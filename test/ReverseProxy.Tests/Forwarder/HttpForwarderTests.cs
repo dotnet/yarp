@@ -498,6 +498,43 @@ public class HttpForwarderTests
         events.AssertContainProxyStages(Array.Empty<ForwarderStage>());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TransformRequestAsync_ModifiesRequestContent_Throws(bool originalHasBody)
+    {
+        var events = TestEventListener.Collect();
+        TestLogger.Collect();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "POST";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new TestBodyDetector { CanHaveBody = originalHasBody });
+
+        var destinationPrefix = "https://localhost/foo";
+
+        var transforms = new DelegateHttpTransforms()
+        {
+            CopyRequestHeaders = true,
+            OnRequest = (context, request, destination) =>
+            {
+                request.Content = new StringContent("modified content");
+                return Task.CompletedTask;
+            }
+        };
+
+        var sut = CreateProxy();
+        var client = MockHttpHandler.CreateClient(
+            (HttpRequestMessage request, CancellationToken cancellationToken) =>
+            {
+                throw new NotImplementedException();
+            });
+
+        var proxyError = await sut.SendAsync(httpContext, destinationPrefix, client, ForwarderRequestConfig.Empty, transforms);
+
+        AssertErrorInfo<InvalidOperationException>(ForwarderError.RequestCreation, StatusCodes.Status502BadGateway, proxyError, httpContext, destinationPrefix);
+        Assert.Empty(events.GetProxyStages());
+    }
+
     // Tests proxying an upgradeable request.
     [Theory]
     [InlineData("WebSocket")]

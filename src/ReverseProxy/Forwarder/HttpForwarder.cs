@@ -430,6 +430,11 @@ internal sealed class HttpForwarder : IHttpForwarder
         // :: Step 3: Copy request headers Client --► Proxy --► Destination
         await transformer.TransformRequestAsync(context, destinationRequest, destinationPrefix, activityToken.Token);
 
+        if (!ReferenceEquals(requestContent, destinationRequest.Content) && destinationRequest.Content is not EmptyHttpContent)
+        {
+            throw new InvalidOperationException("Replacing the YARP outgoing request HttpContent is not supported. You should configure the HttpContext.Request instead.");
+        }
+
         // The transformer generated a response, do not forward.
         if (RequestUtilities.IsResponseSet(context.Response))
         {
@@ -450,7 +455,6 @@ internal sealed class HttpForwarder : IHttpForwarder
             context.Features.Get<IHttpResponseBodyFeature>()?.DisableBuffering();
         }
 
-        // TODO: What if they replace the HttpContent object? That would mess with our tracking and error handling.
         return (destinationRequest, requestContent, tryDowngradingH2WsOnFailure);
     }
 
