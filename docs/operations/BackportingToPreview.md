@@ -8,16 +8,16 @@ Backporting changes is very similar to a regular release. Changes are made on th
 - Make and commit any changes
 - Push the changes **to your own fork** and submit a PR against the preview branch
 - Once the PR is merged, wait for the internal [`microsoft-reverse-proxy-official`](https://dev.azure.com/dnceng/internal/_build?definitionId=809&_a=summary&view=branches) pipeline to produce a build
-- Validate the build the same way you would for a regular release [docs](https://github.com/microsoft/reverse-proxy/blob/main/docs/operations/Release.md#validate-the-final-build)
+- Validate the build the same way you would for a regular release [docs](https://github.com/dotnet/yarp/blob/main/docs/operations/Release.md#validate-the-final-build)
 - Package Artifacts from this build can be shared to validate the patch. Optionally, the artifacts from the [public pipeline](https://dev.azure.com/dnceng/public/_build?definitionId=807&view=branches) can be used
 - Continue iterating on the preview branch until satisfied with the validation of the change
-- [Release the build](https://github.com/microsoft/reverse-proxy/blob/main/docs/operations/Release.md#release-the-build) from the preview branch
+- [Release the build](https://github.com/dotnet/yarp/blob/main/docs/operations/Release.md#release-the-build) from the preview branch
 - Create a new git tag for the released commit
 
   **While still on the preview branch:**
   - `git tag v1.0.0-previewX.build.d`
   - `git push upstream --tags`
-- Create a new [release](https://github.com/microsoft/reverse-proxy/releases).
+- Create a new [release](https://github.com/dotnet/yarp/releases).
 
 # Internal fixes
 
@@ -28,7 +28,7 @@ Issues with significant security or disclosure concerns need to be fixed private
 - Update versioning as needed.
 - Create a feature branch, fix the issue, and send a PR using Azdo.
 - Once approved and merged, the `internal/release/{version}` branch should build automatically and publish to the `.NET 6 Internal` channel, visible at https://dev.azure.com/dnceng/internal/_packaging?_a=feed&feed=dotnet6-internal. This is configured using the `darc` tool.
-- [Release the build](https://github.com/microsoft/reverse-proxy/blob/main/docs/operations/Release.md#release-the-build)
+- [Release the build](https://github.com/dotnet/yarp/blob/main/docs/operations/Release.md#release-the-build)
 - Tag the commit and push it to the public repo
 - Cherry pick the changes to public main as needed.
 - Finish the standard release checklist.

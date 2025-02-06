@@ -31,7 +31,7 @@ public sealed class RouteModel
         Transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
     }
 
-    // May not be populated if the cluster config is missing. https://github.com/microsoft/reverse-proxy/issues/797
+    // May not be populated if the cluster config is missing. https://github.com/dotnet/yarp/issues/797
     /// <summary>
     /// The <see cref="ClusterState"/> instance associated with this route.
     /// </summary>

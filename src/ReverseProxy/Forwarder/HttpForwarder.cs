@@ -112,7 +112,7 @@ internal sealed class HttpForwarder : IHttpForwarder
         }
 
         // HttpClient overload for SendAsync changes response behavior to fully buffered which impacts performance
-        // See discussion in https://github.com/microsoft/reverse-proxy/issues/458
+        // See discussion in https://github.com/dotnet/yarp/issues/458
         if (httpClient is HttpClient)
         {
             throw new ArgumentException($"The http client must be of type HttpMessageInvoker, not HttpClient", nameof(httpClient));
@@ -132,7 +132,7 @@ internal sealed class HttpForwarder : IHttpForwarder
             var isClientHttp2OrGreater = ProtocolHelper.IsHttp2OrGreater(context.Request.Protocol);
 
             // NOTE: We heuristically assume gRPC-looking requests may require streaming semantics.
-            // See https://github.com/microsoft/reverse-proxy/issues/118 for design discussion.
+            // See https://github.com/dotnet/yarp/issues/118 for design discussion.
             var isStreamingRequest = isClientHttp2OrGreater && ProtocolHelper.IsGrpcContentType(context.Request.ContentType);
 
             HttpRequestMessage? destinationRequest = null;

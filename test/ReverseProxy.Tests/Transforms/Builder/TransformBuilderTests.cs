@@ -350,7 +350,7 @@ public class TransformBuilderTests
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    // https://github.com/microsoft/reverse-proxy/issues/859
+    // https://github.com/dotnet/yarp/issues/859
     // Verify that a custom host works no matter what combination of
     // useOriginalHost and copyHeaders is used.
     public async Task UseCustomHost(bool? useOriginalHost, bool? copyHeaders)
