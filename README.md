@@ -9,7 +9,7 @@ We expect YARP to ship as a library and project template that together provide a
 
 # Getting started
 
-- See our [Getting Started](https://microsoft.github.io/reverse-proxy/articles/getting-started.html) docs.
+- See our [Getting Started](https://dotnet.github.io/yarp/articles/getting-started.html) docs.
 - Try our [previews](https://github.com/dotnet/yarp/releases).
 - Try our latest [daily build](/docs/DailyBuilds.md).
 
