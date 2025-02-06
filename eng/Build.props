@@ -6,6 +6,5 @@
         <ProjectToBuild Include="$(RepoRoot)samples\**\*.csproj" />
         <ProjectToBuild Include="$(RepoRoot)testassets\**\*.csproj" />
         <ProjectToBuild Include="$(RepoRoot)eng\yarpapppack\**\*.csproj" />
-        <ProjectToBuild Include="$(RepoRoot)docs\docfx\docfx.csproj" Condition="'$(OS)' == 'Windows_NT'" />
     </ItemGroup>
 </Project>

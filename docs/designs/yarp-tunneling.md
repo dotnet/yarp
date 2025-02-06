@@ -1,5 +1,8 @@
 # YARP Tunneling
 
+> [!CAUTION]
+> These are archived design discussions. Information may be outdated and inaccurate.
+
 ## Introduction
 While many organizations are moving their computing to the cloud, there are occasions where you need to be able to run some services in a local datacenter. The problem then is if you need to be able to communicate with those services from the cloud. Creating a VPN network connection to Azure or other cloud provider is possible, but usually involves a lot of red tape and configuration complexity as the two networks need to be integrated.
 

@@ -1,8 +1,0 @@
-- name: About YARP 2.1
-  href: index.md
-- name: Articles
-  href: articles/
-  homepage: articles/index.md
-- name: API Documentation
-  href: api/
-  homepage: api/index.md

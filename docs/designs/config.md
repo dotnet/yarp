@@ -1,5 +1,8 @@
 # Config based proxy apps
 
+> [!CAUTION]
+> These are archived design discussions. Information may be outdated and inaccurate.
+
 RE: https://github.com/dotnet/yarp/issues/9
 
 Config based proxies are common and we'll need to support at least basic proxy scenarios from config. Here are some initial considerations:
