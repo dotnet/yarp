@@ -187,6 +187,9 @@ internal sealed class HttpForwarder : IHttpForwarder
                     // Trying again
                     activityCancellationSource.ResetTimeout();
 
+                    Debug.Assert(requestConfig?.VersionPolicy is null or HttpVersionPolicy.RequestVersionOrLower || requestConfig.Version?.Major is null or 1,
+                        "HTTP/1.X was disallowed by policy, we shouldn't be retrying.");
+
                     var config = requestConfig! with
                     {
                         Version = HttpVersion.Version11,
@@ -361,15 +364,16 @@ internal sealed class HttpForwarder : IHttpForwarder
             && string.Equals(WebSocketName, connectProtocol, StringComparison.OrdinalIgnoreCase);
 #endif
 
-        var outgoingHttps = destinationPrefix.StartsWith("https://");
+        var outgoingHttps = destinationPrefix.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         var outgoingVersion = requestConfig?.Version ?? DefaultVersion;
         var outgoingPolicy = requestConfig?.VersionPolicy ?? DefaultVersionPolicy;
         var outgoingUpgrade = false;
         var outgoingConnect = false;
         var tryDowngradingH2WsOnFailure = false;
+
         if (isSpdyRequest)
         {
-            // Can only be done on HTTP/1.1, force regardless of options.
+            // Can only be done on HTTP/1.1.
             outgoingUpgrade = true;
         }
         else if (isH1WsRequest || isH2WsRequest)
@@ -378,9 +382,10 @@ internal sealed class HttpForwarder : IHttpForwarder
             {
 #if NET7_0_OR_GREATER
                 case (2, HttpVersionPolicy.RequestVersionExact, _):
-                case (2, HttpVersionPolicy.RequestVersionOrHigher, true):
+                case (2, HttpVersionPolicy.RequestVersionOrHigher, _):
                     outgoingConnect = true;
                     break;
+
                 case (1, HttpVersionPolicy.RequestVersionOrHigher, true):
                 case (2, HttpVersionPolicy.RequestVersionOrLower, true):
                 case (3, HttpVersionPolicy.RequestVersionOrLower, true):
@@ -389,8 +394,7 @@ internal sealed class HttpForwarder : IHttpForwarder
                     tryDowngradingH2WsOnFailure = true;
                     break;
 #endif
-                // 1.x Lower or Exact, regardless of HTTPS
-                // Anything else without HTTPS except 2 Exact
+
                 default:
                     // Override to use HTTP/1.1, nothing else is supported.
                     outgoingUpgrade = true;
@@ -398,9 +402,18 @@ internal sealed class HttpForwarder : IHttpForwarder
             }
         }
 
+        bool http1IsAllowed = outgoingPolicy == HttpVersionPolicy.RequestVersionOrLower || outgoingVersion.Major == 1;
+
         if (outgoingUpgrade)
         {
-            // Can only be done on HTTP/1.1, force regardless of options.
+            // Can only be done on HTTP/1.1, throw if disallowed by options.
+            if (!http1IsAllowed)
+            {
+                throw new HttpRequestException(isSpdyRequest
+                    ? "SPDY requests require HTTP/1.1 support, but outbound HTTP/1.1 was disallowed by HttpVersionPolicy."
+                    : "An outgoing HTTP/1.1 Upgrade request is required to proxy this request, but is disallowed by HttpVersionPolicy.");
+            }
+
             destinationRequest.Version = HttpVersion.Version11;
             destinationRequest.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
             destinationRequest.Method = HttpMethod.Get;
@@ -413,10 +426,12 @@ internal sealed class HttpForwarder : IHttpForwarder
             destinationRequest.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
             destinationRequest.Method = HttpMethod.Connect;
             destinationRequest.Headers.Protocol = connectProtocol ?? WebSocketName;
+            tryDowngradingH2WsOnFailure &= http1IsAllowed;
         }
 #endif
         else
         {
+            Debug.Assert(http1IsAllowed || outgoingVersion.Major != 1);
             destinationRequest.Method = RequestUtilities.GetHttpMethod(context.Request.Method);
             destinationRequest.Version = outgoingVersion;
             destinationRequest.VersionPolicy = outgoingPolicy;

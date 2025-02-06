@@ -678,6 +678,38 @@ public class HttpForwarderTests
     }
 
     [Fact]
+    public async Task UpgradableSpdyRequest_DisallowedByVersionPolicy_Fails()
+    {
+        var events = TestEventListener.Collect();
+        TestLogger.Collect();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "GET";
+        httpContext.Request.Headers.Upgrade = "SPDY/3.1";
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.SetupGet(u => u.IsUpgradableRequest).Returns(true);
+        httpContext.Features.Set(upgradeFeatureMock.Object);
+
+        var destinationPrefix = "https://localhost:123/a/b/";
+        var sut = CreateProxy();
+        var client = MockHttpHandler.CreateClient((_, _) => throw new InvalidOperationException("Unreachable"));
+        var requestConfig = new ForwarderRequestConfig
+        {
+            Version = HttpVersion.Version20,
+            VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
+        };
+
+        var error = await sut.SendAsync(httpContext, destinationPrefix, client, requestConfig);
+
+        var ex = AssertErrorInfo<HttpRequestException>(ForwarderError.RequestCreation, StatusCodes.Status502BadGateway, error, httpContext, destinationPrefix);
+        Assert.Contains("SPDY requests require HTTP/1.1 support", ex.Message);
+
+        // Error thrown before sending the request.
+        events.AssertContainProxyStages([]);
+    }
+
+    [Fact]
     public async Task UpgradableRequest_CancelsIfIdle()
     {
         var events = TestEventListener.Collect();
@@ -2814,18 +2846,20 @@ public class HttpForwarderTests
         }
     }
 
-    private static void AssertErrorInfoAndStages<TException>(
+    private static TException AssertErrorInfoAndStages<TException>(
         ForwarderError expectedError, int expectedStatusCode,
         ForwarderError error, HttpContext context, string destinationPrefix,
         params ForwarderStage[] otherStages)
         where TException : Exception
     {
-        AssertErrorInfo<TException>(expectedError, expectedStatusCode, error, context, destinationPrefix);
+        TException exception = AssertErrorInfo<TException>(expectedError, expectedStatusCode, error, context, destinationPrefix);
 
         TestEventListener.Collect().AssertContainProxyStages([ForwarderStage.SendAsyncStart, .. otherStages]);
+
+        return exception;
     }
 
-    private static void AssertErrorInfo<TException>(
+    private static TException AssertErrorInfo<TException>(
         ForwarderError expectedError, int expectedStatusCode,
         ForwarderError error, HttpContext context, string destinationPrefix)
         where TException : Exception
@@ -2847,6 +2881,8 @@ public class HttpForwarderTests
         Assert.NotNull(log.Exception);
 
         AssertProxyStartFailedStop(TestEventListener.Collect(), destinationPrefix, context.Response.StatusCode, errorFeature.Error);
+
+        return (TException)errorFeature.Exception;
     }
 
     private static void AssertProxyStartStop(List<EventWrittenEventArgs> events, string destinationPrefix, int statusCode)

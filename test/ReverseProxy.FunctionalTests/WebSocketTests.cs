@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -34,6 +35,147 @@ public class WebSocketTests
     {
         _output = output;
     }
+
+#if NET7_0_OR_GREATER
+    public static IEnumerable<object[]> WebSocketVersionNegotiation_TestData()
+    {
+        foreach (Version incomingVersion in new[] { HttpVersion.Version11, HttpVersion.Version20 })
+        {
+            foreach (HttpVersionPolicy versionPolicy in Enum.GetValues<HttpVersionPolicy>())
+            {
+                foreach (Version destinationVersion in new[] { HttpVersion.Version11, HttpVersion.Version20, HttpVersion.Version30 })
+                {
+                    foreach (HttpProtocols destinationProtocols in new[] { HttpProtocols.Http1, HttpProtocols.Http2, HttpProtocols.Http1AndHttp2 })
+                    {
+                        foreach (bool useHttpsOnDestination in new[] { true, false })
+                        {
+                            (int version, bool canDowngrade) = (destinationVersion.Major, versionPolicy, useHttpsOnDestination) switch
+                            {
+                                (1, HttpVersionPolicy.RequestVersionOrHigher, true) => (2, true),
+                                (1, _, _) => (1, false),
+                                (2, HttpVersionPolicy.RequestVersionOrLower, true) => (2, true),
+                                (2, HttpVersionPolicy.RequestVersionOrLower, false) => (1, false),
+                                (2, _, _) => (2, false),
+                                (3, HttpVersionPolicy.RequestVersionOrLower, true) => (2, true),
+                                (3, HttpVersionPolicy.RequestVersionOrLower, false) => (1, false),
+                                (3, _, _) => (-1, false), // RequestCreation error
+                                _ => throw new Exception()
+                            };
+
+                            ForwarderError? expectedProxyError = version == -1 ? ForwarderError.RequestCreation : null;
+                            bool e2eWillFail = expectedProxyError.HasValue;
+
+                            if (version == 2 && destinationProtocols == HttpProtocols.Http1)
+                            {
+                                // ALPN rejects HTTP/2.
+                                if (canDowngrade)
+                                {
+                                    Debug.Assert(useHttpsOnDestination);
+                                    version = 1;
+                                }
+                                else
+                                {
+                                    e2eWillFail = true;
+                                    expectedProxyError = ForwarderError.Request;
+                                }
+                            }
+
+                            if (version == 1 && destinationProtocols == HttpProtocols.Http2)
+                            {
+                                // ALPN rejects HTTP/1.1, or the server sends back an error response when not using TLS.
+                                e2eWillFail = true;
+
+                                // An error response is just a bad status code, not a failed request from the proxy's perspective.
+                                if (useHttpsOnDestination)
+                                {
+                                    expectedProxyError = ForwarderError.Request;
+                                }
+                            }
+
+                            if (version == 2 && destinationProtocols == HttpProtocols.Http1AndHttp2 && !useHttpsOnDestination)
+                            {
+                                // No ALPN, Kestrel doesn't know whether to use HTTP/1.1 or HTTP/2, defaulting to HTTP/1.1.
+                                // YARP will see an 'HTTP_1_1_REQUIRED' error and return a 502.
+                                Debug.Assert(!canDowngrade);
+                                e2eWillFail = true;
+                                expectedProxyError = ForwarderError.Request;
+                            }
+
+                            string expectedVersion = version == 1 ? "HTTP/1.1" : "HTTP/2";
+
+#if NET7_0
+                            if (version == 2 && destinationProtocols is HttpProtocols.Http1 or HttpProtocols.Http1AndHttp2 && !useHttpsOnDestination)
+                            {
+                                // https://github.com/dotnet/runtime/issues/80056
+                                continue;
+                            }
+#endif
+
+                            yield return new object[] { incomingVersion, versionPolicy, destinationVersion, destinationProtocols, useHttpsOnDestination, expectedVersion, expectedProxyError, e2eWillFail };
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    [Theory]
+    [MemberData(nameof(WebSocketVersionNegotiation_TestData))]
+    public async Task WebSocketVersionNegotiation(Version incomingVersion, HttpVersionPolicy versionPolicy, Version requestedDestinationVersion, HttpProtocols destinationProtocols, bool useHttpsOnDestination,
+        string expectedVersion, ForwarderError? expectedProxyError, bool e2eWillFail)
+    {
+#if !NET8_0_OR_GREATER
+        if (OperatingSystem.IsMacOS() && useHttpsOnDestination && destinationProtocols != HttpProtocols.Http1)
+        {
+            // Does not support ALPN until .NET 8
+            return;
+        }
+#endif
+
+        using var cts = CreateTimer();
+
+        var test = CreateTestEnvironment();
+        test.ProxyProtocol = incomingVersion.Major == 1 ? HttpProtocols.Http1 : HttpProtocols.Http2;
+        test.DestinationProtocol = destinationProtocols;
+        test.DestinationHttpVersion = requestedDestinationVersion;
+        test.DestinationHttpVersionPolicy = versionPolicy;
+        test.UseHttpsOnDestination = useHttpsOnDestination;
+
+        int proxyRequests = 0;
+        ForwarderError? error = null;
+
+        test.ConfigureProxyApp = builder =>
+        {
+            builder.Use(async (context, next) =>
+            {
+                proxyRequests++;
+                await next(context);
+
+                error = context.Features.Get<IForwarderErrorFeature>()?.Error;
+            });
+        };
+
+        await test.Invoke(async uri =>
+        {
+            using var client = new ClientWebSocket();
+            client.Options.HttpVersion = incomingVersion;
+            client.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            if (e2eWillFail)
+            {
+                var ex = await Assert.ThrowsAsync<WebSocketException>(() => SendWebSocketRequestAsync(client, uri, expectedVersion, cts.Token));
+                Assert.IsNotType<TaskCanceledException>(ex.InnerException);
+            }
+            else
+            {
+                await SendWebSocketRequestAsync(client, uri, expectedVersion, cts.Token);
+            }
+        }, cts.Token);
+
+        Assert.Equal(1, proxyRequests);
+        Assert.Equal(expectedProxyError, error);
+    }
+#endif
 
     [Theory]
     [InlineData(WebSocketMessageType.Binary)]
@@ -148,7 +290,7 @@ public class WebSocketTests
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http1;
         test.DestinationProtocol = HttpProtocols.Http1;
-        test.DestionationHttpVersion = HttpVersion.Version11;
+        test.DestinationHttpVersion = HttpVersion.Version11;
         test.UseHttpsOnProxy = useHttps;
         test.UseHttpsOnDestination = useHttps;
 
@@ -165,18 +307,20 @@ public class WebSocketTests
     [InlineData(false)]
     public async Task WebSocket20_To_20(bool useHttps)
     {
+#if !NET8_0_OR_GREATER
         if (OperatingSystem.IsMacOS() && useHttps)
         {
             // Does not support ALPN until .NET 8
             return;
         }
+#endif
 
         using var cts = CreateTimer();
 
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http2;
         test.DestinationProtocol = HttpProtocols.Http2;
-        test.DestionationHttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        test.DestinationHttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
         test.UseHttpsOnProxy = useHttps;
         test.UseHttpsOnDestination = useHttps;
 
@@ -194,18 +338,20 @@ public class WebSocketTests
     [InlineData(false)]
     public async Task WebSocket20_To_11(bool useHttps)
     {
+#if !NET8_0_OR_GREATER
         if (OperatingSystem.IsMacOS() && useHttps)
         {
             // Does not support ALPN until .NET 8
             return;
         }
+#endif
 
         using var cts = CreateTimer();
 
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http2;
         test.DestinationProtocol = HttpProtocols.Http1;
-        test.DestionationHttpVersion = HttpVersion.Version11;
+        test.DestinationHttpVersion = HttpVersion.Version11;
         test.UseHttpsOnProxy = useHttps;
         test.UseHttpsOnDestination = useHttps;
 
@@ -223,18 +369,20 @@ public class WebSocketTests
     [InlineData(false)]
     public async Task WebSocket11_To_20(bool useHttps)
     {
+#if !NET8_0_OR_GREATER
         if (OperatingSystem.IsMacOS() && useHttps)
         {
             // Does not support ALPN until .NET 8
             return;
         }
+#endif
 
         using var cts = CreateTimer();
 
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http1;
         test.DestinationProtocol = HttpProtocols.Http2;
-        test.DestionationHttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        test.DestinationHttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
         test.UseHttpsOnProxy = useHttps;
         test.UseHttpsOnDestination = useHttps;
 
@@ -256,7 +404,7 @@ public class WebSocketTests
         test.ProxyProtocol = HttpProtocols.Http1;
         // The destination doesn't support HTTP/2, as determined by ALPN
         test.DestinationProtocol = HttpProtocols.Http1;
-        test.DestionationHttpVersion = HttpVersion.Version20;
+        test.DestinationHttpVersion = HttpVersion.Version20;
         test.UseHttpsOnDestination = true;
 
         await test.Invoke(async uri =>
@@ -279,7 +427,7 @@ public class WebSocketTests
             ProxyProtocol = HttpProtocols.Http1,
             // The destination doesn't support HTTP/2, as determined by ALPN
             DestinationProtocol = HttpProtocols.Http1,
-            DestionationHttpVersion = HttpVersion.Version20,
+            DestinationHttpVersion = HttpVersion.Version20,
             UseHttpsOnDestination = true,
             ConfigureProxy = builder =>
             {
@@ -359,8 +507,8 @@ public class WebSocketTests
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http1;
         test.DestinationProtocol = HttpProtocols.Http1;
-        test.DestionationHttpVersion = HttpVersion.Version20;
-        test.DestionationHttpVersionPolicy = policy;
+        test.DestinationHttpVersion = HttpVersion.Version20;
+        test.DestinationHttpVersionPolicy = policy;
         test.UseHttpsOnDestination = useHttps;
 
         await test.Invoke(async uri =>
@@ -392,8 +540,6 @@ public class WebSocketTests
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http1;
         test.DestinationProtocol = destinationProtocol;
-        test.DestionationHttpVersion = HttpVersion.Version20;
-        test.DestionationHttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
 
         test.ConfigureProxyApp = builder =>
         {
