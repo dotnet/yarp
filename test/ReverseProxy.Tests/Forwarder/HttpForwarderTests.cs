@@ -552,10 +552,7 @@ public class HttpForwarderTests
         httpContext.Request.Headers[":authority"] = "example.com:3456";
         httpContext.Request.Headers["x-ms-request-test"] = "request";
         httpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
-
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        // https://github.com/microsoft/reverse-proxy/issues/467
-        httpContext.Request.Headers["Upgrade"] = upgradeHeader;
+        httpContext.Request.Headers.Upgrade = upgradeHeader;
 
         var downstreamStream = new DuplexStream(
             readStream: StringToStream("request content"),
@@ -629,8 +626,7 @@ public class HttpForwarderTests
         httpContext.Request.QueryString = new QueryString("?a=b&c=d");
         httpContext.Request.Headers[":host"] = "example.com";
         httpContext.Request.Headers["x-ms-request-test"] = "request";
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var proxyResponseStream = new MemoryStream();
         httpContext.Response.Body = proxyResponseStream;
@@ -691,10 +687,7 @@ public class HttpForwarderTests
         httpContext.Request.Scheme = "http";
         httpContext.Request.Path = "/api/test";
         httpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
-
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        // https://github.com/microsoft/reverse-proxy/issues/467
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var idleTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -2175,8 +2168,7 @@ public class HttpForwarderTests
         httpContext.Request.Method = "GET";
         httpContext.Request.Scheme = "http";
         httpContext.Request.Host = new HostString("example.com:3456");
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var downstreamStream = new DuplexStream(
             readStream: new ThrowStream(),
@@ -2231,8 +2223,7 @@ public class HttpForwarderTests
         httpContext.Request.Method = "GET";
         httpContext.Request.Scheme = "http";
         httpContext.Request.Host = new HostString("example.com:3456");
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var downstreamStream = new DuplexStream(
             readStream: new StallStream(ct =>

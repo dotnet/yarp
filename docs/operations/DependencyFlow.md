@@ -56,18 +56,18 @@ To see the current mappings for a repository, you can run `darc get-default-chan
 (1302) https://github.com/dotnet/aspnetcore-tooling @ release/5.0-preview4 -> .NET 5 Preview 4
 ```
 
-Subscriptions are managed using the `get-subscriptions`, `add-subscription` and `update-subscription` commands. You can view all subscriptions in the system by running `darc get-subscription`. You can also filter subscriptions by the source and target using the `--source-repo [repo]` and `--target-repo [repo]` arguments. For example, to see everything that `microsoft/reverse-proxy` is subscribed to:
+Subscriptions are managed using the `get-subscriptions`, `add-subscription` and `update-subscription` commands. You can view all subscriptions in the system by running `darc get-subscription`. You can also filter subscriptions by the source and target using the `--source-repo [repo]` and `--target-repo [repo]` arguments. For example, to see everything that `dotnet/yarp` is subscribed to:
 
 ```shell
-> darc get-subscriptions --target-repo microsoft/reverse-proxy
-https://github.com/dotnet/arcade (.NET Eng - Latest) ==> 'https://github.com/microsoft/reverse-proxy' ('main')
+> darc get-subscriptions --target-repo dotnet/yarp
+https://github.com/dotnet/arcade (.NET Eng - Latest) ==> 'https://github.com/dotnet/yarp' ('main')
   - Id: 642e03bf-3679-4569-fcfc-08d7d0f045ee
   - Update Frequency: EveryWeek
   - Enabled: True
   - Batchable: False
   - Merge Policies:
     Standard
-https://github.com/dotnet/runtime (.NET 5 Preview 4) ==> 'https://github.com/microsoft/reverse-proxy' ('main')
+https://github.com/dotnet/runtime (.NET 5 Preview 4) ==> 'https://github.com/dotnet/yarp' ('main')
   - Id: 763f49c1-8016-44b6-8810-08d7e1727af8
   - Update Frequency: EveryBuild
   - Enabled: True
@@ -93,7 +93,7 @@ A number of comments will also be present, describing available values and what 
 ```
 Channel: .NET 5 Dev
 Source Repository URL: https://github.com/dotnet/runtime
-Target Repository URL: https://github.com/microsoft/reverse-proxy
+Target Repository URL: https://github.com/dotnet/yarp
 Target Branch: main
 Update Frequency: everyBuild
 Batchable: False
@@ -115,7 +115,7 @@ When .NET 5 branches for a preview, we need to switch the "channel" from which w
 
 To do this, run the following commands:
 
-1. Run `darc get-subscriptions --target-repo microsoft/reverse-proxy --source-repo dotnet/runtime` to get the subscription from `dotnet/runtime` to `microsoft/reverse-proxy`
+1. Run `darc get-subscriptions --target-repo dotnet/yarp --source-repo dotnet/runtime` to get the subscription from `dotnet/runtime` to `dotnet/yarp`
 2. Copy the `Id` value
 3. Run `darc update-subscription --id [Id]`. An editor will open.
 4. Change the value of the `Channel` field to `.NET 5 Preview X` (where `X` is the preview we are remaining on)
@@ -134,7 +134,7 @@ Set up dependency flow so we continue getting new runtime bits if necessary:
 2. Fill in the template that opens in your editor as follows:
     * `Channel` = `.NET 5 Preview X` where `X` is the .NET 5 preview that matches the YARP preview
     * `Source Repository URL` = `https://github.com/dotnet/runtime`
-    * `Target Repository URL` = `https://github.com/microsoft/reverse-proxy`
+    * `Target Repository URL` = `https://github.com/dotnet/yarp`
     * `Target Branch` = `release/1.0.0-previewX` (where `X` is the YARP preview number; this should be the same as the branch you created above)
     * `Update Frequency` = `everyBuild` (Builds will be rare in this channel and we'll want every one)
     * `Merge Policies` is a multiline value, it should look like this:
@@ -149,7 +149,7 @@ Merge Policies:
 
 Restore the `main` branch to pulling the latest bits from .NET 5:
 
-1. Run `darc get-subscriptions --target-repo microsoft/reverse-proxy --source-repo dotnet/runtime` to get the subscription from `dotnet/runtime` to `microsoft/reverse-proxy`
+1. Run `darc get-subscriptions --target-repo dotnet/yarp --source-repo dotnet/runtime` to get the subscription from `dotnet/runtime` to `dotnet/yarp`
 2. Copy the `Id` value
 3. Run `darc update-subscription --id [Id]`. An editor will open.
 4. Change the value of the `Channel` field to `.NET 5 Dev`

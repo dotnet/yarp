@@ -86,7 +86,7 @@ public class WebSocketTests
             var targetUri = new Uri(new Uri(uri, UriKind.Absolute), "rawupgrade");
             using var request = new HttpRequestMessage(HttpMethod.Get, targetUri);
 
-            // TODO: https://github.com/microsoft/reverse-proxy/issues/255 Until this is fixed the "Upgrade: WebSocket" header is required.
+            // TODO: https://github.com/dotnet/yarp/issues/255 Until this is fixed the "Upgrade: WebSocket" header is required.
             request.Headers.TryAddWithoutValidation("Upgrade", "WebSocket");
 
             request.Headers.TryAddWithoutValidation("Connection", "upgrade");
@@ -116,7 +116,7 @@ public class WebSocketTests
     }
 
     [Fact]
-    // https://github.com/microsoft/reverse-proxy/issues/255 IIS claims all requests are upgradeable.
+    // https://github.com/dotnet/yarp/issues/255 IIS claims all requests are upgradeable.
     public async Task FalseUpgradeTest()
     {
         using var cts = CreateTimer();
@@ -483,7 +483,7 @@ public class WebSocketTests
             },
             ConfigureProxyApp = proxyApp =>
             {
-                // Mimic the IIS issue https://github.com/microsoft/reverse-proxy/issues/255
+                // Mimic the IIS issue https://github.com/dotnet/yarp/issues/255
                 proxyApp.Use((context, next) =>
                 {
                     if (forceUpgradable && !(context.Features.Get<IHttpUpgradeFeature>()?.IsUpgradableRequest == true))

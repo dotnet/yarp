@@ -32,7 +32,7 @@ public sealed record SessionAffinityConfig
     /// For the header affinity policy this will be the header name.
     /// The policy will give its own default if no value is set.
     /// This value should be unique across clusters to avoid affinity conflicts.
-    /// https://github.com/microsoft/reverse-proxy/issues/976
+    /// https://github.com/dotnet/yarp/issues/976
     /// This field is required.
     /// </summary>
     public string AffinityKeyName { get; init; } = default!;

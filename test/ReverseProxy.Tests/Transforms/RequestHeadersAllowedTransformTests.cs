@@ -102,7 +102,7 @@ public class RequestHeadersAllowedTransformTests
     [InlineData("", 0)]
     [InlineData("connection", 1)]
     [InlineData("Transfer-Encoding;Keep-Alive", 2)]
-    // See https://github.com/microsoft/reverse-proxy/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/RequestUtilities.cs#L61-L83
+    // See https://github.com/dotnet/yarp/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/RequestUtilities.cs#L61-L83
     public async Task RestrictedHeaders_CopiedIfAllowed(string names, int expected)
     {
         var httpContext = new DefaultHttpContext();

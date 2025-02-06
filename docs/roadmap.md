@@ -2,20 +2,20 @@
 
 ### Supported YARP versions
 
-[Latest releases](https://github.com/microsoft/reverse-proxy/releases)
+[Latest releases](https://github.com/dotnet/yarp/releases)
 
 | Version | Release Date | Latest Patch Version | End of Support |
 | -- | -- | -- | -- |
-| [YARP 2.2](https://github.com/microsoft/reverse-proxy/releases/tag/v2.2.0) | September 3, 2024 | [2.2.0](https://github.com/microsoft/reverse-proxy/releases/tag/v2.2.0) |                  |
-| [YARP 2.1](https://github.com/microsoft/reverse-proxy/releases/tag/v2.1.0) | November 17, 2023 | [2.1.0](https://github.com/microsoft/reverse-proxy/releases/tag/v2.1.0) | March 3, 2025    |
+| [YARP 2.2](https://github.com/dotnet/yarp/releases/tag/v2.2.0) | September 3, 2024 | [2.2.0](https://github.com/dotnet/yarp/releases/tag/v2.2.0) |                  |
+| [YARP 2.1](https://github.com/dotnet/yarp/releases/tag/v2.1.0) | November 17, 2023 | [2.1.0](https://github.com/dotnet/yarp/releases/tag/v2.1.0) | March 3, 2025    |
 
 ### End-of-life YARP versions
 
 | Version | Released date | Final Patch Version | End of support |
 | -- | -- | -- | -- |
-| [YARP 2.0](https://github.com/microsoft/reverse-proxy/releases/tag/v2.0.0) | February 14, 2023 | [2.0.1](https://github.com/microsoft/reverse-proxy/releases/tag/v2.0.1) | May 17, 2024     |
-| [YARP 1.1](https://github.com/microsoft/reverse-proxy/releases/tag/v1.1.0) | May 2, 2022       | [1.1.2](https://github.com/microsoft/reverse-proxy/releases/tag/v1.1.2) | August 14, 2023  |
-| [YARP 1.0](https://github.com/microsoft/reverse-proxy/releases/tag/v1.0.0) | November 9, 2021  | [1.0.1](https://github.com/microsoft/reverse-proxy/releases/tag/v1.0.1) | November 2, 2022 |
+| [YARP 2.0](https://github.com/dotnet/yarp/releases/tag/v2.0.0) | February 14, 2023 | [2.0.1](https://github.com/dotnet/yarp/releases/tag/v2.0.1) | May 17, 2024     |
+| [YARP 1.1](https://github.com/dotnet/yarp/releases/tag/v1.1.0) | May 2, 2022       | [1.1.2](https://github.com/dotnet/yarp/releases/tag/v1.1.2) | August 14, 2023  |
+| [YARP 1.0](https://github.com/dotnet/yarp/releases/tag/v1.0.0) | November 9, 2021  | [1.0.1](https://github.com/dotnet/yarp/releases/tag/v1.0.1) | November 2, 2022 |
 
 ## Current status
 
@@ -28,7 +28,7 @@ The cadence for these will depend on the issues reported by customers.
 
 ## Support
 
-YARP support is provided by the product team - the engineers working on YARP - which is a combination of members from ASP.NET and the .NET library teams. We do not provide 24/7 support or 'carry pagers', but as we have team members located in Prague and Redmond we generally have good timezone coverage. Bugs should be reported in github using the issue templates, and will typically be responded to within 24hrs. If you find a security issue we ask you to [report it via the Microsoft Security Response Center (MSRC)](https://github.com/microsoft/reverse-proxy/blob/main/SECURITY.md).
+YARP support is provided by the product team - the engineers working on YARP - which is a combination of members from ASP.NET and the .NET library teams. We do not provide 24/7 support or 'carry pagers', but as we have team members located in Prague and Redmond we generally have good timezone coverage. Bugs should be reported in github using the issue templates, and will typically be responded to within 24hrs. If you find a security issue we ask you to [report it via the Microsoft Security Response Center (MSRC)](https://github.com/dotnet/yarp/blob/main/SECURITY.md).
 
 The support period for YARP releases is as follows:
 
@@ -51,7 +51,7 @@ This support schedule is designed to provide a reasonable time period for custom
 YARP is an open source project, so any customers that need fixes faster, or for older releases, are able to build their own copy of YARP. The build environment for YARP is included in the repo and maintained in sync with the source. Each release (GA and Preview) of YARP is tagged, which means that if you need to patch a specific release you can sync to the tag and build. For example you can rebuild v1.0.0 with:
 
 ```shell
-git clone -b v1.0.0 https://github.com/microsoft/reverse-proxy.git yarp1_0_0
+git clone -b v1.0.0 https://github.com/dotnet/yarp.git yarp1_0_0
 cd yarp1_0_0
 restore.cmd 
 

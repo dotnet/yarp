@@ -10,12 +10,12 @@ We expect YARP to ship as a library and project template that together provide a
 # Getting started
 
 - See our [Getting Started](https://microsoft.github.io/reverse-proxy/articles/getting-started.html) docs.
-- Try our [previews](https://github.com/microsoft/reverse-proxy/releases).
+- Try our [previews](https://github.com/dotnet/yarp/releases).
 - Try our latest [daily build](/docs/DailyBuilds.md).
 
 # Updates
 
-For regular updates, see our [releases page](https://github.com/microsoft/reverse-proxy/releases). Subscribe to release notifications on this repository to be notified of future updates (Watch -> Custom -> Releases).
+For regular updates, see our [releases page](https://github.com/dotnet/yarp/releases). Subscribe to release notifications on this repository to be notified of future updates (Watch -> Custom -> Releases).
 
 If you want to live on the bleeding edge, you can pickup the [daily builds](/docs/DailyBuilds.md).
 

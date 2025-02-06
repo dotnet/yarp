@@ -47,7 +47,7 @@ public class ResponseHeadersAllowedTransform : ResponseTransform
 
         Debug.Assert(!context.HeadersCopied);
 
-        // See https://github.com/microsoft/reverse-proxy/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/HttpTransformer.cs#L67-L77
+        // See https://github.com/dotnet/yarp/blob/51d797986b1fea03500a1ad173d13a1176fb5552/src/ReverseProxy/Forwarder/HttpTransformer.cs#L67-L77
         var responseHeaders = context.HttpContext.Response.Headers;
         CopyResponseHeaders(context.ProxyResponse.Headers, responseHeaders);
         if (context.ProxyResponse.Content is not null)
@@ -60,7 +60,7 @@ public class ResponseHeadersAllowedTransform : ResponseTransform
         return default;
     }
 
-    // See https://github.com/microsoft/reverse-proxy/blob/main/src/ReverseProxy/Forwarder/HttpTransformer.cs#:~:text=void-,CopyResponseHeaders
+    // See https://github.com/dotnet/yarp/blob/main/src/ReverseProxy/Forwarder/HttpTransformer.cs#:~:text=void-,CopyResponseHeaders
     private void CopyResponseHeaders(HttpHeaders source, IHeaderDictionary destination)
     {
         foreach (var header in source.NonValidated)
