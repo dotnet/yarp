@@ -16,8 +16,8 @@ SET PATH=%DOTNET_ROOT%;%PATH%
 SET sln=%~1
 
 IF "%sln%"=="" (
-    echo Solution not specified, using reverse-proxy.sln
-    SET sln=%~dp0reverse-proxy.sln
+    echo Solution not specified, using YARP.sln
+    SET sln=%~dp0YARP.sln
 )
 
 IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
