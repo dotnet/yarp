@@ -50,9 +50,12 @@ One of the primary goals of YARP is to be easily extensible. Each deployment sit
 
 ### Submitting a pull request
 
-You will need to sign a [Contributor License Agreement](https://cla.opensource.microsoft.com) when submitting your pull request. To complete the Contributor License Agreement (CLA), you will need to follow the instructions provided by the CLA bot when you send the pull request. This needs to only be done once for all repos using this CLA.
+You will need to sign a [Contributor License Agreement](https://cla.dotnetfoundation.org/) when submitting your pull request.
+To complete the Contributor License Agreement (CLA), you will need to follow the instructions provided by the CLA bot when you send the pull request.
+This needs to only be done once for any .NET Foundation OSS project.
 
-If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests. Make sure the repository can build and all tests pass. Familiarize yourself with the project workflow and our coding conventions.
+If you don't know what a pull request is read this article: https://help.github.com/articles/using-pull-requests.
+Make sure the repository can build and all tests pass. Familiarize yourself with the project workflow and our coding conventions.
 
 ### Feedback
 

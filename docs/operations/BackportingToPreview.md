@@ -23,7 +23,7 @@ Backporting changes is very similar to a regular release. Changes are made on th
 
 Issues with significant security or disclosure concerns need to be fixed privately first. All of this work will happen on the internal Azdo repo and be merged to the public github repo at the time of disclosure.
 
-- Make a separate clone of https://dnceng@dev.azure.com/dnceng/internal/_git/microsoft-reverse-proxy to avoid accidentally pushing to the public repo.
+- Make a separate clone of https://dnceng@dev.azure.com/dnceng/internal/_git/dotnet-yarp to avoid accidentally pushing to the public repo.
 - Create a branch named `internal/release/{version being patched}` starting from the tagged commit of the prior release.
 - Update versioning as needed.
 - Create a feature branch, fix the issue, and send a PR using Azdo.
