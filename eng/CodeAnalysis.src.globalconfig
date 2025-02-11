@@ -1765,7 +1765,7 @@ dotnet_diagnostic.IDE0071.severity = warning
 dotnet_diagnostic.IDE0072.severity = silent
 
 # IDE0073: The file header is missing or not located at the top of the file
-dotnet_diagnostic.IDE0073.severity = warning
+dotnet_diagnostic.IDE0073.severity = error
 
 # IDE0074: Use compound assignment
 dotnet_diagnostic.IDE0074.severity = warning
