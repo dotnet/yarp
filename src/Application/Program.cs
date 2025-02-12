@@ -23,6 +23,7 @@ var builder = WebApplication.CreateBuilder();
 builder.Configuration.AddJsonFile(fileInfo.FullName, optional: false, reloadOnChange: true);
 
 // Configure YARP
+builder.AddServiceDefaults();
 builder.Services.AddServiceDiscovery();
 builder.Services.AddReverseProxy()
                 .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
