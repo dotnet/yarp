@@ -23,12 +23,11 @@ Backporting changes is very similar to a regular release. Changes are made on th
 
 Issues with significant security or disclosure concerns need to be fixed privately first. All of this work will happen on the internal Azdo repo and be merged to the public github repo at the time of disclosure.
 
-- Make a separate clone of https://dnceng@dev.azure.com/dnceng/internal/_git/dotnet-yarp to avoid accidentally pushing to the public repo.
+- Make a separate clone of https://dev.azure.com/dnceng/internal/_git/dotnet-yarp to avoid accidentally pushing to the public repo.
 - Create a branch named `internal/release/{version being patched}` starting from the tagged commit of the prior release.
 - Update versioning as needed.
 - Create a feature branch, fix the issue, and send a PR using Azdo.
-- Once approved and merged, the `internal/release/{version}` branch should build automatically and publish to the `.NET 6 Internal` channel, visible at https://dev.azure.com/dnceng/internal/_packaging?_a=feed&feed=dotnet6-internal. This is configured using the `darc` tool.
-- [Release the build](https://github.com/dotnet/yarp/blob/main/docs/operations/Release.md#release-the-build)
-- Tag the commit and push it to the public repo
+- Release the build from the internal branch.
+- Tag the commit and push it to the public repo. Do not push to regular `main` or `release/*` branches in the internal mirror.
 - Cherry pick the changes to public main as needed.
 - Finish the standard release checklist.

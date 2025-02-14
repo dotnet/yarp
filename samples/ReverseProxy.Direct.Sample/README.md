@@ -37,7 +37,7 @@ Normal proxying comprises the following steps:
 
 To enable control over mapping request and response fields and headers between the client and destination (steps 4 and 7 above), the HttpForwarder.ProxyAsync method takes a HttpTransformer. Your implementation can modify the request url, method, protocol version, response status code, or decide which headers are copied, modify them, or insert additional headers as required.
 
-**Note:** When using the HttpForwarder class directly there are some [header transforms](https://microsoft.github.io/reverse-proxy/articles/transforms.html) included by default, such as adding ```X-Forwarded-For``` and removing the original Host header. This is the same set of transforms included by default in the YARP pipeline model (see BasicYarpSample).
+**Note:** When using the HttpForwarder class directly there are some [header transforms](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/transforms) included by default, such as adding ```X-Forwarded-For``` and removing the original Host header. This is the same set of transforms included by default in the YARP pipeline model (see BasicYarpSample).
 
 ## Files
 

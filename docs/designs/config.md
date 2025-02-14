@@ -1,5 +1,8 @@
 # Config based proxy apps
 
+> [!CAUTION]
+> These are archived design discussions. Information may be outdated and inaccurate.
+
 RE: https://github.com/dotnet/yarp/issues/9
 
 Config based proxies are common and we'll need to support at least basic proxy scenarios from config. Here are some initial considerations:
@@ -14,7 +17,7 @@ Config based proxies are common and we'll need to support at least basic proxy s
 
 We have three relevant components that already have config systems: Kestrel, UrlRewrite, and ReverseProxy.
 
-- [Kestrel](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-3.1#endpoint-configuration)
+- [Kestrel](https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/endpoints)
 - [UrlRewrite](https://github.com/dotnet/aspnetcore/blob/f4d81e3af2b969744a57d76d4d622036ac514a6a/src/Middleware/Rewrite/sample/UrlRewrite.xml#L1-L11)
 - [ReverseProxy](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/samples/IslandGateway.Sample/appsettings.json#L10-L34)
 

@@ -1,5 +1,8 @@
 ## Problem Statement
 
+> [!CAUTION]
+> These are archived design discussions. Information may be outdated and inaccurate.
+
 Today if you want to extend the route or clusters, you can only do it through the metadata property on each, which is a Dictionary<string, string>. If you want to be able to have structured data its not possible without you forcing it into a string and then parsing it when needed. There are scenarios like A/B testing, or authenticating with back end servers (not pass thru) where you want to be able to store a structure of data in config, and have it available at runtime on the route/cluster objects.
 
 If we want there to be pre-built extensions to YARP (#1714), then there needs to be a way for each of the extensions to have its own config data on routes and clusters, and for them to not step on each others toes.
