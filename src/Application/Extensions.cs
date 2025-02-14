@@ -76,7 +76,7 @@ public static class Extensions
         if (useOtlpExporter)
         {
 
-            if (builder.Environment.IsDevelopment())
+            if (string.Equals(Environment.GetEnvironmentVariable("YARP_UNSAFE_SKIP_OLTP_CERT_VALIDATION"), "true", StringComparison.InvariantCultureIgnoreCase))
             {
                 // We cannot use UseOtlpExporter() since it doesn't support configuration via OtlpExporterOptions
                 // https://github.com/open-telemetry/opentelemetry-dotnet/issues/5802
@@ -94,22 +94,10 @@ public static class Extensions
 
         static void ConfigureOtlpExporterOptions(OtlpExporterOptions options)
         {
-            const string aspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1"; // see https://github.com/dotnet/aspnetcore/blob/main/src/Shared/CertificateGeneration/CertificateManager.cs#L22C27-L22C69
             options.HttpClientFactory = () =>
             {
                 var handler = new HttpClientHandler();
-                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) =>
-                {
-                    if (cert is not null)
-                    {
-                        // We are in dev environment,
-                        // check if the cert matches the dev cert
-                        return cert.Extensions
-                            .OfType<X509Extension>()
-                            .Any(e => string.Equals(aspNetHttpsOid, e.Oid?.Value, StringComparison.Ordinal)); ;
-                    }
-                    return errors == System.Net.Security.SslPolicyErrors.None;
-                };
+                handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
                 var httpClient = new HttpClient(handler);
                 return httpClient;
             };
