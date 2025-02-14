@@ -1,6 +1,6 @@
 {
   "sdk": {
-    "version": "10.0.100-alpha.1.25074.2"
+    "version": "9.0.100"
   },
   "tools": {
     "dotnet": "10.0.100-alpha.1.25074.2",

@@ -143,45 +143,68 @@ public class ForwardedTransformExtensionsTests : TransformExtentionsTestsBase
 
         var builderContext = ValidateAndBuild(routeConfig, _factory, CreateServices());
 
-        ValidateForwarded(builderContext, useHost, useProto, forFormat, byFormat, action);
+        ValidateForwarded(builderContext, useHost, useProto, forFormat, byFormat, action, true);
     }
 
     [Theory]
-    [InlineData(NodeFormat.Random, true, true, NodeFormat.Random, ForwardedTransformActions.Append)]
-    [InlineData(NodeFormat.RandomAndPort, true, true, NodeFormat.Random, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, false, NodeFormat.None, ForwardedTransformActions.Append)]
-    [InlineData(NodeFormat.None, false, false, NodeFormat.None, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.Random, ForwardedTransformActions.Append)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.Random, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.None, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.RandomAndPort, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.Unknown, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.UnknownAndPort, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.Ip, ForwardedTransformActions.Set)]
-    [InlineData(NodeFormat.None, false, true, NodeFormat.IpAndPort, ForwardedTransformActions.Set)]
-    public void AddForwarded(NodeFormat forFormat, bool useHost, bool useProto, NodeFormat byFormat, ForwardedTransformActions action)
+    [InlineData(NodeFormat.Random, true, true, NodeFormat.Random, ForwardedTransformActions.Append, true)]
+    [InlineData(NodeFormat.Random, true, true, NodeFormat.Random, ForwardedTransformActions.Append, false)]
+    [InlineData(NodeFormat.RandomAndPort, true, true, NodeFormat.Random, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.RandomAndPort, true, true, NodeFormat.Random, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, false, NodeFormat.None, ForwardedTransformActions.Append, true)]
+    [InlineData(NodeFormat.None, false, false, NodeFormat.None, ForwardedTransformActions.Append, false)]
+    [InlineData(NodeFormat.None, false, false, NodeFormat.None, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, false, NodeFormat.None, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Random, ForwardedTransformActions.Append, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Random, ForwardedTransformActions.Append, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Random, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Random, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.None, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.None, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.RandomAndPort, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.RandomAndPort, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Unknown, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Unknown, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.UnknownAndPort, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.UnknownAndPort, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Ip, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.Ip, ForwardedTransformActions.Set, false)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.IpAndPort, ForwardedTransformActions.Set, true)]
+    [InlineData(NodeFormat.None, false, true, NodeFormat.IpAndPort, ForwardedTransformActions.Set, false)]
+    public void AddForwarded(NodeFormat forFormat, bool useHost, bool useProto, NodeFormat byFormat, ForwardedTransformActions action, bool removeAllXForwardedHeaders)
     {
         var builderContext = CreateBuilderContext(services: CreateServices());
-        builderContext.AddForwarded(useHost, useProto, forFormat, byFormat, action);
+        builderContext.AddForwarded(useHost, useProto, forFormat, byFormat, action, removeAllXForwardedHeaders);
 
-        ValidateForwarded(builderContext, useHost, useProto, forFormat, byFormat, action);
+        ValidateForwarded(builderContext, useHost, useProto, forFormat, byFormat, action, removeAllXForwardedHeaders);
     }
 
     private static void ValidateForwarded(TransformBuilderContext builderContext, bool useHost, bool useProto,
-        NodeFormat forFormat, NodeFormat byFormat, ForwardedTransformActions action)
+        NodeFormat forFormat, NodeFormat byFormat, ForwardedTransformActions action, bool removeAllXForwardedHeaders)
     {
         Assert.False(builderContext.UseDefaultForwarders);
 
         if (byFormat != NodeFormat.None || forFormat != NodeFormat.None || useHost || useProto)
         {
-            Assert.Equal(5, builderContext.RequestTransforms.Count);
-            Assert.All(
-                builderContext.RequestTransforms.Skip(1).Select(t => (dynamic)t),
-                t =>
-                {
-                    Assert.StartsWith("X-Forwarded-", t.HeaderName);
-                    Assert.Equal(ForwardedTransformActions.Remove, t.TransformAction);
-                });
+            if (removeAllXForwardedHeaders)
+            {
+                Assert.Equal(5, builderContext.RequestTransforms.Count);
+                Assert.All(
+                    builderContext.RequestTransforms.Skip(1).Select(t => (dynamic)t),
+                    t =>
+                    {
+                        Assert.StartsWith("X-Forwarded-", t.HeaderName);
+                        Assert.Equal(ForwardedTransformActions.Remove, t.TransformAction);
+                    });
+            }
+            else
+            {
+                Assert.Equal(1, builderContext.RequestTransforms.Count);
+                var xForwardedTransforms = builderContext.RequestTransforms.Skip(1).Cast<dynamic>().Where(requestTransform =>
+                    requestTransform.HeaderName.ToLowerInvariant().StartsWith("x-forwarded")).ToList();
+                Assert.Empty(xForwardedTransforms);
+            }
+
             var transform = builderContext.RequestTransforms[0];
             var requestHeaderForwardedTransform = Assert.IsType<RequestHeaderForwardedTransform>(transform);
             Assert.Equal(action, requestHeaderForwardedTransform.TransformAction);
