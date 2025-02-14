@@ -114,17 +114,21 @@ public static class ForwardedTransformExtensions
     /// Adds the transform which will add X-Forwarded-* request headers.
     /// </summary>
     /// <remarks>
-    /// Also removes the <c>Forwarded</c> header when enabled.
+    /// Also optionally removes the <c>Forwarded</c> header when enabled.
     /// </remarks>
-    public static TransformBuilderContext AddXForwarded(this TransformBuilderContext context, ForwardedTransformActions action = ForwardedTransformActions.Set)
+    public static TransformBuilderContext AddXForwarded(this TransformBuilderContext context, ForwardedTransformActions action = ForwardedTransformActions.Set, bool removeForwardedHeader = true)
     {
         context.AddXForwardedFor(action: action);
         context.AddXForwardedPrefix(action: action);
         context.AddXForwardedHost(action: action);
         context.AddXForwardedProto(action: action);
 
-        // Remove the Forwarded header when an X-Forwarded transform is enabled
-        TransformHelpers.RemoveForwardedHeader(context);
+        if (removeForwardedHeader)
+        {
+            // Remove the Forwarded header when an X-Forwarded transform is enabled
+            TransformHelpers.RemoveForwardedHeader(context);
+        }
+
         return context;
     }
 
@@ -177,11 +181,11 @@ public static class ForwardedTransformExtensions
     /// Adds the transform which will add the Forwarded header as defined by [RFC 7239](https://tools.ietf.org/html/rfc7239).
     /// </summary>
     /// <remarks>
-    /// Also removes the <c>X-Forwarded</c> headers when enabled.
+    /// Also optionally removes the <c>X-Forwarded</c> headers when enabled.
     /// </remarks>
     public static TransformBuilderContext AddForwarded(this TransformBuilderContext context,
         bool useHost = true, bool useProto = true, NodeFormat forFormat = NodeFormat.Random,
-        NodeFormat byFormat = NodeFormat.Random, ForwardedTransformActions action = ForwardedTransformActions.Set)
+        NodeFormat byFormat = NodeFormat.Random, ForwardedTransformActions action = ForwardedTransformActions.Set, bool removeAllXForwardedHeaders = true)
     {
         context.UseDefaultForwarders = false;
 
@@ -196,8 +200,11 @@ public static class ForwardedTransformExtensions
             context.RequestTransforms.Add(new RequestHeaderForwardedTransform(random,
                 forFormat, byFormat, useHost, useProto, action));
 
-            // Remove the X-Forwarded headers when an Forwarded transform is enabled
-            TransformHelpers.RemoveAllXForwardedHeaders(context, ForwardedTransformFactory.DefaultXForwardedPrefix);
+            if (removeAllXForwardedHeaders)
+            {
+                // Remove the X-Forwarded headers when a Forwarded transform is enabled
+                TransformHelpers.RemoveAllXForwardedHeaders(context, ForwardedTransformFactory.DefaultXForwardedPrefix);
+            }
         }
         return context;
     }
