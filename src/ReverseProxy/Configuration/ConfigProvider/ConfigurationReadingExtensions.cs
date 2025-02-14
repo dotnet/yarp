@@ -29,7 +29,7 @@ internal static class ConfigurationReadingExtensions
     internal static TimeSpan? ReadTimeSpan(this IConfiguration configuration, string name)
     {
         // Format "c" => [-][d'.']hh':'mm':'ss['.'fffffff]. 
-        // You also can find more info at https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-timespan-format-strings#the-constant-c-format-specifier
+        // You also can find more info at https://docs.microsoft.com/dotnet/standard/base-types/standard-timespan-format-strings#the-constant-c-format-specifier
         return configuration[name] is string value ? TimeSpan.ParseExact(value, "c", CultureInfo.InvariantCulture) : null;
     }
 

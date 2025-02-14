@@ -62,7 +62,7 @@ public sealed record HttpClientConfig
     /// Note: If you're using an encoding other than UTF-8 here, then you may also need to configure your server to accept request headers with such an encoding via the corresponding options for the server.
     /// <para>
     /// For example, when using Kestrel as the server, use <see cref="KestrelServerOptions.RequestHeaderEncodingSelector"/> to
-    /// <see href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options">configure Kestrel</see> to use the same encoding.
+    /// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/options">configure Kestrel</see> to use the same encoding.
     /// </para>
     /// </remarks>
     public string? RequestHeaderEncoding { get; init; }
@@ -78,7 +78,7 @@ public sealed record HttpClientConfig
     /// Note: If you're using an encoding other than ASCII here, then you may also need to configure your server to send response headers with such an encoding via the corresponding options for the server.
     /// <para>
     /// For example, when using Kestrel as the server, use <see cref="KestrelServerOptions.ResponseHeaderEncodingSelector"/> to
-    /// <see href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel/options">configure Kestrel</see> to use the same encoding.
+    /// <see href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/kestrel/options">configure Kestrel</see> to use the same encoding.
     /// </para>
     /// </remarks>
     public string? ResponseHeaderEncoding { get; init; }
