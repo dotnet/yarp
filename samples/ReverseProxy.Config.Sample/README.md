@@ -16,10 +16,10 @@ The configuration shows two routes and two clusters:
     - A "MyHeader" header will be added with the value "MyValue"
     - Must have a query parameter "MyQueryParameter" with a value of "value1", "value2" or "another value"
   - This will route to cluster "allClusterProps" which has 2 destinations - https://dotnet.microsoft.com and https://10.20.30.40 
-    - Requests will be [load balanced](https://microsoft.github.io/reverse-proxy/articles/load-balancing.html) between destinations using a "PowerOfTwoChoices" algorithm, which picks two destinations at random, then uses the least loaded of the two.
-    - It includes [session affinity](https://microsoft.github.io/reverse-proxy/articles/session-affinity.html) using a cookie which will ensure subsequent requests from the same client go to the same host.
-    - It is configured to have both active and passive [health checks](https://microsoft.github.io/reverse-proxy/articles/dests-health-checks.html) - note the second destination will timeout for active checks (unless you have a host with that IP on your network)
-    - It includes [HttpClient configuration](https://microsoft.github.io/reverse-proxy/articles/http-client-config.html) setting outbound connection properties
+    - Requests will be [load balanced](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/load-balancing) between destinations using a "PowerOfTwoChoices" algorithm, which picks two destinations at random, then uses the least loaded of the two.
+    - It includes [session affinity](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/session-affinity) using a cookie which will ensure subsequent requests from the same client go to the same host.
+    - It is configured to have both active and passive [health checks](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/dests-health-checks) - note the second destination will timeout for active checks (unless you have a host with that IP on your network)
+    - It includes [HttpClient configuration](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/http-client-config) setting outbound connection properties
     - HttpRequest properties defaulting to HTTP/2 with a 2min timout
 
 The other files in the sample are the same as the getting started instructions.

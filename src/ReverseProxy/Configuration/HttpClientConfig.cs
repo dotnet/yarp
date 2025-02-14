@@ -14,7 +14,7 @@ namespace Yarp.ReverseProxy.Configuration;
 /// Options used for communicating with the destination servers.
 /// </summary>
 /// <remarks>
-/// If you need a more granular approach, please use a <see href="https://microsoft.github.io/reverse-proxy/articles/http-client-config.html#custom-iforwarderhttpclientfactory">custom implementation of <see cref="IForwarderHttpClientFactory"/></see>.
+/// If you need a more granular approach, please use a <see href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/http-client-config#custom-iforwarderhttpclientfactory">custom implementation of <see cref="IForwarderHttpClientFactory"/></see>.
 /// </remarks>
 public sealed record HttpClientConfig
 {

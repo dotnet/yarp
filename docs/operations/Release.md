@@ -36,7 +36,7 @@ The packages can be accessed from the `PackageArtifacts` artifact:
 - Visual Studio: Place it in a local folder and add that folder as a nuget feed in Visual Studio.
 - Command Line: `dotnet nuget add source <directory> -n local`
 
-Walk through the [Getting Started](https://microsoft.github.io/reverse-proxy/articles/getting_started.html) instructions and update them in the release branch as needed.
+Walk through the [Getting Started](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started) instructions and update them in the release branch as needed.
 
 Also validate any major new scenarios this release and their associated docs.
 
