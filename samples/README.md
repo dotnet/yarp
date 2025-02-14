@@ -4,9 +4,9 @@
 
 The samples in this folder are in sync with the main branch for YARP. If there have been breaking changes to the API or configuration, they may not match what is published on Nuget. To avoid disappointment, if using the samples with the YARP library published to Nuget, please change to the branch to match the latest release or preview, either using the branch dropdown or these links:
 
-**[Samples folder in latest release/preview](https://github.com/microsoft/reverse-proxy/tree/release/latest/samples)**
+**[Samples folder in latest release/preview](https://github.com/dotnet/yarp/tree/release/latest/samples)**
 
-**[Source zip for latest release, including samples](https://github.com/microsoft/reverse-proxy/releases/latest)**
+**[Source zip for latest release, including samples](https://github.com/dotnet/yarp/releases/latest)**
 
 ----
 

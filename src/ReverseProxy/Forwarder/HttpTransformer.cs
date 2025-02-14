@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -261,7 +261,7 @@ public class HttpTransformer
 
             var currentValue = destination[headerName];
 
-            // https://github.com/microsoft/reverse-proxy/issues/2269
+            // https://github.com/dotnet/yarp/issues/2269
             // The Strict-Transport-Security may be added by the proxy before forwarding. Only copy the header
             // if it's not already present.
             if (!StringValues.IsNullOrEmpty(currentValue)

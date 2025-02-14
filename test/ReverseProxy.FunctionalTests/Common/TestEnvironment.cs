@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -45,9 +45,9 @@ public class TestEnvironment
 
     public Func<ClusterConfig, RouteConfig, (ClusterConfig Cluster, RouteConfig Route)> ConfigTransformer { get; set; } = (a, b) => (a, b);
 
-    public Version DestionationHttpVersion { get; set; }
+    public Version DestinationHttpVersion { get; set; }
 
-    public HttpVersionPolicy? DestionationHttpVersionPolicy { get; set; }
+    public HttpVersionPolicy? DestinationHttpVersionPolicy { get; set; }
 
     public HttpProtocols DestinationProtocol { get; set; } = HttpProtocols.Http1AndHttp2;
 
@@ -117,8 +117,8 @@ public class TestEnvironment
                     },
                     HttpRequest = new Forwarder.ForwarderRequestConfig
                     {
-                        Version = DestionationHttpVersion,
-                        VersionPolicy = DestionationHttpVersionPolicy,
+                        Version = DestinationHttpVersion,
+                        VersionPolicy = DestinationHttpVersionPolicy,
                     }
                 };
                 (cluster, route) = ConfigTransformer(cluster, route);

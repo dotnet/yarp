@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -498,6 +498,43 @@ public class HttpForwarderTests
         events.AssertContainProxyStages(Array.Empty<ForwarderStage>());
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task TransformRequestAsync_ModifiesRequestContent_Throws(bool originalHasBody)
+    {
+        var events = TestEventListener.Collect();
+        TestLogger.Collect();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "POST";
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new TestBodyDetector { CanHaveBody = originalHasBody });
+
+        var destinationPrefix = "https://localhost/foo";
+
+        var transforms = new DelegateHttpTransforms()
+        {
+            CopyRequestHeaders = true,
+            OnRequest = (context, request, destination) =>
+            {
+                request.Content = new StringContent("modified content");
+                return Task.CompletedTask;
+            }
+        };
+
+        var sut = CreateProxy();
+        var client = MockHttpHandler.CreateClient(
+            (HttpRequestMessage request, CancellationToken cancellationToken) =>
+            {
+                throw new NotImplementedException();
+            });
+
+        var proxyError = await sut.SendAsync(httpContext, destinationPrefix, client, ForwarderRequestConfig.Empty, transforms);
+
+        AssertErrorInfo<InvalidOperationException>(ForwarderError.RequestCreation, StatusCodes.Status502BadGateway, proxyError, httpContext, destinationPrefix);
+        Assert.Empty(events.GetProxyStages());
+    }
+
     // Tests proxying an upgradeable request.
     [Theory]
     [InlineData("WebSocket")]
@@ -515,10 +552,7 @@ public class HttpForwarderTests
         httpContext.Request.Headers[":authority"] = "example.com:3456";
         httpContext.Request.Headers["x-ms-request-test"] = "request";
         httpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
-
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        // https://github.com/microsoft/reverse-proxy/issues/467
-        httpContext.Request.Headers["Upgrade"] = upgradeHeader;
+        httpContext.Request.Headers.Upgrade = upgradeHeader;
 
         var downstreamStream = new DuplexStream(
             readStream: StringToStream("request content"),
@@ -592,8 +626,7 @@ public class HttpForwarderTests
         httpContext.Request.QueryString = new QueryString("?a=b&c=d");
         httpContext.Request.Headers[":host"] = "example.com";
         httpContext.Request.Headers["x-ms-request-test"] = "request";
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var proxyResponseStream = new MemoryStream();
         httpContext.Response.Body = proxyResponseStream;
@@ -645,6 +678,38 @@ public class HttpForwarderTests
     }
 
     [Fact]
+    public async Task UpgradableSpdyRequest_DisallowedByVersionPolicy_Fails()
+    {
+        var events = TestEventListener.Collect();
+        TestLogger.Collect();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "GET";
+        httpContext.Request.Headers.Upgrade = "SPDY/3.1";
+
+        var upgradeFeatureMock = new Mock<IHttpUpgradeFeature>();
+        upgradeFeatureMock.SetupGet(u => u.IsUpgradableRequest).Returns(true);
+        httpContext.Features.Set(upgradeFeatureMock.Object);
+
+        var destinationPrefix = "https://localhost:123/a/b/";
+        var sut = CreateProxy();
+        var client = MockHttpHandler.CreateClient((_, _) => throw new InvalidOperationException("Unreachable"));
+        var requestConfig = new ForwarderRequestConfig
+        {
+            Version = HttpVersion.Version20,
+            VersionPolicy = HttpVersionPolicy.RequestVersionOrHigher
+        };
+
+        var error = await sut.SendAsync(httpContext, destinationPrefix, client, requestConfig);
+
+        var ex = AssertErrorInfo<HttpRequestException>(ForwarderError.RequestCreation, StatusCodes.Status502BadGateway, error, httpContext, destinationPrefix);
+        Assert.Contains("SPDY requests require HTTP/1.1 support", ex.Message);
+
+        // Error thrown before sending the request.
+        events.AssertContainProxyStages([]);
+    }
+
+    [Fact]
     public async Task UpgradableRequest_CancelsIfIdle()
     {
         var events = TestEventListener.Collect();
@@ -654,10 +719,7 @@ public class HttpForwarderTests
         httpContext.Request.Scheme = "http";
         httpContext.Request.Path = "/api/test";
         httpContext.Connection.RemoteIpAddress = IPAddress.Loopback;
-
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        // https://github.com/microsoft/reverse-proxy/issues/467
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var idleTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -2138,8 +2200,7 @@ public class HttpForwarderTests
         httpContext.Request.Method = "GET";
         httpContext.Request.Scheme = "http";
         httpContext.Request.Host = new HostString("example.com:3456");
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var downstreamStream = new DuplexStream(
             readStream: new ThrowStream(),
@@ -2194,8 +2255,7 @@ public class HttpForwarderTests
         httpContext.Request.Method = "GET";
         httpContext.Request.Scheme = "http";
         httpContext.Request.Host = new HostString("example.com:3456");
-        // TODO: https://github.com/microsoft/reverse-proxy/issues/255
-        httpContext.Request.Headers["Upgrade"] = "WebSocket";
+        httpContext.Request.Headers.Upgrade = "WebSocket";
 
         var downstreamStream = new DuplexStream(
             readStream: new StallStream(ct =>
@@ -2786,18 +2846,20 @@ public class HttpForwarderTests
         }
     }
 
-    private static void AssertErrorInfoAndStages<TException>(
+    private static TException AssertErrorInfoAndStages<TException>(
         ForwarderError expectedError, int expectedStatusCode,
         ForwarderError error, HttpContext context, string destinationPrefix,
         params ForwarderStage[] otherStages)
         where TException : Exception
     {
-        AssertErrorInfo<TException>(expectedError, expectedStatusCode, error, context, destinationPrefix);
+        TException exception = AssertErrorInfo<TException>(expectedError, expectedStatusCode, error, context, destinationPrefix);
 
         TestEventListener.Collect().AssertContainProxyStages([ForwarderStage.SendAsyncStart, .. otherStages]);
+
+        return exception;
     }
 
-    private static void AssertErrorInfo<TException>(
+    private static TException AssertErrorInfo<TException>(
         ForwarderError expectedError, int expectedStatusCode,
         ForwarderError error, HttpContext context, string destinationPrefix)
         where TException : Exception
@@ -2819,6 +2881,8 @@ public class HttpForwarderTests
         Assert.NotNull(log.Exception);
 
         AssertProxyStartFailedStop(TestEventListener.Collect(), destinationPrefix, context.Response.StatusCode, errorFeature.Error);
+
+        return (TException)errorFeature.Exception;
     }
 
     private static void AssertProxyStartStop(List<EventWrittenEventArgs> events, string destinationPrefix, int statusCode)

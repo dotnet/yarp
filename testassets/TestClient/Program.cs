@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -28,8 +28,7 @@ var scenarioFactories = new Dictionary<string, Func<IScenario>>(StringComparer.O
     {"Http1", () => new Http1Scenario()},
     {"Http2", () => new Http2Scenario()},
     {"Http2PostExpectContinue", () => new Http2PostExpectContinueScenario()},
-    // Disabled due to a conflict with a workaround to the issue https://github.com/microsoft/reverse-proxy/issues/255.
-    //{"RawUpgrade", () => new RawUpgradeScenario()},
+    {"RawUpgrade", () => new RawUpgradeScenario()},
     {"WebSockets", () => new WebSocketsScenario()},
     {"SessionAffinity", () => new SessionAffinityScenario()}
 };

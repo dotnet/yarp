@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Polly;
 using System;
@@ -111,7 +111,7 @@ public class LimiterTests
         Assert.Equal(TimeSpan.FromMilliseconds(50), delayHalfAvailable);
     }
 
-    [Fact(Skip = "https://github.com/microsoft/reverse-proxy/issues/1357")]
+    [Fact(Skip = "https://github.com/dotnet/yarp/issues/1357")]
     public async Task WaitAsyncCausesPauseLikeReserve()
     {
         var limiter = new Limiter(new Limit(10), 5);
@@ -155,7 +155,7 @@ public class LimiterTests
         Assert.InRange(delayHalfAvailable.Elapsed, TimeSpan.FromMilliseconds(25), TimeSpan.FromMilliseconds(75));
     }
 
-    [Fact(Skip = "https://github.com/microsoft/reverse-proxy/issues/1357")]
+    [Fact(Skip = "https://github.com/dotnet/yarp/issues/1357")]
     public async Task ManyWaitsStackUp()
     {
         await Policy

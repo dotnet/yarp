@@ -60,7 +60,7 @@ The front-end needs to have a tunnel endpoint that the back-end will connect to.
 app.MapReversProxy();
 app.MapTunnel("/tunnel/{ClusterId}", async (connectionContext, cluster) => {
 
-    // Use the extensions feature https://github.com/microsoft/reverse-proxy/issues/1709 to add auth data for the tunnel
+    // Use the extensions feature https://github.com/dotnet/yarp/issues/1709 to add auth data for the tunnel
     var tunnelAuth = cluster.Extensions[typeof(TunnelAuth)]; 
     if (!context.Connection.ClientCertificate.Verify()) return false;
     foreach (var c in tunnelAuth.Certs)

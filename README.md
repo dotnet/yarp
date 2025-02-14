@@ -10,12 +10,12 @@ We expect YARP to ship as a library and project template that together provide a
 # Getting started
 
 - See our [Getting Started](https://microsoft.github.io/reverse-proxy/articles/getting-started.html) docs.
-- Try our [previews](https://github.com/microsoft/reverse-proxy/releases).
+- Try our [previews](https://github.com/dotnet/yarp/releases).
 - Try our latest [daily build](/docs/DailyBuilds.md).
 
 # Updates
 
-For regular updates, see our [releases page](https://github.com/microsoft/reverse-proxy/releases). Subscribe to release notifications on this repository to be notified of future updates (Watch -> Custom -> Releases).
+For regular updates, see our [releases page](https://github.com/dotnet/yarp/releases). Subscribe to release notifications on this repository to be notified of future updates (Watch -> Custom -> Releases).
 
 If you want to live on the bleeding edge, you can pickup the [daily builds](/docs/DailyBuilds.md).
 
@@ -56,14 +56,8 @@ Security issues and bugs should be reported privately, via email, to the Microso
 
 # Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+This project welcomes contributions and suggestions.
+Check out the [contributing](CONTRIBUTING.md) page for more info.
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+This project has adopted the code of conduct defined by the Contributor Covenant to clarify expected behavior in our community.
+For more information, see the [.NET Foundation Code of Conduct](https://dotnetfoundation.org/code-of-conduct).

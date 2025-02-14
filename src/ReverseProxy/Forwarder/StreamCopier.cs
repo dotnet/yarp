@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Buffers;
@@ -17,7 +17,7 @@ namespace Yarp.ReverseProxy.Forwarder;
 /// </summary>
 internal static class StreamCopier
 {
-    // Based on performance investigations, see https://github.com/microsoft/reverse-proxy/pull/330#issuecomment-758851852.
+    // Based on performance investigations, see https://github.com/dotnet/yarp/pull/330#issuecomment-758851852.
     private const int DefaultBufferSize = 65536;
     public const long UnknownLength = -1;
 

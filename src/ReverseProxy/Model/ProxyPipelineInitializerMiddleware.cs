@@ -1,5 +1,5 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -50,7 +50,7 @@ internal sealed class ProxyPipelineInitializerMiddleware
             ?? throw new InvalidOperationException($"Routing Endpoint is missing {typeof(RouteModel).FullName} metadata.");
 
         var cluster = route.Cluster;
-        // TODO: Validate on load https://github.com/microsoft/reverse-proxy/issues/797
+        // TODO: Validate on load https://github.com/dotnet/yarp/issues/797
         if (cluster is null)
         {
             Log.NoClusterFound(_logger, route.Config.RouteId);

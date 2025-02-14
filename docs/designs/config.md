@@ -1,6 +1,6 @@
 # Config based proxy apps
 
-RE: https://github.com/microsoft/reverse-proxy/issues/9
+RE: https://github.com/dotnet/yarp/issues/9
 
 Config based proxies are common and we'll need to support at least basic proxy scenarios from config. Here are some initial considerations:
 
@@ -16,7 +16,7 @@ We have three relevant components that already have config systems: Kestrel, Url
 
 - [Kestrel](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/servers/kestrel?view=aspnetcore-3.1#endpoint-configuration)
 - [UrlRewrite](https://github.com/dotnet/aspnetcore/blob/f4d81e3af2b969744a57d76d4d622036ac514a6a/src/Middleware/Rewrite/sample/UrlRewrite.xml#L1-L11)
-- [ReverseProxy](https://github.com/microsoft/reverse-proxy/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/samples/IslandGateway.Sample/appsettings.json#L10-L34)
+- [ReverseProxy](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/samples/IslandGateway.Sample/appsettings.json#L10-L34)
 
 Proposals:
 - The Kestrel config and the Proxy/Gadeway config should remain adjacent, not merged. Inbound and outbound are distinct concerns. As long as both are available in the same broader config system then that's close enough.
@@ -24,7 +24,7 @@ Proposals:
 
 ## Route config:
 
-The proxy has a [config mechanism](https://github.com/microsoft/reverse-proxy/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/samples/IslandGateway.Sample/appsettings.json#L26-L32) to define routes and map those to back end groups.
+The proxy has a [config mechanism](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/samples/IslandGateway.Sample/appsettings.json#L26-L32) to define routes and map those to back end groups.
 ```
       "Routes": [
         {
@@ -34,13 +34,13 @@ The proxy has a [config mechanism](https://github.com/microsoft/reverse-proxy/bl
         }
       ]
 ```
-This maps to a [ProxyRoute](https://github.com/microsoft/reverse-proxy/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/RouteDiscovery/Contract/GatewayRoute.cs) type.
+This maps to a [ProxyRoute](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/RouteDiscovery/Contract/GatewayRoute.cs) type.
 
-This basic structure is useful though the "Rule" [system](https://github.com/microsoft/reverse-proxy/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Service/Config/RuleParsing/RuleParser.cs) seems overly complex. Need to circle back with DavidN on this. We may be able to simplify that down to independent keys for matching Host, Path, Header, etc.. It's not clear that the additional `&&` or `||` aspects are necessary here. If we used separate properties then it would be implicitly `&&` based. To achieve `||` you'd define additional routes. This is also an area where augmenting with code defined constraints could be useful to handle the more complex scenarios. 
+This basic structure is useful though the "Rule" [system](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Service/Config/RuleParsing/RuleParser.cs) seems overly complex. Need to circle back with DavidN on this. We may be able to simplify that down to independent keys for matching Host, Path, Header, etc.. It's not clear that the additional `&&` or `||` aspects are necessary here. If we used separate properties then it would be implicitly `&&` based. To achieve `||` you'd define additional routes. This is also an area where augmenting with code defined constraints could be useful to handle the more complex scenarios. 
 
 The ProxyRoute.Metadata dictionary may be able to be replaced or supplemented by giving direct access to the config node for that route. Compare to Kestrel's [EndpointConfig.ConfigSection](https://github.com/dotnet/aspnetcore/blob/f4d81e3af2b969744a57d76d4d622036ac514a6a/src/Servers/Kestrel/Core/src/Internal/ConfigurationReader.cs#L168-L175) property. That would allow for augmenting an endpoint with additional complex custom entries that the app code can reference for additional config actions.
 
-Update: The custom rule system was modified by [#24](https://github.com/microsoft/reverse-proxy/pull/24) so that the config now looks like this:
+Update: The custom rule system was modified by [#24](https://github.com/dotnet/yarp/pull/24) so that the config now looks like this:
 ```
        "Routes": [
          {
@@ -57,7 +57,7 @@ Update: The custom rule system was modified by [#24](https://github.com/microsof
 
 ## Backend configuration
 
-The proxy code defines the types [Backend](https://github.com/microsoft/reverse-proxy/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/BackendDiscovery/Contract/Backend.cs) and [BackendEndpoint](https://github.com/microsoft/reverse-proxy/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/BackendEndpointDiscovery/Contract/BackendEndpoint.cs) and allows these to be defined via config and referenced by name from routes.
+The proxy code defines the types [Backend](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/BackendDiscovery/Contract/Backend.cs) and [BackendEndpoint](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/BackendEndpointDiscovery/Contract/BackendEndpoint.cs) and allows these to be defined via config and referenced by name from routes.
 
 A BackendEndpoint defines a specific service instance with an id, address, and associated metadata.
 
