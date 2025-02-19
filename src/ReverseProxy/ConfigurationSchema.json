@@ -1,0 +1,1006 @@
+{
+    "$id": "https://yarp.dot.net/reverseproxy/YarpConfigSchema.json",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "YARP Configuration Schema",
+    "description": "https://yarp.dot.net",
+    "type": "object",
+    "properties": {
+        "Urls": {
+            "type": "string",
+            "description": "One or more listening URLs separated by semicolons."
+        },
+        "Logging": {
+            "type": "object",
+            "description": "Logging configuration settings.",
+            "properties": {
+                "LogLevel": {
+                    "type": "object",
+                    "description": "Maps logging providers to log levels.",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            },
+            "additionalProperties": true
+        },
+        "ReverseProxy": {
+            "type": "object",
+            "description": "Reverse proxy configuration for routes and clusters.",
+            "properties": {
+                "Routes": {
+                    "type": "object",
+                    "description": "Named routes that direct incoming requests to clusters.",
+                    "patternProperties": {
+                        "^[A-Za-z0-9_-]+$": {
+                            "type": "object",
+                            "properties": {
+                                "ClusterId": {
+                                    "type": "string",
+                                    "description": "Name of the cluster this route points to."
+                                },
+                                "Order": {
+                                    "type": "number",
+                                    "description": "Determines route priority; lower values match first."
+                                },
+                                "MaxRequestBodySize": {
+                                    "type": "number",
+                                    "description": "Optional override for max request body size in bytes."
+                                },
+                                "AuthorizationPolicy": {
+                                    "type": "string",
+                                    "description": "Specifies which authorization policy applies, e.g. 'Default' or 'Anonymous'."
+                                },
+                                "CorsPolicy": {
+                                    "type": "string",
+                                    "description": "Specifies which CORS policy applies, e.g. 'Default' or 'Disable'."
+                                },
+                                "Match": {
+                                    "type": "object",
+                                    "properties": {
+                                        "Path": {
+                                            "type": "string",
+                                            "description": "Path pattern using ASP.NET route template syntax, e.g. '/something/{**remainder}'"
+                                        },
+                                        "Hosts": {
+                                            "type": "array",
+                                            "description": "Host names to match, e.g. 'www.aaaa.com'",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "Methods": {
+                                            "type": "array",
+                                            "description": "Allowed HTTP methods, e.g. 'GET'",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "Headers": {
+                                            "type": "array",
+                                            "description": "List of header match conditions.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "Name": {
+                                                        "type": "string",
+                                                        "description": "Header name"
+                                                    },
+                                                    "Values": {
+                                                        "type": "array",
+                                                        "description": "Matches against any of these values",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "Mode": {
+                                                        "type": "string",
+                                                        "description": "How the header values should be matched",
+                                                        "enum": [
+                                                            "ExactHeader",
+                                                            "HeaderPrefix",
+                                                            "Exists",
+                                                            "Contains",
+                                                            "NotContains",
+                                                            "NotExists"
+                                                        ]
+                                                    },
+                                                    "IsCaseSensitive": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "Name"
+                                                ]
+                                            }
+                                        },
+                                        "QueryParameters": {
+                                            "type": "array",
+                                            "description": "List of query string match conditions.",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "Name": {
+                                                        "type": "string",
+                                                        "description": "Name of the query parameter"
+                                                    },
+                                                    "Values": {
+                                                        "type": "array",
+                                                        "description": "Matches are against any of the specified values",
+                                                        "items": {
+                                                            "type": "string"
+                                                        }
+                                                    },
+                                                    "Mode": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "Exact",
+                                                            "Prefix",
+                                                            "Exists",
+                                                            "Contains",
+                                                            "NotContains"
+                                                        ]
+                                                    },
+                                                    "IsCaseSensitive": {
+                                                        "type": "boolean"
+                                                    }
+                                                },
+                                                "required": [
+                                                    "Name"
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "Metadata": {
+                                    "type": "object",
+                                    "description": "Arbitrary key-value pairs for custom route logic.",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "Transforms": {
+                                    "type": "array",
+                                    "description": "List of transform objects for request customization.",
+                                    "items": {
+                                        "description": "A single transform definition.",
+                                        "anyOf": [
+                                            {
+                                                "type": "object",
+                                                "description": "Transform controlling whether request headers are copied from the original request.",
+                                                "properties": {
+                                                    "RequestHeadersCopy": {
+                                                        "type": "boolean",
+                                                        "description": "If true, copies all request headers to outbound request."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "RequestHeadersCopy"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform to control whether the original host header is preserved.",
+                                                "properties": {
+                                                    "RequestHeaderOriginalHost": {
+                                                        "type": "boolean",
+                                                        "description": "If true, preserve the original Host header; otherwise the destination's host is used."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "RequestHeaderOriginalHost"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform for setting, appending, or removing a request header.",
+                                                "properties": {
+                                                    "RequestHeader": {
+                                                        "type": "string",
+                                                        "description": "The header name to operate on."
+                                                    },
+                                                    "Set": {
+                                                        "type": "string",
+                                                        "description": "Value to set in the given request header."
+                                                    },
+                                                    "Append": {
+                                                        "type": "string",
+                                                        "description": "Value to append to the given request header."
+                                                    },
+                                                    "Remove": {
+                                                        "type": "boolean",
+                                                        "description": "Removes the header if true."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "RequestHeader"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform that removes a specified prefix from the request path.",
+                                                "properties": {
+                                                    "PathRemovePrefix": {
+                                                        "type": "string",
+                                                        "description": "Prefix to remove from the existing request path."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "PathRemovePrefix"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform that replaces the entire request path with the provided value.",
+                                                "properties": {
+                                                    "PathSet": {
+                                                        "type": "string",
+                                                        "description": "Sets the request path to this value."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "PathSet"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform that adds or modifies path prefix.",
+                                                "properties": {
+                                                    "PathPrefix": {
+                                                        "type": "string",
+                                                        "description": "Path prefix to add if not already present."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "PathPrefix"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform that copies a parameter from the route and adds it as a query parameter.",
+                                                "properties": {
+                                                    "QueryParameterFromRoute": {
+                                                        "type": "string",
+                                                        "description": "Specifies the query parameter name to add or replace."
+                                                    },
+                                                    "RouteParameter": {
+                                                        "type": "string",
+                                                        "description": "Name of the route parameter to copy from."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "QueryParameterFromRoute",
+                                                    "RouteParameter"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform that replaces the entire request path using a pattern template, replacing {} segments with the route value",
+                                                "properties": {
+                                                    "PathPattern": {
+                                                        "type": "string",
+                                                        "description": "A path template starting with a '/'"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "PathPattern"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Adds or replaces parameters in the request query string",
+                                                "properties": {
+                                                    "QueryValueParameter": {
+                                                        "type": "string",
+                                                        "description": "Name of a query string parameter"
+                                                    },
+                                                    "Set": {
+                                                        "type": "string",
+                                                        "description": "Value to set in the given query parameter."
+                                                    },
+                                                    "Append": {
+                                                        "type": "string",
+                                                        "description": "Value to append to the given query parameter."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "QueryValueParameter"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Adds or replaces a query string parameter with a value from the route configuration",
+                                                "properties": {
+                                                    "QueryRouteParameter": {
+                                                        "type": "string",
+                                                        "description": "Name of a query string parameter"
+                                                    },
+                                                    "Set": {
+                                                        "type": "string",
+                                                        "description": "Route value to set in the given query parameter."
+                                                    },
+                                                    "Append": {
+                                                        "type": "string",
+                                                        "description": "Route value to append to the given query parameter."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "QueryRouteParameter"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Removes the specified parameter from the request query string",
+                                                "properties": {
+                                                    "QueryRemoveParameter": {
+                                                        "type": "string",
+                                                        "description": "Name of a query string parameter"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "QueryRemoveParameter"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Adds or replaces parameters in the request query string",
+                                                "properties": {
+                                                    "HttpMethodChange": {
+                                                        "type": "string",
+                                                        "description": "The http method to replace"
+                                                    },
+                                                    "Set": {
+                                                        "type": "string",
+                                                        "description": "The new HTTP method"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "HttpMethodChange"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Adds or replaces a header with a value from the route configuration",
+                                                "properties": {
+                                                    "RequestHeaderRouteValue": {
+                                                        "type": "string",
+                                                        "description": "Name of a query string parameter"
+                                                    },
+                                                    "Set": {
+                                                        "type": "string",
+                                                        "description": "Route value to set in the given header."
+                                                    },
+                                                    "Append": {
+                                                        "type": "string",
+                                                        "description": "Route value to append to the given header."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "RequestHeaderRouteValue"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Removes the specified header from the request",
+                                                "properties": {
+                                                    "RequestHeaderRemove": {
+                                                        "type": "string",
+                                                        "description": "The header name"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "RequestHeaderRemove"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "YARP copies most request headers to the proxy request by default, this transform disables RequestHeadersCopy and only copies the given headers.",
+                                                "properties": {
+                                                    "RequestHeadersAllowed": {
+                                                        "type": "string",
+                                                        "description": "A semicolon separated list of allowed header names."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "RequestHeadersAllowed"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Adds headers with information about the original client request",
+                                                "properties": {
+                                                    "X-Forwarded": {
+                                                        "type": "string",
+                                                        "description": "Default action to apply to all X-Forwarded-* headers",
+                                                        "enum": [
+                                                            "Set",
+                                                            "Append",
+                                                            "Remove",
+                                                            "Off"
+                                                        ]
+                                                    },
+                                                    "For": {
+                                                        "type": "string",
+                                                        "description": "Action to apply to the 'For' header",
+                                                        "enum": [
+                                                            "Set",
+                                                            "Append",
+                                                            "Remove",
+                                                            "Off"
+                                                        ]
+                                                    },
+                                                    "Proto": {
+                                                        "type": "string",
+                                                        "description": "Action to apply to the 'Proto' header",
+                                                        "enum": [
+                                                            "Set",
+                                                            "Append",
+                                                            "Remove",
+                                                            "Off"
+                                                        ]
+                                                    },
+                                                    "Host": {
+                                                        "type": "string",
+                                                        "description": "Action to apply to the 'Host' header",
+                                                        "enum": [
+                                                            "Set",
+                                                            "Append",
+                                                            "Remove",
+                                                            "Off"
+                                                        ]
+                                                    },
+                                                    "Prefix": {
+                                                        "type": "string",
+                                                        "description": "Action to apply to the 'Prefix' header",
+                                                        "enum": [
+                                                            "Set",
+                                                            "Append",
+                                                            "Remove",
+                                                            "Off"
+                                                        ]
+                                                    },
+                                                    "HeaderPrefix": {
+                                                        "type": "string",
+                                                        "description": "The header name prefix, defaults to 'X-Forwarded-`"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "X-Forwarded"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Adds a header with information about the original client request",
+                                                "properties": {
+                                                    "Forwarded": {
+                                                        "type": "string",
+                                                        "description": "A comma separated list containing any of these values: 'for,by,proto,host'"
+                                                    },
+                                                    "ForFormat": {
+                                                        "type": "string",
+                                                        "description": "Format to apply to the 'For' header",
+                                                        "enum": [
+                                                            "Random",
+                                                            "RandomAndPort",
+                                                            "RandomAndRandomPort",
+                                                            "Unknown",
+                                                            "UnknownAndPort",
+                                                            "UnknownAndRandomPort",
+                                                            "Ip",
+                                                            "IpAndPort",
+                                                            "IpAndRandomPort"
+                                                        ]
+                                                    },
+                                                    "ByFormat": {
+                                                        "type": "string",
+                                                        "description": "Format to apply to the 'For' header",
+                                                        "enum": [
+                                                            "Random",
+                                                            "RandomAndPort",
+                                                            "RandomAndRandomPort",
+                                                            "Unknown",
+                                                            "UnknownAndPort",
+                                                            "UnknownAndRandomPort",
+                                                            "Ip",
+                                                            "IpAndPort",
+                                                            "IpAndRandomPort"
+                                                        ]
+                                                    },
+                                                    "Action": {
+                                                        "type": "string",
+                                                        "description": "Action to apply to an existing 'Forwarded' header",
+                                                        "enum": [
+                                                            "Set",
+                                                            "Append",
+                                                            "Remove",
+                                                            "Off"
+                                                        ]
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "Forwarded"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Forwards the client cert used on the inbound connection as a header to destination",
+                                                "properties": {
+                                                    "ClientCert": {
+                                                        "type": "string",
+                                                        "description": "The header name to use for the forwarded client cert"
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ClientCert"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform controlling whether response headers are copied from the original response.",
+                                                "properties": {
+                                                    "ResponseHeadersCopy": {
+                                                        "type": "boolean",
+                                                        "description": "If true, copies all response headers to outbound response."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseHeadersCopy"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform for setting, appending, or removing a response header.",
+                                                "properties": {
+                                                    "ResponseHeader": {
+                                                        "type": "string",
+                                                        "description": "The header name to operate on."
+                                                    },
+                                                    "Set": {
+                                                        "type": "string",
+                                                        "description": "Value to set in the given response header."
+                                                    },
+                                                    "Append": {
+                                                        "type": "string",
+                                                        "description": "Value to append to the given response header."
+                                                    },
+                                                    "When": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "Success",
+                                                            "Always",
+                                                            "Failure"
+                                                        ],
+                                                        "description": "Specifies if the response header should be included for all, successful, or failure responses. Any response with a status code less than 400 is considered a success."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseHeader"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Removes the specified header from the response",
+                                                "properties": {
+                                                    "ResponseHeaderRemove": {
+                                                        "type": "string",
+                                                        "description": "The header name"
+                                                    },
+                                                    "When": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "Success",
+                                                            "Always",
+                                                            "Failure"
+                                                        ],
+                                                        "description": "Specifies if the response header should be included for all, successful, or failure responses. Any response with a status code less than 400 is considered a success."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseHeaderRemove"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "YARP copies most response headers to the proxy response by default, this transform disables ResponseHeadersCopy and only copies the given headers.",
+                                                "properties": {
+                                                    "ResponseHeadersAllowed": {
+                                                        "type": "string",
+                                                        "description": "A semicolon separated list of allowed header names."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseHeadersAllowed"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Sets whether destination trailing response headers are copied to the client",
+                                                "properties": {
+                                                    "ResponseTrailersCopy": {
+                                                        "type": "boolean",
+                                                        "description": "If true, copies all response trailers to outbound response."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseTrailersCopy"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Transform for setting, appending, or removing a response trailer.",
+                                                "properties": {
+                                                    "ResponseTrailer": {
+                                                        "type": "string",
+                                                        "description": "The trailer name to operate on."
+                                                    },
+                                                    "Set": {
+                                                        "type": "string",
+                                                        "description": "Value to set in the given response trailer."
+                                                    },
+                                                    "Append": {
+                                                        "type": "string",
+                                                        "description": "Value to append to the given response trailer."
+                                                    },
+                                                    "When": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "Success",
+                                                            "Always",
+                                                            "Failure"
+                                                        ],
+                                                        "description": "Specifies if the response trailer should be included for all, successful, or failure responses. Any response with a status code less than 400 is considered a success."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseTrailer"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "Removes the specified trailer from the response",
+                                                "properties": {
+                                                    "ResponseTrailerRemove": {
+                                                        "type": "string",
+                                                        "description": "The trailer name"
+                                                    },
+                                                    "When": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "Success",
+                                                            "Always",
+                                                            "Failure"
+                                                        ],
+                                                        "description": "Specifies if the response trailer should be removed for all, successful, or failure responses. Any response with a status code less than 400 is considered a success."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseTrailerRemove"
+                                                ]
+                                            },
+                                            {
+                                                "type": "object",
+                                                "description": "YARP copies most response trailers to the proxy response by default, this transform disables ResponseTrailersCopy and only copies the given headers.",
+                                                "properties": {
+                                                    "ResponseTrailersAllowed": {
+                                                        "type": "string",
+                                                        "description": "A semicolon separated list of allowed trailer names."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "ResponseTrailersAllowed"
+                                                ]
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "required": [
+                                "ClusterId",
+                                "Match"
+                            ],
+                            "additionalProperties": false
+                        }
+                    }
+                },
+                "Clusters": {
+                    "type": "object",
+                    "description": "Named clusters describing destinations and load-balancing.",
+                    "patternProperties": {
+                        "^[A-Za-z0-9_-]+$": {
+                            "type": "object",
+                            "properties": {
+                                "Destinations": {
+                                    "type": "object",
+                                    "description": "Named destinations where traffic is forwarded.",
+                                    "patternProperties": {
+                                        "^[A-Za-z0-9_-]+$": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Address": {
+                                                    "type": "string",
+                                                    "description": "Destination address (must include scheme)."
+                                                },
+                                                "Health": {
+                                                    "type": "string",
+                                                    "description": "Optional override URL checked during active health."
+                                                }
+                                            },
+                                            "required": [
+                                                "Address"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    }
+                                },
+                                "LoadBalancingPolicy": {
+                                    "type": "string",
+                                    "enum": [
+                                        "PowerOfTwoChoices",
+                                        "FirstAlphabetical",
+                                        "Random",
+                                        "RoundRobin",
+                                        "LeastRequests"
+                                    ],
+                                    "description": "Determines traffic distribution among destinations."
+                                },
+                                "SessionAffinity": {
+                                    "type": "object",
+                                    "description": "Session affinity is a mechanism to bind (affinitize) a causally related request sequence to the destination that handled the first request when the load is balanced among several destinations.",
+                                    "properties": {
+                                        "Enabled": {
+                                            "type": "boolean"
+                                        },
+                                        "Policy": {
+                                            "type": "string",
+                                            "enum": [
+                                                "HashCookie",
+                                                "ArrCookie",
+                                                "Cookie",
+                                                "CustomHeader"
+                                            ],
+                                            "description": "Affinity failure policy to use if the affinity key cannot be decoded or no healthy destination found ."
+                                        },
+                                        "FailurePolicy": {
+                                            "type": "string",
+                                            "enum": [
+                                                "Redistribute",
+                                                "Return503Error"
+                                            ],
+                                            "description": "Determines how the session will be stored and retrieved."
+                                        },
+                                        "AffinityKeyName": {
+                                            "type": "string",
+                                            "description": "Affinity key used to identify the target destination."
+                                        },
+                                        "Cookie": {
+                                            "type": "object",
+                                            "properties": {
+                                                "Name": {
+                                                    "type": "string",
+                                                    "description": "Specifies the name of the cookie."
+                                                },
+                                                "Domain": {
+                                                    "type": "string",
+                                                    "description": "Specifies the domain of the cookie."
+                                                },
+                                                "Path": {
+                                                    "type": "string",
+                                                    "description": "Specifies the path of the cookie."
+                                                },
+                                                "Expiration": {
+                                                    "type": "string",
+                                                    "description": "Specifies the expiration of the cookie."
+                                                },
+                                                "MaxAge": {
+                                                    "type": "string",
+                                                    "description": "Specifies the maximum age of the cookie."
+                                                },
+                                                "SecurePolicy": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Always",
+                                                        "None",
+                                                        "SameAsRequest"
+                                                    ],
+                                                    "description": "Specifies the Secure attribute of the cookie."
+                                                },
+                                                "HttpOnly": {
+                                                    "type": "boolean",
+                                                    "description": "Specifies whether a cookie is accessible by client-side script."
+                                                },
+                                                "SameSite": {
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "Lax",
+                                                        "None",
+                                                        "Strict",
+                                                        "Unspecified"
+                                                    ],
+                                                    "description": "Specifies the SameSite attribute of the cookie."
+                                                },
+                                                "IsEssential": {
+                                                    "type": "boolean",
+                                                    "description": "Specifies whether a cookie is essential for the application to function correctly. If true then consent policy checks may be bypassed."
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "HealthCheck": {
+                                    "type": "object",
+                                    "description": "Health check configuration for destinations.",
+                                    "properties": {
+                                        "Active": {
+                                            "type": "object",
+                                            "description": "Active health checks are based on sending health probing requests.",
+                                            "properties": {
+                                                "Enabled": {
+                                                    "type": "string",
+                                                    "description": "Determines if active health checks are enabled. Default false."
+                                                },
+                                                "Interval": {
+                                                    "type": "string",
+                                                    "description": "Period of sending health probing requests. Default 00:00:15"
+                                                },
+                                                "Timeout": {
+                                                    "type": "string",
+                                                    "description": "Period of waiting for a health check response. Default 00:00:10"
+                                                },
+                                                "Policy": {
+                                                    "type": "string",
+                                                    "description": "Determines the health check policy.",
+                                                    "enum": [
+                                                        "ConsecutiveFailures"
+                                                    ]
+                                                },
+                                                "Path": {
+                                                    "type": "string",
+                                                    "description": "Path to send health check requests to. Default /"
+                                                },
+                                                "Query": {
+                                                    "type": "string",
+                                                    "description": "Query string to send with health check requests."
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        },
+                                        "Passive": {
+                                            "type": "object",
+                                            "description": "Passive health checks are based on observing the health of the responses from the destination.",
+                                            "properties": {
+                                                "Enabled": {
+                                                    "type": "boolean",
+                                                    "description": "Determines if passive health checks are enabled. Default false."
+                                                },
+                                                "Policy": {
+                                                    "type": "string",
+                                                    "description": "Determines the health check policy.",
+                                                    "enum": [
+                                                        "TransportFailureRate"
+                                                    ]
+                                                },
+                                                "ReactivationPeriod": {
+                                                    "type": "string",
+                                                    "description": "Period of waiting for reactivating a destination after a failure. Default 00:00:30"
+                                                }
+                                            },
+                                            "additionalProperties": false
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "HttpClient": {
+                                    "type": "object",
+                                    "description": "Configuration for outbound HTTP connections.",
+                                    "properties": {
+                                        "SSLProtocols": {
+                                            "type": "array",
+                                            "description": "Specifies the SSL protocols to use.",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "DangerousAcceptAnyServerCertificate": {
+                                            "type": "boolean",
+                                            "description": "Determines whether the server's SSL certificate validity is checked by the client. Setting it to true completely disables validation. Default value is false."
+                                        },
+                                        "MaxConnectionsPerServer": {
+                                            "type": "number",
+                                            "description": "Specifies the maximum number of connections per server."
+                                        },
+                                        "EnableMultipleHttp2Connections": {
+                                            "type": "boolean",
+                                            "description": "Determines if multiple HTTP/2 connections are enabled."
+                                        },
+                                        "RequestHeaderEncoding": {
+                                            "type": "string",
+                                            "description": "Specifies the encoding of request headers, e.g. 'utf-8'"
+                                        },
+                                        "ResponseHeaderEncoding": {
+                                            "type": "string",
+                                            "description": "Specifies the encoding of response headers, e.g. 'utf-8'"
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "HttpRequest": {
+                                    "type": "object",
+                                    "description": "Options controlling requests sent to destinations.",
+                                    "properties": {
+                                        "ActivityTimeout": {
+                                            "type": "string",
+                                            "description": "Specifies the activity timeout for the request."
+                                        },
+                                        "Version": {
+                                            "type": "string",
+                                            "description": "Specifies the HTTP version to use for the request, e.g. '2'"
+                                        },
+                                        "VersionPolicy": {
+                                            "type": "string",
+                                            "description": "Specifies the HTTP version policy to use for the request,",
+                                            "enum": [
+                                                "RequestVersionExact",
+                                                "RequestVersionOrLower",
+                                                "RequestVersionOrHigher",
+                                                "ResponseVersionExact",
+                                                "ResponseVersionOrLower",
+                                                "ResponseVersionOrHigher"
+                                            ]
+                                        },
+                                        "AllowResponseBuffering": {
+                                            "type": "boolean",
+                                            "description": "Determines if response buffering is allowed."
+                                        }
+                                    },
+                                    "additionalProperties": false
+                                },
+                                "Metadata": {
+                                    "type": "object",
+                                    "description": "Arbitrary key-value pairs for custom cluster logic.",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    }
+                }
+            },
+            "additionalProperties": false
+        }
+    },
+    "required": [
+        "Urls",
+        "ReverseProxy"
+    ],
+    "additionalProperties": false
+}
