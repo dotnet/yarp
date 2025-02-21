@@ -19,54 +19,53 @@
                   "description": "Name of the cluster this route points to."
                 },
                 "Order": {
-                  "type": "number",
+                  "type": [ "number", "null" ],
                   "description": "Order value for this route. Routes with lower numbers take precedence over higher numbers."
                 },
                 "MaxRequestBodySize": {
-                  "type": "number",
+                  "type": [ "number", "null" ],
                   "description": "An optional override for how large request bodies can be in bytes."
                 },
                 "AuthorizationPolicy": {
-                  "type": "string",
+                  "type": [ "string", "null" ],
                   "description": "Specifies which authorization policy applies, e.g. 'Default' or 'Anonymous'."
                 },
                 "RateLimiterPolicy": {
-                  "type": "string",
+                  "type": [ "string", "null" ],
                   "description": "The name of the RateLimiterPolicy to apply to this route."
                 },
                 "OutputCachePolicy": {
-                  "type": "string",
+                  "type": [ "string", "null" ],
                   "description": "The name of the OutputCachePolicy to apply to this route."
                 },
                 "Timeout": {
-                  "type": "string",
+                  "type": [ "string", "null" ],
                   "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                   "description": "The Timeout to apply to this route. This overrides any system defaults. Setting both Timeout and TimeoutPolicy is an error."
                 },
                 "TimeoutPolicy": {
-                  "type": "string",
+                  "type": [ "string", "null" ],
                   "description": "Specifies which timeout policy applies, e.g. 'Default' or 'Disable'. Setting both Timeout and TimeoutPolicy is an error."
                 },
                 "CorsPolicy": {
-                  "type": "string",
+                  "type": [ "string", "null" ],
                   "description": "Specifies which CORS policy applies, e.g. 'Default' or 'Disable'."
                 },
                 "Match": {
                   "type": "object",
                   "properties": {
                     "Path": {
-                      "type": "string",
+                      "type": [ "string", "null" ],
                       "description": "Path pattern using ASP.NET route template syntax, e.g. '/something/{**remainder}'"
                     },
                     "Hosts": {
-                      "type": "array",
+                      "type": [ "array", "null" ],
                       "description": "Only match requests with the given Host header. Supports wildcards and ports. For unicode host names, do not use punycode.",
                       "items": {
                         "type": "string"
                       }
                     },
                     "Methods": {
-                      "type": "array",
                       "description": "Allowed HTTP methods.",
                       "items": {
                         "anyOf": [
@@ -84,13 +83,13 @@
                             ]
                           },
                           {
-                            "type": "string"
+                            "type": [ "array", "null" ]
                           }
                         ]
                       }
                     },
                     "Headers": {
-                      "type": "array",
+                      "type": [ "array", "null" ],
                       "description": "List of header match conditions.",
                       "items": {
                         "type": "object",
@@ -128,7 +127,7 @@
                       }
                     },
                     "QueryParameters": {
-                      "type": "array",
+                      "type": [ "array", "null" ],
                       "description": "List of query string match conditions.",
                       "items": {
                         "type": "object",
@@ -167,20 +166,20 @@
                   }
                 },
                 "Metadata": {
-                  "type": "object",
+                  "type": [ "object", "null" ],
                   "description": "Arbitrary key-value pairs for custom route logic.",
                   "additionalProperties": {
                     "type": "string"
                   }
                 },
                 "Transforms": {
-                  "type": "array",
+                  "type": [ "array", "null" ],
                   "description": "List of transform objects for request customization.",
                   "items": {
                     "description": "A single transform definition.",
                     "anyOf": [
                       {
-                        "type": "object",
+                        "type": [ "object", "null" ],
                         "$comment": "Fallback that matches any custom user-defined transforms.",
                         "properties": {
                           "RequestHeadersCopy": false,
@@ -884,16 +883,16 @@
                           "description": "Destination address (must include scheme)."
                         },
                         "Health": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "format": "iri",
                           "description": "Optional override URL accepting active health check probes."
                         },
                         "Host": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "description": "Optional fallback host header value used if a host is not already specified by request transforms."
                         },
                         "Metadata": {
-                          "type": "object",
+                          "type": [ "object", "null" ],
                           "description": "Arbitrary key-value pairs for custom destination logic.",
                           "additionalProperties": {
                             "type": "string"
@@ -919,17 +918,17 @@
                       ]
                     },
                     {
-                      "type": "string"
+                      "type": [ "string", "null" ]
                     }
                   ],
                   "description": "Determines traffic distribution among destinations."
                 },
                 "SessionAffinity": {
-                  "type": "object",
+                  "type": [ "object", "null" ],
                   "description": "Session affinity is a mechanism to bind (affinitize) a causally related request sequence to the destination that handled the first request when the load is balanced among several destinations.",
                   "properties": {
                     "Enabled": {
-                      "type": "boolean"
+                      "type": [ "boolean", "null" ]
                     },
                     "Policy": {
                       "anyOf": [
@@ -943,7 +942,7 @@
                           ]
                         },
                         {
-                          "type": "string"
+                          "type": [ "string", "null" ]
                         }
                       ],
                       "description": "Determines how the session will be stored and retrieved."
@@ -958,7 +957,7 @@
                           ]
                         },
                         {
-                          "type": "string"
+                          "type": [ "string", "null" ]
                         }
                       ],
                       "description": "Strategy for handling a missing destination for an affinitized request."
@@ -968,32 +967,28 @@
                       "description": "Identifies the name of the field where the affinity value is stored (cookie or header name)."
                     },
                     "Cookie": {
-                      "type": "object",
+                      "type": [ "object", "null" ],
                       "properties": {
-                        "Name": {
-                          "type": "string",
-                          "description": "Specifies the name of the cookie."
-                        },
                         "Domain": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "description": "Specifies the domain of the cookie."
                         },
                         "Path": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "description": "Specifies the path of the cookie."
                         },
                         "Expiration": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Specifies the expiration of the cookie."
                         },
                         "MaxAge": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Specifies the maximum age of the cookie."
                         },
                         "SecurePolicy": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "enum": [
                             "Always",
                             "None",
@@ -1002,11 +997,11 @@
                           "description": "Specifies the Secure attribute of the cookie."
                         },
                         "HttpOnly": {
-                          "type": "boolean",
+                          "type": [ "boolean", "null" ],
                           "description": "Specifies whether a cookie is accessible by client-side script."
                         },
                         "SameSite": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "enum": [
                             "Lax",
                             "None",
@@ -1016,7 +1011,7 @@
                           "description": "Specifies the SameSite attribute of the cookie."
                         },
                         "IsEssential": {
-                          "type": "boolean",
+                          "type": [ "boolean", "null" ],
                           "description": "Specifies whether a cookie is essential for the application to function correctly. If true then consent policy checks may be bypassed."
                         }
                       }
@@ -1027,24 +1022,24 @@
                   ]
                 },
                 "HealthCheck": {
-                  "type": "object",
+                  "type": [ "object", "null" ],
                   "description": "Health check configuration for destinations.",
                   "properties": {
                     "Active": {
-                      "type": "object",
+                      "type": [ "object", "null" ],
                       "description": "Active health checks are based on sending health probing requests.",
                       "properties": {
                         "Enabled": {
-                          "type": "boolean",
+                          "type": [ "boolean", "null" ],
                           "description": "Determines if active health checks are enabled. Defaults to false."
                         },
                         "Interval": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Period of sending health probing requests. Defaults to '00:00:15'."
                         },
                         "Timeout": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Period of waiting for a health check response. Defaults to '00:00:10'."
                         },
@@ -1057,31 +1052,30 @@
                               ]
                             },
                             {
-                              "type": "string"
+                              "type": [ "string", "null" ]
                             }
                           ],
                           "description": "Determines the health check policy."
                         },
                         "Path": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "description": "HTTP health check endpoint path. Defaults to '/'."
                         },
                         "Query": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "description": "Query string to append to the probe, including the leading '?'."
                         }
                       }
                     },
                     "Passive": {
-                      "type": "object",
+                      "type": [ "object", "null" ],
                       "description": "Passive health checks are based on observing the health of the responses from the destination.",
                       "properties": {
                         "Enabled": {
-                          "type": "boolean",
+                          "type": [ "boolean", "null" ],
                           "description": "Determines if passive health checks are enabled. Default false."
                         },
                         "Policy": {
-                          "type": "string",
                           "anyOf": [
                             {
                               "type": "string",
@@ -1090,13 +1084,13 @@
                               ]
                             },
                             {
-                              "type": "string"
+                              "type": [ "string", "null" ]
                             }
                           ],
                           "description": "Determines the health check policy."
                         },
                         "ReactivationPeriod": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Period after which an unhealthy destination reverts back to an Unknown health state."
                         }
@@ -1112,14 +1106,14 @@
                           ]
                         },
                         {
-                          "type": "string"
+                          "type": [ "string", "null" ]
                         }
                       ]
                     }
                   }
                 },
                 "HttpClient": {
-                  "type": "object",
+                  "type": [ "object", "null" ],
                   "description": "Configuration for outbound HTTP connections.",
                   "properties": {
                     "SSLProtocols": {
@@ -1130,40 +1124,40 @@
                       }
                     },
                     "DangerousAcceptAnyServerCertificate": {
-                      "type": "boolean",
+                      "type": [ "boolean", "null" ],
                       "description": "Determines whether the server's SSL certificate validity is checked by the client. Setting it to true completely disables validation. Default value is false."
                     },
                     "MaxConnectionsPerServer": {
-                      "type": "number",
+                      "type": [ "number", "null" ],
                       "description": "Specifies the maximum number of connections per server."
                     },
                     "EnableMultipleHttp2Connections": {
-                      "type": "boolean",
+                      "type": [ "boolean", "null" ],
                       "description": "Determines if multiple HTTP/2 connections are enabled. Defaults to true."
                     },
                     "RequestHeaderEncoding": {
-                      "type": "string",
+                      "type": [ "string", "null" ],
                       "description": "Specifies the encoding of request headers, e.g. 'utf-8'."
                     },
                     "ResponseHeaderEncoding": {
-                      "type": "string",
+                      "type": [ "string", "null" ],
                       "description": "Specifies the encoding of response headers, e.g. 'utf-8'."
                     },
                     "WebProxy": {
-                      "type": "object",
+                      "type": [ "object", "null" ],
                       "description": "Config used to construct a System.Net.WebProxy instance.",
                       "properties": {
                         "Address": {
-                          "type": "string",
+                          "type": [ "string", "null" ],
                           "format": "iri",
                           "description": "The URI of the proxy server."
                         },
                         "BypassOnLocal": {
-                          "type": "boolean",
+                          "type": [ "boolean", "null" ],
                           "description": "If true, bypasses the proxy for local addresses. Defaults to false."
                         },
                         "UseDefaultCredentials": {
-                          "type": "boolean",
+                          "type": [ "boolean", "null" ],
                           "description": "If true, sends CredentialCache.DefaultCredentials with requests. Defaults to false."
                         }
                       }
@@ -1171,20 +1165,20 @@
                   }
                 },
                 "HttpRequest": {
-                  "type": "object",
+                  "type": [ "object", "null" ],
                   "description": "Options controlling requests sent to destinations.",
                   "properties": {
                     "ActivityTimeout": {
-                      "type": "string",
+                      "type": [ "string", "null" ],
                       "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                       "description": "Specifies how long a request is allowed to remain idle between any operation completing, after which it will be canceled. Default is 100 seconds."
                     },
                     "Version": {
-                      "type": "string",
+                      "type": [ "string", "null" ],
                       "description": "Preferred version of the outgoing request. Defaults to HTTP/2."
                     },
                     "VersionPolicy": {
-                      "type": "string",
+                      "type": [ "string", "null" ],
                       "description": "The policy applied to version selection, e.g. whether to prefer downgrades, upgrades or request an exact version. The default is `RequestVersionOrLower`.",
                       "enum": [
                         "RequestVersionExact",
@@ -1193,13 +1187,13 @@
                       ]
                     },
                     "AllowResponseBuffering": {
-                      "type": "boolean",
+                      "type": [ "boolean", "null" ],
                       "description": "Determines if response buffering is allowed."
                     }
                   }
                 },
                 "Metadata": {
-                  "type": "object",
+                  "type": [ "object", "null" ],
                   "description": "Arbitrary key-value pairs for custom cluster logic.",
                   "additionalProperties": {
                     "type": "string"
