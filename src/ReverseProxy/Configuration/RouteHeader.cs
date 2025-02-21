@@ -20,7 +20,7 @@ public sealed record RouteHeader
 
     /// <summary>
     /// A collection of acceptable header values used during routing. Only one value must match.
-    /// The list must not be empty unless using <see cref="HeaderMatchMode.Exists"/> or <see cref="HeaderMatchMode.NotExists"/>.
+    /// The list must not be empty unless when using <see cref="HeaderMatchMode.Exists"/> or <see cref="HeaderMatchMode.NotExists"/>.
     /// </summary>
     public IReadOnlyList<string>? Values { get; init; }
 

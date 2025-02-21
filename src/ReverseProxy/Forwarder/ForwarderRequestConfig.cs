@@ -28,7 +28,7 @@ public sealed record ForwarderRequestConfig
 
     /// <summary>
     /// Preferred version of the outgoing request.
-    /// The default is HTTP/2.0.
+    /// The default is HTTP/2.
     /// </summary>
     public Version? Version { get; init; }
 
