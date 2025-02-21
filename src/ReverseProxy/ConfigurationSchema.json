@@ -1122,7 +1122,7 @@
                   "type": [ "object", "null" ],
                   "description": "Configuration for outbound HTTP connections.",
                   "properties": {
-                    "SSLProtocols": {
+                    "SslProtocols": {
                       "type": "array",
                       "description": "Specifies the SSL protocols to use.",
                       "items": {
