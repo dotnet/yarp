@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="..\..\src\ReverseProxy\ConfigurationSchema.json" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\TestCertificates\*.*" LinkBase="TestCertificates" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="validSelfSignedClientEkuCertificate.cer">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -20,6 +21,7 @@
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(MicrosoftAspNetCoreTestHostVersion)" />
+    <PackageReference Include="JsonSchema.Net" Version="$(JsonSchemaNetVersion)" />
   </ItemGroup>
 
   <ItemGroup>

@@ -33,6 +33,7 @@
     <SerilogSinksConsoleVersion>3.1.1</SerilogSinksConsoleVersion>
     <YamlDotNetVersion>16.2.1</YamlDotNetVersion>
     <KubernetesClientVersion>15.0.1</KubernetesClientVersion>
+    <JsonSchemaNetVersion>7.0.2</JsonSchemaNetVersion>
     <!-- Container app dependencies -->
     <YarpNugetVersion>2.2.0</YarpNugetVersion>
     <MicrosoftExtensionsServiceDiscovery>8.2.2</MicrosoftExtensionsServiceDiscovery>

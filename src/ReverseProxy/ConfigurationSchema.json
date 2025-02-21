@@ -11,7 +11,7 @@
           "type": "object",
           "description": "Named routes that direct incoming requests to clusters.",
           "patternProperties": {
-            "^[A-Za-z0-9_-]+$": {
+            ".": {
               "type": "object",
               "properties": {
                 "ClusterId": {
@@ -867,14 +867,14 @@
           "type": "object",
           "description": "Named clusters describing destinations.",
           "patternProperties": {
-            "^[A-Za-z0-9_-]+$": {
+            ".": {
               "type": "object",
               "properties": {
                 "Destinations": {
                   "type": "object",
                   "description": "Named destinations where traffic is forwarded.",
                   "patternProperties": {
-                    "^[A-Za-z0-9_-]+$": {
+                    ".": {
                       "type": "object",
                       "properties": {
                         "Address": {
