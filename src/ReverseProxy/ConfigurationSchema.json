@@ -56,7 +56,7 @@
                   "properties": {
                     "Path": {
                       "type": [ "string", "null" ],
-                      "description": "Path pattern using ASP.NET route template syntax, e.g. '/something/{**remainder}'"
+                      "description": "Path pattern using ASP.NET route template syntax, e.g. '/something/{**remainder}'."
                     },
                     "Hosts": {
                       "type": [ "array", "null" ],
@@ -418,7 +418,7 @@
                       },
                       {
                         "type": "object",
-                        "description": "Changes the http method used in the request",
+                        "description": "Changes the http method used in the request.",
                         "properties": {
                           "HttpMethodChange": {
                             "description": "The HTTP method to replace.",
@@ -587,7 +587,8 @@
                           },
                           "HeaderPrefix": {
                             "type": "string",
-                            "description": "The header name prefix, defaults to 'X-Forwarded-`"
+                            "description": "The header name prefix.",
+                            "default": "X-Forwarded-"
                           }
                         },
                         "additionalProperties": false,
@@ -1031,17 +1032,20 @@
                       "properties": {
                         "Enabled": {
                           "type": [ "boolean", "null" ],
-                          "description": "Determines if active health checks are enabled. Defaults to false."
+                          "description": "Determines if active health checks are enabled.",
+                          "default": false
                         },
                         "Interval": {
                           "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                          "description": "Period of sending health probing requests. Defaults to '00:00:15'."
+                          "description": "Period of sending health probing requests.",
+                          "default": "00:00:15"
                         },
                         "Timeout": {
                           "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                          "description": "Period of waiting for a health check response. Defaults to '00:00:10'."
+                          "description": "Period of waiting for a health check response.",
+                          "default": "00:00:10"
                         },
                         "Policy": {
                           "anyOf": [
@@ -1059,7 +1063,8 @@
                         },
                         "Path": {
                           "type": [ "string", "null" ],
-                          "description": "HTTP health check endpoint path. Defaults to '/'."
+                          "description": "HTTP health check endpoint path.",
+                          "default": "/"
                         },
                         "Query": {
                           "type": [ "string", "null" ],
@@ -1073,7 +1078,8 @@
                       "properties": {
                         "Enabled": {
                           "type": [ "boolean", "null" ],
-                          "description": "Determines if passive health checks are enabled. Default false."
+                          "description": "Determines if passive health checks are enabled.",
+                          "default": false
                         },
                         "Policy": {
                           "anyOf": [
@@ -1125,7 +1131,8 @@
                     },
                     "DangerousAcceptAnyServerCertificate": {
                       "type": [ "boolean", "null" ],
-                      "description": "Determines whether the server's SSL certificate validity is checked by the client. Setting it to true completely disables validation. Default value is false."
+                      "description": "Determines whether the server's SSL certificate validity is checked by the client. Setting it to true completely disables validation.",
+                      "default": false
                     },
                     "MaxConnectionsPerServer": {
                       "type": [ "number", "null" ],
@@ -1133,7 +1140,8 @@
                     },
                     "EnableMultipleHttp2Connections": {
                       "type": [ "boolean", "null" ],
-                      "description": "Determines if multiple HTTP/2 connections are enabled. Defaults to true."
+                      "description": "Determines if multiple HTTP/2 connections are enabled.",
+                      "default": true
                     },
                     "RequestHeaderEncoding": {
                       "type": [ "string", "null" ],
@@ -1154,11 +1162,13 @@
                         },
                         "BypassOnLocal": {
                           "type": [ "boolean", "null" ],
-                          "description": "If true, bypasses the proxy for local addresses. Defaults to false."
+                          "description": "If true, bypasses the proxy for local addresses.",
+                          "default": false
                         },
                         "UseDefaultCredentials": {
                           "type": [ "boolean", "null" ],
-                          "description": "If true, sends CredentialCache.DefaultCredentials with requests. Defaults to false."
+                          "description": "If true, sends CredentialCache.DefaultCredentials with requests.",
+                          "default": false
                         }
                       }
                     }
@@ -1171,15 +1181,18 @@
                     "ActivityTimeout": {
                       "type": [ "string", "null" ],
                       "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                      "description": "Specifies how long a request is allowed to remain idle between any operation completing, after which it will be canceled. Default is 100 seconds."
+                      "description": "Specifies how long a request is allowed to remain idle between any operation completing, after which it will be canceled.",
+                      "default": "00:01:40"
                     },
                     "Version": {
                       "type": [ "string", "null" ],
-                      "description": "Preferred version of the outgoing request. Defaults to HTTP/2."
+                      "description": "Preferred version of the outgoing request.",
+                      "default": "2.0"
                     },
                     "VersionPolicy": {
                       "type": [ "string", "null" ],
-                      "description": "The policy applied to version selection, e.g. whether to prefer downgrades, upgrades or request an exact version. The default is `RequestVersionOrLower`.",
+                      "description": "The policy applied to version selection, e.g. whether to prefer downgrades, upgrades or request an exact version.",
+                      "default": "RequestVersionOrLower",
                       "enum": [
                         "RequestVersionExact",
                         "RequestVersionOrLower",
