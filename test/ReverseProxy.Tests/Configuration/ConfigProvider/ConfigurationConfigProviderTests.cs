@@ -11,7 +11,9 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Authentication;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Threading.Tasks;
 using Json.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -319,9 +321,6 @@ public class ConfigurationConfigProviderTests
                     }
                 },
                 "cluster2": {
-                    "CircuitBreaker": null,
-                    "Quota": null,
-                    "Partitioning": null,
                     "LoadBalancingPolicy": "RoundRobin",
                     "SessionAffinity": null,
                     "HealthCheck": null,
@@ -663,8 +662,44 @@ public class ConfigurationConfigProviderTests
             """),
             s_schemaOptions);
 
+        var errors = results.Details
+            .Where(d => d.HasErrors)
+            .SelectMany(d => d.Errors!.Select(error => $"Path:${d.InstanceLocation} {error.Key}:{error.Value}"))
+            .ToArray();
+
         Assert.True(results.IsValid);
         Assert.False(results.HasErrors);
         Assert.True(results.Details.Count > 300);
+    }
+
+    [Fact]
+    public async Task ValidateSchema_Samples()
+    {
+        string repoRoot = Path.Combine(Environment.CurrentDirectory, "../../../../../");
+        repoRoot = Path.GetFullPath(repoRoot);
+
+        foreach (string file in Directory.EnumerateFiles(repoRoot, "*.json", SearchOption.AllDirectories))
+        {
+            if (file.Contains("appsettings", StringComparison.OrdinalIgnoreCase))
+            {
+                var contents = await File.ReadAllTextAsync(file);
+                var document = JsonDocument.Parse(contents, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip });
+                var results = s_yarpSchema.Evaluate(document.RootElement, s_schemaOptions);
+
+                if (results.IsValid)
+                {
+                    Assert.False(results.HasErrors);
+
+                    if (contents.Contains("\"ReverseProxy\"", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Assert.True(results.Details.Count > 5);
+                    }
+                }
+                else
+                {
+                    Assert.Fail($"Json errors reported for '{file}'");
+                }
+            }
+        }
     }
 }
