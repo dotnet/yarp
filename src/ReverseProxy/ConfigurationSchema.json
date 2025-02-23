@@ -880,12 +880,10 @@
                       "properties": {
                         "Address": {
                           "type": "string",
-                          "format": "iri",
                           "description": "Destination address (must include scheme)."
                         },
                         "Health": {
                           "type": [ "string", "null" ],
-                          "format": "iri",
                           "description": "Optional override URL accepting active health check probes."
                         },
                         "Host": {
@@ -1157,7 +1155,6 @@
                       "properties": {
                         "Address": {
                           "type": [ "string", "null" ],
-                          "format": "iri",
                           "description": "The URI of the proxy server."
                         },
                         "BypassOnLocal": {
