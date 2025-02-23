@@ -442,25 +442,8 @@
                             ]
                           },
                           "Set": {
-                            "description": "The new HTTP method.",
-                            "anyOf": [
-                              {
-                                "type": "string",
-                                "enum": [
-                                  "DELETE",
-                                  "GET",
-                                  "HEAD",
-                                  "OPTIONS",
-                                  "PATCH",
-                                  "POST",
-                                  "PUT",
-                                  "TRACE"
-                                ]
-                              },
-                              {
-                                "type": "string"
-                              }
-                            ]
+                            "type": "string",
+                            "description": "The new HTTP method."
                           }
                         },
                         "additionalProperties": false,
