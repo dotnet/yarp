@@ -41,7 +41,7 @@
                 "Timeout": {
                   "type": [ "string", "null" ],
                   "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                  "description": "The Timeout to apply to this route. This overrides any system defaults. Setting both Timeout and TimeoutPolicy is an error."
+                  "description": "The Timeout to apply to this route. This overrides any system defaults. Setting both Timeout and TimeoutPolicy is an error. Format: 'hh:mm:ss'."
                 },
                 "TimeoutPolicy": {
                   "type": [ "string", "null" ],
@@ -979,12 +979,12 @@
                         "Expiration": {
                           "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                          "description": "Specifies the expiration of the cookie."
+                          "description": "Specifies the expiration of the cookie. Format: 'hh:mm:ss'."
                         },
                         "MaxAge": {
                           "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                          "description": "Specifies the maximum age of the cookie."
+                          "description": "Specifies the maximum age of the cookie. Format: 'hh:mm:ss'."
                         },
                         "SecurePolicy": {
                           "type": [ "string", "null" ],
@@ -1038,13 +1038,13 @@
                         "Interval": {
                           "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                          "description": "Period of sending health probing requests.",
+                          "description": "Period of sending health probing requests. Format: 'hh:mm:ss'.",
                           "default": "00:00:15"
                         },
                         "Timeout": {
                           "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                          "description": "Period of waiting for a health check response.",
+                          "description": "Period of waiting for a health check response. Format: 'hh:mm:ss'.",
                           "default": "00:00:10"
                         },
                         "Policy": {
@@ -1099,7 +1099,7 @@
                         "ReactivationPeriod": {
                           "type": [ "string", "null" ],
                           "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                          "description": "Period after which an unhealthy destination reverts back to an Unknown health state."
+                          "description": "Period after which an unhealthy destination reverts back to an Unknown health state. Format: 'hh:mm:ss'."
                         }
                       },
                       "additionalProperties": false
@@ -1156,7 +1156,7 @@
                     },
                     "WebProxy": {
                       "type": [ "object", "null" ],
-                      "description": "Config used to construct a System.Net.WebProxy instance.",
+                      "description": "Config used to construct a System.Net.WebProxy instance used for outgoing requests.",
                       "properties": {
                         "Address": {
                           "type": [ "string", "null" ],
@@ -1185,7 +1185,7 @@
                     "ActivityTimeout": {
                       "type": [ "string", "null" ],
                       "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
-                      "description": "Specifies how long a request is allowed to remain idle between any operation completing, after which it will be canceled.",
+                      "description": "Specifies how long a request is allowed to remain idle between any operation completing, after which it will be canceled. Format: 'hh:mm:ss'.",
                       "default": "00:01:40"
                     },
                     "Version": {
