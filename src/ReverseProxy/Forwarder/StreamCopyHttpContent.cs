@@ -167,14 +167,10 @@ internal sealed class StreamCopyHttpContent : HttpContent
             {
                 await stream.FlushAsync(cancellationToken);
             }
-            catch (OperationCanceledException oex)
-            {
-                _tcs.TrySetResult((StreamCopyResult.Canceled, oex));
-                return;
-            }
             catch (Exception ex)
             {
-                _tcs.TrySetResult((StreamCopyResult.OutputError, ex));
+                var canceled = ex is OperationCanceledException || _activityToken.CancelledByLinkedToken;
+                _tcs.TrySetResult((canceled ? StreamCopyResult.Canceled : StreamCopyResult.OutputError, ex));
                 return;
             }
 
