@@ -40,7 +40,7 @@
                 },
                 "Timeout": {
                   "type": [ "string", "null" ],
-                  "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                  "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                   "description": "The Timeout to apply to this route. This overrides any system defaults. Setting both Timeout and TimeoutPolicy is an error. Format: 'hh:mm:ss'."
                 },
                 "TimeoutPolicy": {
@@ -978,12 +978,12 @@
                         },
                         "Expiration": {
                           "type": [ "string", "null" ],
-                          "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Specifies the expiration of the cookie. Format: 'hh:mm:ss'."
                         },
                         "MaxAge": {
                           "type": [ "string", "null" ],
-                          "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Specifies the maximum age of the cookie. Format: 'hh:mm:ss'."
                         },
                         "SecurePolicy": {
@@ -1037,13 +1037,13 @@
                         },
                         "Interval": {
                           "type": [ "string", "null" ],
-                          "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Period of sending health probing requests. Format: 'hh:mm:ss'.",
                           "default": "00:00:15"
                         },
                         "Timeout": {
                           "type": [ "string", "null" ],
-                          "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Period of waiting for a health check response. Format: 'hh:mm:ss'.",
                           "default": "00:00:10"
                         },
@@ -1098,7 +1098,7 @@
                         },
                         "ReactivationPeriod": {
                           "type": [ "string", "null" ],
-                          "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                           "description": "Period after which an unhealthy destination reverts back to an Unknown health state. Format: 'hh:mm:ss'."
                         }
                       },
@@ -1184,7 +1184,7 @@
                   "properties": {
                     "ActivityTimeout": {
                       "type": [ "string", "null" ],
-                      "pattern": "^-?\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                      "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
                       "description": "Specifies how long a request is allowed to remain idle between any operation completing, after which it will be canceled. Format: 'hh:mm:ss'.",
                       "default": "00:01:40"
                     },
