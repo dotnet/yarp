@@ -25,7 +25,7 @@ internal interface IYarpOutputCachePolicyProvider
 internal sealed class YarpOutputCachePolicyProvider : IYarpOutputCachePolicyProvider
 {
 #if NET7_0_OR_GREATER
-    // Workaround for https://github.com/dotnet/yarp/issues/2598 to make YARP work with NativeAOT on .NET 8.
+    // Workaround for https://github.com/dotnet/yarp/issues/2598 to make YARP work with NativeAOT on .NET 8. This is not needed on .NET 9+.
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private static readonly Type s_OutputCacheOptionsType = typeof(OutputCacheOptions);
 
