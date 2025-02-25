@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using Yarp.ReverseProxy.Model;
 
 namespace Yarp.ReverseProxy.Configuration;
 
@@ -21,7 +22,7 @@ public sealed record PassiveHealthCheckConfig
     public string? Policy { get; init; }
 
     /// <summary>
-    /// Destination reactivation period after which an unhealthy destination is considered healthy again.
+    /// Destination reactivation period after which an unhealthy destination reverts back to <see cref="DestinationHealth.Unknown"/>.
     /// </summary>
     public TimeSpan? ReactivationPeriod { get; init; }
 

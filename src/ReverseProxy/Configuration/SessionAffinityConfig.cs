@@ -30,7 +30,6 @@ public sealed record SessionAffinityConfig
     /// Identifies the name of the field where the affinity value is stored.
     /// For the cookie affinity policy this will be the cookie name.
     /// For the header affinity policy this will be the header name.
-    /// The policy will give its own default if no value is set.
     /// This value should be unique across clusters to avoid affinity conflicts.
     /// https://github.com/dotnet/yarp/issues/976
     /// This field is required.

@@ -3,6 +3,29 @@
   <!-- Recurse up. -->
   <Import Project="$(MSBuildThisFileDirectory)..\Directory.Build.props" />
 
+  <!-- Include ConfigurationSchema.json in the package if it exists. -->
+  <PropertyGroup>
+    <ConfigurationSchemaPath>$(MSBuildProjectDirectory)\ConfigurationSchema.json</ConfigurationSchemaPath>
+    <ConfigurationSchemaExists Condition="Exists('$(ConfigurationSchemaPath)')">true</ConfigurationSchemaExists>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(ConfigurationSchemaExists)' == 'true'">
+    <None Include="$(ConfigurationSchemaPath)"
+          Pack="True"
+          PackagePath="ConfigurationSchema.json" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(ConfigurationSchemaExists)' == 'true'">
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);AddPackageTargetsInPackage</TargetsForTfmSpecificContentInPackage>
+  </PropertyGroup>
+
+  <Target Name="AddPackageTargetsInPackage">
+    <ItemGroup>
+      <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)Common\Package.targets"
+                              PackagePath="buildTransitive\$(TargetFramework)\$(PackageId).targets" />
+    </ItemGroup>
+  </Target>
+
   <PropertyGroup>
     <IsShipping>true</IsShipping>
     <IsPackable>true</IsPackable>

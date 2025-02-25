@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <JsonSchemaSegment Include="$(MSBuildThisFileDirectory)..\..\ConfigurationSchema.json"
+                       FilePathPattern="appsettings\..*json" />
+  </ItemGroup>
+</Project>
