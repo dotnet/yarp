@@ -7,7 +7,7 @@
       That ensures that if we get up to preview 10, it doesn't sort as between preview 1 and preview 2!
       See https://semver.org/spec/v2.0.0.html for details.
     -->
-    <PreReleaseVersionLabel>preview.1</PreReleaseVersionLabel>
+    <PreReleaseVersionLabel>rtw</PreReleaseVersionLabel>
     <DotNetFinalVersionKind Condition="'$(PreReleaseVersionLabel)' == 'rtw'">release</DotNetFinalVersionKind>
   </PropertyGroup>
   <!--Package versions-->
