@@ -22,8 +22,14 @@ internal sealed class ActivityCancellationTokenSource : CancellationTokenSource
     private static readonly Action<object?> _linkedTokenCancelDelegate = static s =>
     {
         var cts = (ActivityCancellationTokenSource)s!;
-        cts.CancelledByLinkedToken = true;
-        cts.Cancel(throwOnFirstException: false);
+
+        // If a cancellation was triggered by a timeout or manual call to Cancel, it's possible that this will
+        // cascade into other tokens firing. Avoid incorrectly marking CancelledByLinkedToken in such cases.
+        if (!cts.IsCancellationRequested)
+        {
+            cts.CancelledByLinkedToken = true;
+            cts.Cancel(throwOnFirstException: false);
+        }
     };
 
     private int _activityTimeoutMs;

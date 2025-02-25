@@ -793,10 +793,10 @@ internal sealed class HttpForwarder : IHttpForwarder
 
         ForwarderError error;
 
-        var (firstResult, firstException) = await firstTask;
+        var (firstResult, firstException) = firstTask.Result;
         if (firstResult != StreamCopyResult.Success)
         {
-            error = ReportResult(context, requestFinishedFirst, firstResult, firstException, activityCancellationSource);
+            error = ReportResult(context, requestFinishedFirst, firstResult, firstException!, activityCancellationSource);
             // Cancel the other direction
             activityCancellationSource.Cancel();
             // Wait for this to finish before exiting so the resources get cleaned up properly.
@@ -833,10 +833,14 @@ internal sealed class HttpForwarder : IHttpForwarder
                 StreamCopyResult.Canceled => request ? ForwarderError.UpgradeRequestCanceled : ForwarderError.UpgradeResponseCanceled,
                 _ => throw new NotImplementedException(result.ToString()),
             };
+
             if (activityCancellationSource.IsCancellationRequested && !activityCancellationSource.CancelledByLinkedToken)
             {
+                // We haven't manually called `Cancel` on the ActivityCancellationTokenSource, and the linked tokens haven't been signaled,
+                // so the only remaining option is that this failure was caused by the ActivityTimeout firing.
                 error = ForwarderError.UpgradeActivityTimeout;
             }
+
             ReportProxyError(context, error, exception);
             return error;
         }
@@ -1050,7 +1054,9 @@ internal sealed class HttpForwarder : IHttpForwarder
             if (error is
                 ForwarderError.RequestCanceled or
                 ForwarderError.RequestBodyCanceled or
-                ForwarderError.UpgradeRequestCanceled)
+                ForwarderError.ResponseBodyCanceled or
+                ForwarderError.UpgradeRequestCanceled or
+                ForwarderError.UpgradeResponseCanceled)
             {
                 // These error conditions are triggered by the client and are not generally indicative of a problem with the proxy.
                 // It's unlikely that they will be useful in most cases, so we log them at Debug level to reduce noise.

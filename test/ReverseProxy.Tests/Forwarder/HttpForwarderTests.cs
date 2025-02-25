@@ -2871,7 +2871,14 @@ public class HttpForwarderTests
         Assert.Equal(error, errorFeature.Error);
         Assert.IsAssignableFrom<TException>(errorFeature.Exception);
 
-        var expectedId = error is ForwarderError.RequestCanceled or ForwarderError.RequestBodyCanceled or ForwarderError.UpgradeRequestCanceled
+        var errorIsRequestCancelled = error is
+            ForwarderError.RequestCanceled or
+            ForwarderError.RequestBodyCanceled or
+            ForwarderError.ResponseBodyCanceled or
+            ForwarderError.UpgradeRequestCanceled or
+            ForwarderError.UpgradeResponseCanceled;
+
+        var expectedId = errorIsRequestCancelled
             ? EventIds.ForwardingRequestCancelled
             : EventIds.ForwardingError;
 
