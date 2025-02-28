@@ -6,7 +6,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Yarp.Telemetry.Consumption</RootNamespace>
     <Nullable>enable</Nullable>
-    <IsAotCompatible Condition="'$(TargetFramework)' != 'net6.0'">true</IsAotCompatible>
+    <IsAotCompatible>true</IsAotCompatible>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>yarp;dotnet;reverse-proxy;aspnetcore;telemetry</PackageTags>
   </PropertyGroup>

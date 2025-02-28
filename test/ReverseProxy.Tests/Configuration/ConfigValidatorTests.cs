@@ -4,13 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-#if NET7_0_OR_GREATER
 using Microsoft.AspNetCore.Builder;
-#endif
 using Microsoft.AspNetCore.Cors.Infrastructure;
-#if NET7_0_OR_GREATER
 using Microsoft.AspNetCore.RateLimiting;
-#endif
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
@@ -607,7 +603,7 @@ public class ConfigValidatorTests
         Assert.NotEmpty(result);
         Assert.Contains(result, err => err.Message.Equals($"The application has registered an authorization policy named '{authorizationPolicy}' that conflicts with the reserved authorization policy name used on this route. The registered policy name needs to be changed for this route to function."));
     }
-#if NET8_0_OR_GREATER
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -745,7 +741,7 @@ public class ConfigValidatorTests
         Assert.NotEmpty(result);
         Assert.Contains(result, err => err.Message.Equals("Timeout policy 'unknown' not found for route 'route1'."));
     }
-#endif
+
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -854,7 +850,6 @@ public class ConfigValidatorTests
         Assert.Contains(result, err => err.Message.Equals($"The application has registered a CORS policy named '{corsPolicy}' that conflicts with the reserved CORS policy name used on this route. The registered policy name needs to be changed for this route to function."));
     }
 
-#if NET7_0_OR_GREATER
     [Theory]
     [InlineData("Default")]
     [InlineData("Disable")]
@@ -927,7 +922,6 @@ public class ConfigValidatorTests
         Assert.NotEmpty(result);
         Assert.Contains(result, err => err.Message.Contains($"RateLimiter policy '{rateLimiterPolicy}' not found"));
     }
-#endif
 
     [Fact]
     public async Task EmptyCluster_Works()

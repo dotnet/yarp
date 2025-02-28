@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Internal;
 using System;
 
 #pragma warning disable CS0169 // The field 'Reservation.limit' is never used

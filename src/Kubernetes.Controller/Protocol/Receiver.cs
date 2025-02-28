@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -15,7 +13,6 @@ using Microsoft.Extensions.Options;
 using Yarp.Kubernetes.Controller.Configuration;
 using Yarp.Kubernetes.Controller.Hosting;
 using Yarp.Kubernetes.Controller.Rate;
-using Yarp.ReverseProxy.Forwarder;
 
 namespace Yarp.Kubernetes.Protocol;
 
@@ -65,11 +62,7 @@ public class Receiver : BackgroundHostedService
                 using var cancellation = cancellationToken.Register(stream.Close);
                 while (true)
                 {
-#if NET6_0
-                    var json = await reader.ReadLineAsync().ConfigureAwait(false);
-#else
                     var json = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
-#endif
                     if (string.IsNullOrEmpty(json))
                     {
                         break;

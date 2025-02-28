@@ -15,11 +15,7 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
 {
     protected override string EventSourceName => "System.Net.Http";
 
-#if NET8_0_OR_GREATER
     protected override int NumberOfMetrics => 11;
-#else
-    protected override int NumberOfMetrics => 9;
-#endif
 
     public HttpEventListenerService(ILogger<HttpEventListenerService> logger, IEnumerable<IHttpTelemetryConsumer> telemetryConsumers, IEnumerable<IMetricsConsumer<HttpMetrics>> metricsConsumers)
         : base(logger, telemetryConsumers, metricsConsumers)
@@ -54,36 +50,22 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
             case 2:
                 Debug.Assert(eventData.EventName == "RequestStop" && payload.Count == (eventData.Version == 0 ? 0 : 1));
                 {
-#if NET8_0_OR_GREATER
                     var statusCode = (int)payload[0];
                     foreach (var consumer in consumers)
                     {
                         consumer.OnRequestStop(eventData.TimeStamp, statusCode);
                     }
-#else
-                    foreach (var consumer in consumers)
-                    {
-                        consumer.OnRequestStop(eventData.TimeStamp);
-                    }
-#endif
                 }
                 break;
 
             case 3:
                 Debug.Assert(eventData.EventName == "RequestFailed" && payload.Count == (eventData.Version == 0 ? 0 : 1));
                 {
-#if NET8_0_OR_GREATER
                     var exceptionMessage = (string)payload[0];
                     foreach (var consumer in consumers)
                     {
                         consumer.OnRequestFailed(eventData.TimeStamp, exceptionMessage);
                     }
-#else
-                    foreach (var consumer in consumers)
-                    {
-                        consumer.OnRequestFailed(eventData.TimeStamp);
-                    }
-#endif
                 }
                 break;
 
@@ -92,7 +74,6 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
                 {
                     var versionMajor = (int)(byte)payload[0];
                     var versionMinor = (int)(byte)payload[1];
-#if NET8_0_OR_GREATER
                     var connectionId = (long)payload[2];
                     var scheme = (string)payload[3];
                     var host = (string)payload[4];
@@ -102,12 +83,6 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
                     {
                         consumer.OnConnectionEstablished(eventData.TimeStamp, versionMajor, versionMinor, connectionId, scheme, host, port, remoteAddress);
                     }
-#else
-                    foreach (var consumer in consumers)
-                    {
-                        consumer.OnConnectionEstablished(eventData.TimeStamp, versionMajor, versionMinor);
-                    }
-#endif
                 }
                 break;
 
@@ -116,18 +91,11 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
                 {
                     var versionMajor = (int)(byte)payload[0];
                     var versionMinor = (int)(byte)payload[1];
-#if NET8_0_OR_GREATER
                     var connectionId = (long)payload[2];
                     foreach (var consumer in consumers)
                     {
                         consumer.OnConnectionClosed(eventData.TimeStamp, versionMajor, versionMinor, connectionId);
                     }
-#else
-                    foreach (var consumer in consumers)
-                    {
-                        consumer.OnConnectionClosed(eventData.TimeStamp, versionMajor, versionMinor);
-                    }
-#endif
                 }
                 break;
 
@@ -147,18 +115,11 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
             case 7:
                 Debug.Assert(eventData.EventName == "RequestHeadersStart" && payload.Count == (eventData.Version == 0 ? 0 : 1));
                 {
-#if NET8_0_OR_GREATER
                     var connectionId = (long)payload[0];
                     foreach (var consumer in consumers)
                     {
                         consumer.OnRequestHeadersStart(eventData.TimeStamp, connectionId);
                     }
-#else
-                    foreach (var consumer in consumers)
-                    {
-                        consumer.OnRequestHeadersStart(eventData.TimeStamp);
-                    }
-#endif
                 }
                 break;
 
@@ -206,18 +167,11 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
             case 12:
                 Debug.Assert(eventData.EventName == "ResponseHeadersStop" && payload.Count == (eventData.Version == 0 ? 0 : 1));
                 {
-#if NET8_0_OR_GREATER
                     var statusCode = (int)payload[0];
                     foreach (var consumer in consumers)
                     {
                         consumer.OnResponseHeadersStop(eventData.TimeStamp, statusCode);
                     }
-#else
-                    foreach (var consumer in consumers)
-                    {
-                        consumer.OnResponseHeadersStop(eventData.TimeStamp);
-                    }
-#endif
                 }
                 break;
 
@@ -249,7 +203,6 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
 
             case 16:
                 Debug.Assert(eventData.EventName == "Redirect" && payload.Count == 1);
-#if NET8_0_OR_GREATER
                 {
                     var redirectUri = (string)payload[0];
                     foreach (var consumer in consumers)
@@ -257,7 +210,6 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
                         consumer.OnRedirect(eventData.TimeStamp, redirectUri);
                     }
                 }
-#endif
                 break;
         }
     }
@@ -302,7 +254,6 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
                 metrics.Http20RequestsQueueDuration = TimeSpan.FromMilliseconds(value);
                 break;
 
-#if NET8_0_OR_GREATER
             case "http30-connections-current-total":
                 metrics.CurrentHttp30Connections = (long)value;
                 break;
@@ -310,7 +261,6 @@ internal sealed class HttpEventListenerService : EventListenerService<HttpEventL
             case "http30-requests-queue-duration":
                 metrics.Http30RequestsQueueDuration = TimeSpan.FromMilliseconds(value);
                 break;
-#endif
 
             default:
                 return false;

@@ -204,9 +204,7 @@ public class TelemetryConsumptionTests
             "OnRequestHeadersStop",
             "OnResponseHeadersStart",
             "OnResponseHeadersStop",
-#if NET8_0_OR_GREATER
             "OnRedirect",
-#endif
             "OnRequestHeadersStart",
             "OnRequestHeadersStop",
             "OnResponseHeadersStart",
