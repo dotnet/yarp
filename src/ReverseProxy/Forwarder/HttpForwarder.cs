@@ -351,11 +351,9 @@ internal sealed class HttpForwarder : IHttpForwarder
             && upgradeHeader.StartsWith("SPDY/", StringComparison.OrdinalIgnoreCase);
         var isH1WsRequest = (upgradeFeature?.IsUpgradableRequest ?? false)
             && string.Equals(WebSocketName, upgradeHeader, StringComparison.OrdinalIgnoreCase);
-        var incomingUpgrade = isSpdyRequest || isH1WsRequest;
-        var isH2WsRequest = false;
         var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
         var connectProtocol = connectFeature?.Protocol;
-        isH2WsRequest = (connectFeature?.IsExtendedConnect ?? false)
+        var isH2WsRequest = (connectFeature?.IsExtendedConnect ?? false)
             && string.Equals(WebSocketName, connectProtocol, StringComparison.OrdinalIgnoreCase);
 
         var outgoingHttps = destinationPrefix.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
@@ -801,7 +799,7 @@ internal sealed class HttpForwarder : IHttpForwarder
 
         return error;
 
-        ForwarderError ReportResult(HttpContext context, bool request, StreamCopyResult result, Exception exception, ActivityCancellationTokenSource activityCancellationTokenSource)
+        ForwarderError ReportResult(HttpContext context, bool request, StreamCopyResult result, Exception exception, ActivityCancellationTokenSource activityCancellationSource)
         {
             var error = result switch
             {
