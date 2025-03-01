@@ -1,115 +1,194 @@
-﻿<!DOCTYPE html>
-<!--[if IE]><![endif]-->
-<html>
-  
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>YARP Documentation </title>
-    <meta name="viewport" content="width=device-width">
-    <meta name="title" content="YARP Documentation ">
-    <meta name="generator" content="docfx 2.59.4.0">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YARP - Your reverse proxy, your way</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/github-dark.min.css">
+    <script>hljs.highlightAll();</script>
+    <link rel="shortcut icon" href="logo.svg">
+</head>
+<body class="bg-gray-900 text-white font-sans">
     
-    <link rel="shortcut icon" href="favicon.ico">
-    <link rel="stylesheet" href="styles/docfx.vendor.css">
-    <link rel="stylesheet" href="styles/docfx.css">
-    <link rel="stylesheet" href="styles/main.css">
-    <meta property="docfx:navrel" content="toc.html">
-    <meta property="docfx:tocrel" content="toc.html">
-    
-    
-    
-  </head>
-  <body data-spy="scroll" data-target="#affix" data-offset="120">
-    <div id="wrapper">
-      <header>
-        
-        <nav id="autocollapse" class="navbar navbar-inverse ng-scope" role="navigation">
-          <div class="container">
-            <div class="navbar-header">
-              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-              </button>
-              
-              <a class="navbar-brand" href="index.html">
-                <img id="logo" class="svg" src="logo.svg" alt="">
-              </a>
-            </div>
-            <div class="collapse navbar-collapse" id="navbar">
-              <form class="navbar-form navbar-right" role="search" id="search">
-                <div class="form-group">
-                  <input type="text" class="form-control" id="search-query" placeholder="Search" autocomplete="off">
-                </div>
-              </form>
-            </div>
-          </div>
-        </nav>
-        
-        <div class="subnav navbar navbar-default">
-          <div class="container hide-when-search" id="breadcrumb">
-            <ul class="breadcrumb">
-              <li></li>
-            </ul>
-          </div>
+    <!-- Logo and Navigation -->
+    <header class="py-6 px-6 flex justify-between items-center max-w-6xl mx-auto">
+        <div class="flex items-center space-x-3">
+            <img src="logo.svg" alt="YARP Logo" class="h-10">
+            <h1 class="text-2xl font-bold">YARP</h1>
         </div>
-      </header>
-      <div role="main" class="container body-content hide-when-search">
-        <div class="article row grid">
-          <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="root">
-<h1 id="yarp-yet-another-reverse-proxy">YARP: Yet Another Reverse Proxy</h1>
+        <a href="https://github.com/dotnet/yarp" class="border border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white py-2 px-4 rounded-lg text-lg font-semibold">View on GitHub</a>
+    </header>
+    
+    <!-- Hero Section -->
+    <section class="text-center py-20 px-6 bg-gray-800">
+        <h1 class="text-4xl md:text-6xl font-bold">Your Reverse Proxy,<br>Your Way.</h1>
+        <p class="mt-4 text-lg md:text-xl">Fast, flexible, and easy to extend—YARP lets you build a reverse proxy tailored to your needs in just a few lines of code.</p>
+        <div class="mt-6">
+            <a href="#get-started" class="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg text-lg font-semibold">Get Started</a>
+            <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started" class="ml-4 text-blue-400 hover:underline">Explore Docs</a>
+        </div>
+    </section>
 
-<p>Welcome to the documentation for YARP! YARP is a library to help create reverse proxy servers that are high-performance, production-ready, and highly customizable. Please provide us your feedback by going to <a href="https://github.com/microsoft/reverse-proxy">the GitHub repository</a>.</p>
-<p>This is the documentation for YARP 2.2.
-For documentation of YARP 1.1.1, see <a href="https://github.com/microsoft/reverse-proxy/tree/release/1.1/docs/docfx/articles">https://github.com/microsoft/reverse-proxy/tree/release/1.1/docs/docfx/articles</a>.</p>
-<h2 id="why-yarp">Why YARP</h2>
-<p>We found a bunch of internal teams at Microsoft who were either building a reverse proxy for their service or had been asking about APIs and tech for building one, so we decided to get them all together to work on a common solution, this project. Each of these projects was doing something slightly off the beaten path which meant they were not well served by existing proxies, and customization of those proxies had a high cost and ongoing maintenance considerations.</p>
-<p>Many of the existing proxies were built to support HTTP/1.1, but with workloads changing to include gRPC traffic, they require HTTP/2 support which requires a significantly more complex implementation. By using YARP the projects get to customize the routing and handling behavior without having to implement the http protocol.</p>
-<h2 id="using-yarp">Using YARP</h2>
-<p>YARP is built on .NET using the infrastructure from ASP.NET and .NET (.NET 6 and newer). The key differentiator for YARP is that it's been designed to be easily customized and tweaked via .NET code to match the specific needs of each deployment scenario.</p>
-<p>Eventually we expect YARP to ship as a library, project template, and a single-file exe, to provide a variety of choices for building a robust, performant proxy server. Its pipeline and modules are designed so that you can then customize the functionality for your needs. For example, while YARP supports configuration files, we expect that many users will want to manage the configuration programmatically based on their own configuration management system. YARP provides a configuration API to enable that customization in-proc.</p>
-<p>YARP is designed with customizability as a primary scenario rather than requiring you to break out to script or rebuild the library from source.</p>
-<p>See the <a href="articles/getting-started.html">Getting Started</a> guide for a brief tutorial, or <a href="https://github.com/microsoft/reverse-proxy/tree/main/samples/BasicYarpSample">Basic Sample</a> for a fully commented sample showing how to use the YARP library to implement a fairly well featured proxy.</p>
-</article>
-          </div>
-          
-          <div class="hidden-sm col-md-2" role="complementary">
-            <div class="sideaffix">
-              <div class="contribution">
-                <ul class="nav">
-                  <li>
-                    <a href="https://github.com/microsoft/reverse-proxy/blob/release/latest/docs/docfx/index.md/#L1" class="contribution-link">Improve this Doc</a>
-                  </li>
-                </ul>
-              </div>
-              <nav class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix" id="affix">
-                <h5>In This Article</h5>
-                <div></div>
-              </nav>
+    <!-- Features Section -->
+    <section class="py-16 px-6 max-w-6xl mx-auto text-center">
+        <div class="grid md:grid-cols-3 gap-12">
+            <div>
+                <h3 class="text-xl font-bold">Build a Reverse Proxy in Minutes</h3>
+                <p class="mt-2 text-gray-300">Configure and extend with just a few lines of .NET code.</p>
             </div>
-          </div>
+            <div>
+                <h3 class="text-xl font-bold">Customize to Fit Your Needs</h3>
+                <p class="mt-2 text-gray-300">Fine-grained control over routing, load balancing, and health checks.</p>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold">Optimized for Performance & Scale</h3>
+                <p class="mt-2 text-gray-300">Supports gRPC, WebSockets, HTTP/2, and HTTP/3.</p>
+            </div>
         </div>
-      </div>
-      
-      <footer>
-        <div class="grad-bottom"></div>
-        <div class="footer">
-          <div class="container">
-            <span class="pull-right">
-              <a href="#top">Back to top</a>
-            </span>
-            
-            <span>Generated by <strong>DocFX</strong></span>
-          </div>
+    </section>
+    <!-- Trusted at Scale -->
+    <section class="py-16 px-6 bg-gray-800 text-center">
+        <h2 class="text-2xl font-bold">Trusted at Scale</h2>
+        <p class="mt-4 text-gray-300">YARP is used by teams at Microsoft to handle billions of requests daily, powering services at massive scale.</p>
+        <div class="mt-4 flex justify-center space-x-6">
+            <a href="https://devblogs.microsoft.com/dotnet/bringing-kestrel-and-yarp-to-azure-app-services/" class="text-blue-400 hover:underline">Learn how Azure App Services uses YARP →</a>
+            <a href="https://devblogs.microsoft.com/dotnet/building-a-scalable-gateway-for-microsoft-ai/" class="text-blue-400 hover:underline">Learn how Microsoft AI uses YARP →</a>
         </div>
-      </footer>
-    </div>
+    </section>
     
-    <script type="text/javascript" src="styles/docfx.vendor.js"></script>
-    <script type="text/javascript" src="styles/docfx.js"></script>
-    <script type="text/javascript" src="styles/main.js"></script>
-  </body>
+    <!-- Quick Start Section with Tailwind Tabs -->
+    <section id="get-started" class="py-16 px-6 max-w-4xl mx-auto">
+        <h2 class="text-2xl font-bold text-center">Quick Start</h2>
+        <p class="mt-4 text-gray-300 text-center">Check out our full <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started" class="text-blue-400 hover:underline">Getting Started tutorial</a>, or dive right in with some code or a pre-built container.</p>
+        
+        <div class="mt-6 border-b border-gray-600">
+            <nav class="flex justify-center space-x-4">
+                <button class="tab-button py-2 px-4 border-b-2 border-blue-600 text-white" onclick="showTab('code-first')">Code-First 📄</button>
+                <button class="tab-button py-2 px-4 text-gray-400" onclick="showTab('container')">Container 📦</button>
+            </nav>
+        </div>
+        
+        <div id="code-first" class="tab-content mt-6">
+            <p class="mb-4 text-gray-300">
+                Get started with YARP using a code-first approach. This snippet sets up a basic reverse proxy.
+            </p>
+            <pre class="p-4 bg-gray-800 rounded-lg overflow-x-auto"><code class="language-csharp">var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+var app = builder.Build();
+app.MapReverseProxy();
+app.Run();</code></pre>
+<p class="mb-4 text-gray-300">
+    <br>Put the following configuration in <code>appsettings.json</code>. YARP supports loading configuration from any IConfiguration provider. See <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/config-files" class="text-blue-400 hover:underline">Configuration Files</a> for more details.
+</p>
+<pre class="p-4 bg-gray-800 rounded-lg overflow-x-auto"><code class="language-json">{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "ReverseProxy": {
+    "Routes": {
+      "route1": {
+        "ClusterId": "cluster1",
+        "Match": {
+          "Path": "{**catch-all}"
+        }
+      }
+    },
+    "Clusters": {
+      "cluster1": {
+        "Destinations": {
+          "destination1": {
+            "Address": "https://example.com/"
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+        </div>
+        
+        <div id="container" class="tab-content mt-6 hidden">
+            <div class="bg-yellow-900 text-yellow-300 p-4 rounded-lg mb-4">
+                <strong class="text-yellow-400">⚠️ Preview:</strong> The YARP container experience is currently in <strong>Preview</strong>. 
+                We are actively working on improvements, and we welcome your feedback!
+            </div>
+
+            <p class="mb-4 text-gray-300">
+                The YARP container is a quick way to get started with YARP. It's a pre-built proxy using YARP packaged as a docker container. Supply a configuration file and you are ready to route traffic! <br>
+            </p>
+            <pre class="p-4 bg-gray-800 rounded-lg overflow-x-auto"><code class="language-bash"># Run a YARP container with a custom config file, mapping port 5000.
+# Make sure to replace the path to your config file.
+# See docs for more info on configuration.
+
+docker run --rm -v $(pwd)/my-config.config:/etc/yarp.config \
+-p 5000:5000 mcr.microsoft.com/dotnet/nightly/yarp:latest</code></pre>
+                <p class="mb-4 text-gray-300">
+                    <br>The configuration for YARP is defined in a configuration file that should be mapped to <code>/etc/yarp.config</code>. See <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/config-files" class="text-blue-400 hover:underline">Configuration Files</a> for more details.
+                </p>
+                <pre class="p-4 bg-gray-800 rounded-lg overflow-x-auto"><code class="language-json">{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "ReverseProxy": {
+    "Routes": {
+      "route1": {
+        "ClusterId": "cluster1",
+        "Match": {
+          "Path": "{**catch-all}"
+        }
+      }
+    },
+    "Clusters": {
+      "cluster1": {
+        "Destinations": {
+          "destination1": {
+            "Address": "https://example.com/"
+          }
+        }
+      }
+    }
+  }
+}</code></pre>
+        </div>
+    </section>
+    
+    <!-- Footer -->
+    <footer class="py-6 bg-gray-800 text-center text-gray-400">
+        <p>&copy; 2025 YARP. Open-source project by Microsoft.</p>
+        <p><a href="https://github.com/dotnet/yarp" class="text-blue-400 hover:underline text-lg font-semibold">GitHub</a> | <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started" class="text-blue-400 hover:underline">Documentation</a></p>
+    </footer>
+
+    <script>
+    function showTab(tabId) {
+    // Hide all tab content sections.
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    // Show the selected tab content.
+    document.getElementById(tabId).classList.remove('hidden');
+    
+    // Reset all tab buttons: remove color classes and the underline.
+    document.querySelectorAll('.tab-button').forEach(el => {
+        el.classList.remove('border-blue-600', 'text-white', 'border-b-2');
+        el.classList.add('text-gray-400');
+    });
+    
+    // Select the active tab button using its onclick attribute.
+    const activeButton = document.querySelector(`[onclick="showTab('${tabId}')"]`);
+    activeButton.classList.add('border-blue-600', 'text-white', 'border-b-2');
+    activeButton.classList.remove('text-gray-400');
+}
+
+</script>
+</body>
 </html>
