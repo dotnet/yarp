@@ -27,7 +27,7 @@
         <p class="mt-4 text-lg md:text-xl">Fast, flexible, and easy to extend—YARP lets you build a reverse proxy tailored to your needs in just a few lines of code.</p>
         <div class="mt-6">
             <a href="#get-started" class="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-lg text-lg font-semibold">Get Started</a>
-            <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/getting-started" class="ml-4 text-blue-400 hover:underline">Explore Docs</a>
+            <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started" class="ml-4 text-blue-400 hover:underline">Explore Docs</a>
         </div>
     </section>
 
@@ -61,7 +61,7 @@
     <!-- Quick Start Section with Tailwind Tabs -->
     <section id="get-started" class="py-16 px-6 max-w-4xl mx-auto">
         <h2 class="text-2xl font-bold text-center">Quick Start</h2>
-        <p class="mt-4 text-gray-300 text-center">Check out our full <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/getting-started" class="text-blue-400 hover:underline">Getting Started tutorial</a>, or dive right in with some code or a pre-built container.</p>
+        <p class="mt-4 text-gray-300 text-center">Check out our full <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started" class="text-blue-400 hover:underline">Getting Started tutorial</a>, or dive right in with some code or a pre-built container.</p>
         
         <div class="mt-6 border-b border-gray-600">
             <nav class="flex justify-center space-x-4">
@@ -81,7 +81,7 @@ var app = builder.Build();
 app.MapReverseProxy();
 app.Run();</code></pre>
 <p class="mb-4 text-gray-300">
-    <br>Put the following configuration in <code>appsettings.json</code>. YARP supports loading configuration from any IConfiguration provider. See <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/config-files" class="text-blue-400 hover:underline">Configuration Files</a> for more details.
+    <br>Put the following configuration in <code>appsettings.json</code>. YARP supports loading configuration from any IConfiguration provider. See <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/config-files" class="text-blue-400 hover:underline">Configuration Files</a> for more details.
 </p>
 <pre class="p-4 bg-gray-800 rounded-lg overflow-x-auto"><code class="language-json">{
   "Logging": {
@@ -130,7 +130,7 @@ app.Run();</code></pre>
 docker run --rm -v $(pwd)/my-config.config:/etc/yarp.config \
 -p 5000:5000 mcr.microsoft.com/dotnet/nightly/yarp:latest</code></pre>
                 <p class="mb-4 text-gray-300">
-                    <br>The configuration for YARP is defined in a configuration file that should be mapped to <code>/etc/yarp.config</code>. See <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/config-files" class="text-blue-400 hover:underline">Configuration Files</a> for more details.
+                    <br>The configuration for YARP is defined in a configuration file that should be mapped to <code>/etc/yarp.config</code>. See <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/config-files" class="text-blue-400 hover:underline">Configuration Files</a> for more details.
                 </p>
                 <pre class="p-4 bg-gray-800 rounded-lg overflow-x-auto"><code class="language-json">{
   "Logging": {
@@ -167,7 +167,7 @@ docker run --rm -v $(pwd)/my-config.config:/etc/yarp.config \
     <!-- Footer -->
     <footer class="py-6 bg-gray-800 text-center text-gray-400">
         <p>&copy; 2025 YARP. Open-source project by Microsoft.</p>
-        <p><a href="https://github.com/dotnet/yarp" class="text-blue-400 hover:underline text-lg font-semibold">GitHub</a> | <a href="https://learn.microsoft.com/en-us/aspnet/core/fundamentals/servers/yarp/getting-started" class="text-blue-400 hover:underline">Documentation</a></p>
+        <p><a href="https://github.com/dotnet/yarp" class="text-blue-400 hover:underline text-lg font-semibold">GitHub</a> | <a href="https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started" class="text-blue-400 hover:underline">Documentation</a></p>
     </footer>
 
     <script>
