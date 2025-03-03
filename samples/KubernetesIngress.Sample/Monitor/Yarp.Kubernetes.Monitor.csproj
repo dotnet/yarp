@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFrameworks>$(ReleaseTFMs)</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <UserSecretsId>42f98116-26c4-4115-b6af-c5dec1f88c84</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <IsPackable>$('System.TeamProject') != 'internal'</IsPackable>
