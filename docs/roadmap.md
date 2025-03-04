@@ -6,13 +6,14 @@
 
 | Version | Release Date | Latest Patch Version | End of Support |
 | -- | -- | -- | -- |
-| [YARP 2.2](https://github.com/dotnet/yarp/releases/tag/v2.2.0) | September 3, 2024 | [2.2.0](https://github.com/dotnet/yarp/releases/tag/v2.2.0) |                  |
-| [YARP 2.1](https://github.com/dotnet/yarp/releases/tag/v2.1.0) | November 17, 2023 | [2.1.0](https://github.com/dotnet/yarp/releases/tag/v2.1.0) | March 3, 2025    |
+| [YARP 2.3](https://github.com/dotnet/yarp/releases/tag/v2.3.0) | February 27, 2025 | [2.3.0](https://github.com/dotnet/yarp/releases/tag/v2.3.0) |                  |
+| [YARP 2.2](https://github.com/dotnet/yarp/releases/tag/v2.2.0) | September 3, 2024 | [2.2.0](https://github.com/dotnet/yarp/releases/tag/v2.2.0) | August 27, 2025  |
 
 ### End-of-life YARP versions
 
 | Version | Released date | Final Patch Version | End of support |
 | -- | -- | -- | -- |
+| [YARP 2.1](https://github.com/dotnet/yarp/releases/tag/v2.1.0) | November 17, 2023 | [2.1.0](https://github.com/dotnet/yarp/releases/tag/v2.1.0) | March 3, 2025    |
 | [YARP 2.0](https://github.com/dotnet/yarp/releases/tag/v2.0.0) | February 14, 2023 | [2.0.1](https://github.com/dotnet/yarp/releases/tag/v2.0.1) | May 17, 2024     |
 | [YARP 1.1](https://github.com/dotnet/yarp/releases/tag/v1.1.0) | May 2, 2022       | [1.1.2](https://github.com/dotnet/yarp/releases/tag/v1.1.2) | August 14, 2023  |
 | [YARP 1.0](https://github.com/dotnet/yarp/releases/tag/v1.0.0) | November 9, 2021  | [1.0.1](https://github.com/dotnet/yarp/releases/tag/v1.0.1) | November 2, 2022 |
