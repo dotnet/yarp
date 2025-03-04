@@ -112,9 +112,6 @@ public interface IHttpTelemetryConsumer
     /// <param name="timestamp">Timestamp when the event was fired.</param>
     void OnResponseContentStop(DateTime timestamp) { }
 
-    // Some events were augmented in .NET 8 with more parameters.
-    // For backwards compatibility, they are implemented as DIMs that forward to older methods with fewer parameters.
-#if NET8_0_OR_GREATER
     /// <summary>
     /// Called after an HTTP request.
     /// </summary>
@@ -177,5 +174,4 @@ public interface IHttpTelemetryConsumer
     /// <param name="timestamp">Timestamp when the event was fired.</param>
     /// <param name="redirectUri">The uri the request is being redirected to.</param>
     void OnRedirect(DateTime timestamp, string redirectUri) { }
-#endif
 }

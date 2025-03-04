@@ -9,8 +9,8 @@ namespace Yarp.ReverseProxy.Configuration.RouteValidators;
 
 internal sealed class RateLimitPolicyValidator : IRouteValidator
 {
-#if NET7_0_OR_GREATER
     private readonly IYarpRateLimiterPolicyProvider _rateLimiterPolicyProvider;
+
     public RateLimitPolicyValidator(IYarpRateLimiterPolicyProvider rateLimiterPolicyProvider)
     {
         _rateLimiterPolicyProvider = rateLimiterPolicyProvider;
@@ -56,7 +56,4 @@ internal sealed class RateLimitPolicyValidator : IRouteValidator
                 ex));
         }
     }
-#else
-    public ValueTask ValidateAsync(RouteConfig routeConfig, IList<Exception> errors) => ValueTask.CompletedTask;
-#endif
 }

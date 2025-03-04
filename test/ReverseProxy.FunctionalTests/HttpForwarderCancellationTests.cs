@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Xunit;
 using Yarp.ReverseProxy.Common;
 using Yarp.ReverseProxy.Utilities;

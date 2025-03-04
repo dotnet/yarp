@@ -11,9 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-#if NET8_0_OR_GREATER
 using Microsoft.AspNetCore.Http.Timeouts;
-#endif
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -257,12 +255,10 @@ internal sealed class HttpForwarder : IHttpForwarder
             // :: Step 7-A: Check for a 101 upgrade response, this takes care of WebSockets as well as any other upgradeable protocol.
             // Also check for HTTP/2 CONNECT 200 responses, they function similarly.
             if (destinationResponse.StatusCode == HttpStatusCode.SwitchingProtocols
-#if NET7_0_OR_GREATER
                 || (destinationResponse.StatusCode == HttpStatusCode.OK
                 && destinationResponse.Version == HttpVersion.Version20
                 && destinationRequest.Headers.Protocol is not null
                 && destinationRequest.Method.Equals(HttpMethod.Connect))
-#endif
                 )
             {
                 Debug.Assert(requestContent?.Started != true);
@@ -355,14 +351,10 @@ internal sealed class HttpForwarder : IHttpForwarder
             && upgradeHeader.StartsWith("SPDY/", StringComparison.OrdinalIgnoreCase);
         var isH1WsRequest = (upgradeFeature?.IsUpgradableRequest ?? false)
             && string.Equals(WebSocketName, upgradeHeader, StringComparison.OrdinalIgnoreCase);
-        var incomingUpgrade = isSpdyRequest || isH1WsRequest;
-        var isH2WsRequest = false;
-#if NET7_0_OR_GREATER
         var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
         var connectProtocol = connectFeature?.Protocol;
-        isH2WsRequest = (connectFeature?.IsExtendedConnect ?? false)
+        var isH2WsRequest = (connectFeature?.IsExtendedConnect ?? false)
             && string.Equals(WebSocketName, connectProtocol, StringComparison.OrdinalIgnoreCase);
-#endif
 
         var outgoingHttps = destinationPrefix.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         var outgoingVersion = requestConfig?.Version ?? DefaultVersion;
@@ -380,7 +372,6 @@ internal sealed class HttpForwarder : IHttpForwarder
         {
             switch (outgoingVersion.Major, outgoingPolicy, outgoingHttps)
             {
-#if NET7_0_OR_GREATER
                 case (2, HttpVersionPolicy.RequestVersionExact, _):
                 case (2, HttpVersionPolicy.RequestVersionOrHigher, _):
                     outgoingConnect = true;
@@ -393,7 +384,6 @@ internal sealed class HttpForwarder : IHttpForwarder
                     outgoingConnect = true;
                     tryDowngradingH2WsOnFailure = true;
                     break;
-#endif
 
                 default:
                     // Override to use HTTP/1.1, nothing else is supported.
@@ -418,7 +408,6 @@ internal sealed class HttpForwarder : IHttpForwarder
             destinationRequest.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
             destinationRequest.Method = HttpMethod.Get;
         }
-#if NET7_0_OR_GREATER
         else if (outgoingConnect)
         {
             // HTTP/2 only (for now).
@@ -428,7 +417,6 @@ internal sealed class HttpForwarder : IHttpForwarder
             destinationRequest.Headers.Protocol = connectProtocol ?? WebSocketName;
             tryDowngradingH2WsOnFailure &= http1IsAllowed;
         }
-#endif
         else
         {
             Debug.Assert(http1IsAllowed || outgoingVersion.Major != 1);
@@ -539,16 +527,6 @@ internal sealed class HttpForwarder : IHttpForwarder
         {
             // 5.0 servers provide a definitive answer for us.
             hasBody = canHaveBodyFeature.CanHaveBody;
-
-#if NET7_0
-            // TODO: Kestrel 7.0 bug only, hasBody shouldn't be true for ExtendedConnect.
-            // https://github.com/dotnet/aspnetcore/issues/46002 Fixed in 8.0
-            var connectFeature = request.HttpContext.Features.Get<IHttpExtendedConnectFeature>();
-            if (connectFeature?.IsExtendedConnect == true)
-            {
-                hasBody = false;
-            }
-#endif
         }
         // https://tools.ietf.org/html/rfc7230#section-3.3.3
         // All HTTP/1.1 requests should have Transfer-Encoding or Content-Length.
@@ -750,7 +728,6 @@ internal sealed class HttpForwarder : IHttpForwarder
         Stream upgradeResult;
         try
         {
-#if NET7_0_OR_GREATER
             if (isHttp2Request)
             {
                 var connectFeature = context.Features.Get<IHttpExtendedConnectFeature>();
@@ -758,16 +735,14 @@ internal sealed class HttpForwarder : IHttpForwarder
                 upgradeResult = await connectFeature.AcceptAsync();
             }
             else
-#endif
             {
                 var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
                 Debug.Assert(upgradeFeature != null);
                 upgradeResult = await upgradeFeature.UpgradeAsync();
             }
-#if NET8_0_OR_GREATER
+
             // Disable request timeout, if there is one, after the upgrade has been accepted
             context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
-#endif
         }
         catch (Exception ex)
         {
@@ -824,7 +799,7 @@ internal sealed class HttpForwarder : IHttpForwarder
 
         return error;
 
-        ForwarderError ReportResult(HttpContext context, bool request, StreamCopyResult result, Exception exception, ActivityCancellationTokenSource activityCancellationTokenSource)
+        ForwarderError ReportResult(HttpContext context, bool request, StreamCopyResult result, Exception exception, ActivityCancellationTokenSource activityCancellationSource)
         {
             var error = result switch
             {

@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 using Yarp.ReverseProxy.Transforms;
-using Yarp.ReverseProxy.Transforms.Builder;
 using Yarp.ReverseProxy.Transforms.Builder.Tests;
 using Yarp.Tests.Common;
 

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -23,10 +22,15 @@ namespace Yarp.ReverseProxy.Forwarder;
 /// </summary>
 public static class RequestUtilities
 {
-#if NET8_0_OR_GREATER
+    // https://datatracker.ietf.org/doc/html/rfc3986/#appendix-A
+    // pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+    // pct-encoded   = "%" HEXDIG HEXDIG
+    // unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+    // reserved      = gen-delims / sub-delims
+    // gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+    // sub-delims    = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
     private static readonly SearchValues<char> s_validPathChars =
         SearchValues.Create("!$&'()*+,-./0123456789:;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz~");
-#endif
 
     /// <summary>
     /// Converts the given HTTP method (usually obtained from <see cref="HttpRequest.Method"/>)
@@ -129,7 +133,7 @@ public static class RequestUtilities
     }
 
     // This isn't using PathString.ToUriComponent() because it doesn't round trip some escape sequences the way we want.
-    private static string EncodePath(PathString path)
+    internal static string EncodePath(PathString path)
     {
         var value = path.Value;
 
@@ -139,20 +143,7 @@ public static class RequestUtilities
         }
 
         // Check if any escaping is required.
-#if NET8_0_OR_GREATER
         var indexOfInvalidChar = value.AsSpan().IndexOfAnyExcept(s_validPathChars);
-#else
-        var indexOfInvalidChar = -1;
-
-        for (var i = 0; i < value.Length; i++)
-        {
-            if (!IsValidPathChar(value[i]))
-            {
-                indexOfInvalidChar = i;
-                break;
-            }
-        }
-#endif
 
         return indexOfInvalidChar < 0
             ? value
@@ -169,7 +160,7 @@ public static class RequestUtilities
 
         while (i < value.Length)
         {
-            if (IsValidPathChar(value[i]))
+            if (s_validPathChars.Contains(value[i]))
             {
                 if (requiresEscaping)
                 {
@@ -215,46 +206,6 @@ public static class RequestUtilities
         return builder.ToString();
     }
 
-#if NET8_0_OR_GREATER
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool IsValidPathChar(char c) => s_validPathChars.Contains(c);
-#else
-    // https://datatracker.ietf.org/doc/html/rfc3986/#appendix-A
-    // pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
-    // pct-encoded   = "%" HEXDIG HEXDIG
-    // unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
-    // reserved      = gen-delims / sub-delims
-    // gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
-    // sub-delims    = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
-
-    // uint[] bits uses 1 cache line (Array info + 16 bytes)
-    // bool[] would use 3 cache lines (Array info + 128 bytes)
-    // So we use 128 bits rather than 128 bytes/bools
-    private static readonly uint[] ValidPathChars = {
-        0b_0000_0000__0000_0000__0000_0000__0000_0000, // 0x00 - 0x1F
-        0b_0010_1111__1111_1111__1111_1111__1101_0010, // 0x20 - 0x3F
-        0b_1000_0111__1111_1111__1111_1111__1111_1111, // 0x40 - 0x5F
-        0b_0100_0111__1111_1111__1111_1111__1111_1110, // 0x60 - 0x7F
-    };
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool IsValidPathChar(char c)
-    {
-        // Use local array and uint .Length compare to elide the bounds check on array access
-        var validChars = ValidPathChars;
-        var i = (int)c;
-
-        // Array is in chunks of 32 bits, so get offset by dividing by 32
-        var offset = i >> 5; // i / 32;
-        // Significant bit position is the remainder of the above calc; i % 32 => i & 31
-        var significantBit = 1u << (i & 31);
-
-        // Check offset in bounds and check if significant bit set
-        return (uint)offset < (uint)validChars.Length &&
-            ((validChars[offset] & significantBit) != 0);
-    }
-#endif
-
     // Note: HttpClient.SendAsync will end up sending the union of
     // HttpRequestMessage.Headers and HttpRequestMessage.Content.Headers.
     // We don't really care where the proxied headers appear among those 2,
@@ -288,18 +239,6 @@ public static class RequestUtilities
         else
         {
             string[] headerValues = value!;
-
-#if !NET7_0_OR_GREATER
-            // HttpClient wrongly uses comma (",") instead of semi-colon (";") as a separator for Cookie headers.
-            // To mitigate this, we concatenate them manually and put them back as a single header value.
-            // A multi-header cookie header is invalid, but we get one because of
-            // https://github.com/dotnet/aspnetcore/issues/26461
-            if (string.Equals(headerName, HeaderNames.Cookie, StringComparison.OrdinalIgnoreCase))
-            {
-                AddHeader(request, headerName, string.Join("; ", headerValues));
-                return;
-            }
-#endif
 
             foreach (var headerValue in headerValues)
             {

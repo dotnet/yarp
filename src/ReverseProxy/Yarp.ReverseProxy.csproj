@@ -7,15 +7,13 @@
     <RootNamespace>Yarp.ReverseProxy</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-    <IsAotCompatible Condition="'$(TargetFramework)' != 'net6.0'">true</IsAotCompatible>
+    <IsAotCompatible>true</IsAotCompatible>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>yarp;dotnet;reverse-proxy;aspnetcore</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="System.IO.Hashing" Version="$(SystemIOHashingVersion)" />
-    <PackageReference Include="System.Collections.Immutable" Version="$(SystemCollectionsImmutableVersion)" Condition="'$(TargetFramework)' != 'net8.0'" />
-    <PackageReference Include="Microsoft.Bcl.TimeProvider" Version="$(MicrosoftBclTimeProviderVersion)" Condition="'$(TargetFramework)' != 'net8.0'" />
   </ItemGroup>
 
   <ItemGroup>

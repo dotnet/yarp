@@ -141,13 +141,9 @@ public class ConfigurationConfigProviderTests
                 RouteId = "routeA",
                 ClusterId = "cluster1",
                 AuthorizationPolicy = "Default",
-#if NET7_0_OR_GREATER
                 RateLimiterPolicy = "Default",
-#endif
-#if NET8_0_OR_GREATER
                 TimeoutPolicy = "Default",
                 Timeout = TimeSpan.Zero,
-#endif
                 CorsPolicy = "Default",
                 Order = -1,
                 MaxRequestBodySize = -1,

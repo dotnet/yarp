@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.DotNet.XUnitExtensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -187,8 +186,6 @@ public class Expect100ContinueTests
         });
     }
 
-    // Fix was implemented in https://github.com/dotnet/runtime/pull/58548
-#if NET7_0_OR_GREATER
     [ConditionalTheory(nameof(Http2OverTlsSupported))]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http1, false)]
     [InlineData(HttpProtocols.Http2, HttpProtocols.Http2, false)]
@@ -198,7 +195,7 @@ public class Expect100ContinueTests
     [InlineData(HttpProtocols.Http2, HttpProtocols.Http2, true)]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http2, true)]
     [InlineData(HttpProtocols.Http2, HttpProtocols.Http1, true)]
-    public async Task PostExpect100_SkipRequestBodyWithUnsuccesfulResponseCode(HttpProtocols proxyProtocol, HttpProtocols destProtocol, bool useContentLength)
+    public async Task PostExpect100_SkipRequestBodyWithUnsuccessfulResponseCode(HttpProtocols proxyProtocol, HttpProtocols destProtocol, bool useContentLength)
     {
         var requestBodyTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -248,7 +245,6 @@ public class Expect100ContinueTests
             });
         });
     }
-#endif
 
     private static async Task ReadContent(Microsoft.AspNetCore.Http.HttpContext context, TaskCompletionSource<string> bodyTcs, int byteCount)
     {

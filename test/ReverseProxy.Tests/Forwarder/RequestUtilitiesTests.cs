@@ -98,7 +98,6 @@ public class RequestUtilitiesTests
     // unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
     // sub-delims    = "!" / "$" / "&" / "'" / "(" / ")" / "*" / "+" / "," / ";" / "="
     [InlineData("http://localhost/base/", "/path/!$&'()*+,;=:@/%?#[]", "?query", "http://localhost/base/path/!$&'()*+,;=:@/%25%3F%23%5B%5D?query")]
-    // #if NET6.0 [InlineData("http://localhost/base/", "/path/", "?query%4A", "http://localhost/base/path/?query%4A")] // https://github.com/dotnet/runtime/issues/58057
     // PathString should be fully un-escaped to start with and QueryString should be fully escaped.
     [InlineData("http://localhost/base/", "/path/%2F%20", "?query%20", "http://localhost/base/path/%252F%2520?query%20")]
     public void MakeDestinationAddress(string destinationPrefix, string path, string query, string expected)
@@ -128,11 +127,10 @@ public class RequestUtilitiesTests
             'a', 'b', 'c', 'd', 'e', 'f','g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
             '~'
         };
+
         foreach (var c in valids)
         {
-            var isValid = RequestUtilities.IsValidPathChar(c);
-
-            Assert.True(isValid, c.ToString());
+            Assert.Equal($"/{c}", RequestUtilities.EncodePath($"/{c}"));
         }
     }
 
@@ -146,11 +144,10 @@ public class RequestUtilitiesTests
             (char)0x10, (char)0x11, (char)0x02, (char)0x13, (char)0x14, (char)0x15, (char)0x16, (char)0x10, (char)0x17, (char)0x18, (char)0x19, (char)0x1A, (char)0x1B, (char)0x1C, (char)0x1D, (char)0x1E, (char)0x1F,
             ' ', '"', '#', '%', '<', '>', '?', '[', '\\', ']', '^', '`', '{', '|', '}'
         };
+
         foreach (var c in invalids)
         {
-            var isValid = RequestUtilities.IsValidPathChar(c);
-
-            Assert.False(isValid, c.ToString());
+            Assert.Equal($"/%{(int)c:X2}", RequestUtilities.EncodePath($"/{c}"));
         }
     }
 

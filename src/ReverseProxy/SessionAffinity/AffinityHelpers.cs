@@ -4,7 +4,6 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Yarp.ReverseProxy.Configuration;
-using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.SessionAffinity;
 

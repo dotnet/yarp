@@ -4,19 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-#if NET8_0_OR_GREATER
 using Microsoft.AspNetCore.Http.Timeouts;
-#endif
 using Microsoft.Extensions.Options;
 
 namespace Yarp.ReverseProxy.Configuration.RouteValidators;
 
 internal sealed class TimeoutPolicyValidator : IRouteValidator
 {
-#if NET8_0_OR_GREATER
     private readonly IOptionsMonitor<RequestTimeoutOptions> _timeoutOptions;
 
-  public TimeoutPolicyValidator(IOptionsMonitor<RequestTimeoutOptions> timeoutOptions)
+    public TimeoutPolicyValidator(IOptionsMonitor<RequestTimeoutOptions> timeoutOptions)
     {
         _timeoutOptions = timeoutOptions;
     }
@@ -55,8 +52,4 @@ internal sealed class TimeoutPolicyValidator : IRouteValidator
 
         return ValueTask.CompletedTask;
     }
-
-#else
-    public ValueTask ValidateAsync(RouteConfig routeConfig, IList<Exception> errors) => ValueTask.CompletedTask;
-#endif
 }

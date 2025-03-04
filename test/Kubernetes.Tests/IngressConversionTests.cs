@@ -85,12 +85,7 @@ public class IngressConversionTests
 
     private static void VerifyRoutes(string routesJson, string name)
     {
-#if NET7_0_OR_GREATER
         VerifyJson(routesJson, name, "routes.json");
-#else
-        VerifyJson(routesJson, name,
-            string.Equals("annotations", name, StringComparison.OrdinalIgnoreCase) ? "routes.net6.json" : "routes.json");
-#endif
     }
 
     private static string StripNullProperties(string json)

@@ -62,7 +62,6 @@ public sealed class HttpMetrics
     /// </summary>
     public TimeSpan Http20RequestsQueueDuration { get; internal set; }
 
-#if NET8_0_OR_GREATER
     /// <summary>
     /// Number of currently open HTTP 3.0 connections.
     /// </summary>
@@ -72,5 +71,4 @@ public sealed class HttpMetrics
     /// Average time spent on queue for HTTP 3.0 requests in the last metrics interval.
     /// </summary>
     public TimeSpan Http30RequestsQueueDuration { get; internal set; }
-#endif
 }

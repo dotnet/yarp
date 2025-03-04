@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Net.Http.Headers;
-using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.WebSocketsTelemetry;
 

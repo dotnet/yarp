@@ -9,8 +9,8 @@ namespace Yarp.ReverseProxy.Configuration.RouteValidators;
 
 internal sealed class OutputCachePolicyValidator : IRouteValidator
 {
-#if NET7_0_OR_GREATER
     private readonly IYarpOutputCachePolicyProvider _outputCachePolicyProvider;
+
     public OutputCachePolicyValidator(IYarpOutputCachePolicyProvider outputCachePolicyProvider)
     {
         _outputCachePolicyProvider = outputCachePolicyProvider;
@@ -42,7 +42,4 @@ internal sealed class OutputCachePolicyValidator : IRouteValidator
                 ex));
         }
     }
-#else
-    public ValueTask ValidateAsync(RouteConfig routeConfig, IList<Exception> errors) => ValueTask.CompletedTask;
-#endif
 }

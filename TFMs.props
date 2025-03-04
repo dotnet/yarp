@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <LatestDevTFM>net9.0</LatestDevTFM>
-    <ReleaseTFMs>net6.0;net7.0;net8.0</ReleaseTFMs>
-    <TestTFMs>net6.0;net7.0;net8.0;net9.0</TestTFMs>
+    <ReleaseTFMs>net8.0</ReleaseTFMs>
+    <TestTFMs>net8.0;net9.0</TestTFMs>
   </PropertyGroup>
 </Project>

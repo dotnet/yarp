@@ -7,9 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-#if NET8_0_OR_GREATER
 using Microsoft.AspNetCore.Http.Timeouts;
-#endif
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Moq;
@@ -124,7 +122,6 @@ public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
         Assert.Equal(StatusCodes.Status418ImATeapot, httpContext.Response.StatusCode);
     }
 
-#if NET8_0_OR_GREATER
     [Theory]
     [InlineData(1)]
     [InlineData(Timeout.Infinite)]
@@ -162,7 +159,6 @@ public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
             await Assert.ThrowsAsync<InvalidOperationException>(() => sut.Invoke(httpContext));
         }
     }
-#endif
 
     private static Endpoint CreateAspNetCoreEndpoint(RouteModel routeConfig, Action<RouteEndpointBuilder> configure = null)
     {

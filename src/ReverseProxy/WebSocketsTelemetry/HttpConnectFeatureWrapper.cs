@@ -1,15 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NET7_0_OR_GREATER
-
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.WebSocketsTelemetry;
 
@@ -42,5 +39,3 @@ internal sealed class HttpConnectFeatureWrapper : IHttpExtendedConnectFeature
         return TelemetryStream;
     }
 }
-
-#endif
