@@ -1,3 +1,6 @@
 <Project>
-  <!-- Arcade currently requires this file, though it doesn't require any content in it I believe. -->
+  <ItemGroup Label="File signing information">
+    <!-- Third-party components which should be signed.  -->
+    <FileSignInfo Include="OpenTelemetry.dll" CertificateName="3PartySHA2" />
+  </ItemGroup>
 </Project>
