@@ -1,6 +1,10 @@
 <Project>
   <ItemGroup Label="File signing information">
     <!-- Third-party components which should be signed.  -->
+    <FileSignInfo Include="HealthChecks.ApplicationStatus.dll" CertificateName="3PartySHA2" />
     <FileSignInfo Include="OpenTelemetry.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Api.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Api.ProviderBuilderExtensions.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 </Project>
