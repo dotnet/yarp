@@ -1,3 +1,15 @@
 <Project>
-  <!-- Arcade currently requires this file, though it doesn't require any content in it I believe. -->
+  <ItemGroup Label="File signing information">
+    <!-- Third-party components which should be signed.  -->
+    <FileSignInfo Include="HealthChecks.ApplicationStatus.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Api.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Api.ProviderBuilderExtensions.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Exporter.OpenTelemetryProtocol.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Extensions.Hosting.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Instrumentation.AspNetCore.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Instrumentation.GrpcNetClient.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Instrumentation.Http.dll" CertificateName="3PartySHA2" />
+    <FileSignInfo Include="OpenTelemetry.Instrumentation.Runtime.dll" CertificateName="3PartySHA2" />
+  </ItemGroup>
 </Project>
