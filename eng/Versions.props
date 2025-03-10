@@ -33,7 +33,15 @@
     <JsonSchemaNetVersion>7.0.2</JsonSchemaNetVersion>
     <!-- Container app dependencies -->
     <YarpNugetVersion>2.2.0</YarpNugetVersion>
-    <MicrosoftExtensionsServiceDiscovery>8.2.2</MicrosoftExtensionsServiceDiscovery>
-    <MicrosoftExtensionsServiceDiscoveryYarp>8.2.2</MicrosoftExtensionsServiceDiscoveryYarp>
+    <MicrosoftExtensionsServiceDiscovery>9.0.0</MicrosoftExtensionsServiceDiscovery>
+    <MicrosoftExtensionsServiceDiscoveryYarp>9.0.0</MicrosoftExtensionsServiceDiscoveryYarp>
+    <OpenTelemetryExporterOpenTelemetryProtocol>1.9.0 </OpenTelemetryExporterOpenTelemetryProtocol>
+    <OpenTelemetryExtensionsHosting>1.9.0</OpenTelemetryExtensionsHosting>
+    <OpenTelemetryInstrumentationAspNetCore>1.9.0</OpenTelemetryInstrumentationAspNetCore>
+    <OpenTelemetryInstrumentationGrpcNetClient>1.9.0-beta.1</OpenTelemetryInstrumentationGrpcNetClient>
+    <OpenTelemetryInstrumentationHttp>1.9.0</OpenTelemetryInstrumentationHttp>
+    <OpenTelemetryInstrumentationRuntime>1.9.0</OpenTelemetryInstrumentationRuntime>
+    <MicrosoftExtensionsHttpResilience>9.1.0</MicrosoftExtensionsHttpResilience>
+    <AspNetCoreHealthChecksApplicationStatus>9.0.0</AspNetCoreHealthChecksApplicationStatus>
   </PropertyGroup>
 </Project>
