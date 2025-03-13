@@ -111,7 +111,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
     {
         await _ready.WaitAsync(cancellationToken).ConfigureAwait(false);
 
-        // Release is called  after each WaitAync because
+        // Release is called after each WaitAsync because
         // the semaphore is being used as a manual reset event
         _ready.Release();
     }

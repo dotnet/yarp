@@ -154,7 +154,7 @@ internal partial class ActiveHealthCheckMonitor : IActiveHealthCheckMonitor, ICl
             }
             catch (Exception ex)
             {
-                Log.ErrorOccuredDuringActiveHealthProbingShutdownOnCluster(_logger, cluster.ClusterId, ex);
+                Log.ErrorOccurredDuringActiveHealthProbingShutdownOnCluster(_logger, cluster.ClusterId, ex);
             }
 
             Log.StoppedActiveHealthProbingOnCluster(_logger, cluster.ClusterId);

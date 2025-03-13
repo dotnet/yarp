@@ -14,7 +14,7 @@ internal class HealthyAndUnknownDestinationsPolicy : IAvailableDestinationsPolic
 {
     public virtual string Name => HealthCheckConstants.AvailableDestinations.HealthyAndUnknown;
 
-    public virtual IReadOnlyList<DestinationState> GetAvailalableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations)
+    public virtual IReadOnlyList<DestinationState> GetAvailableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations)
     {
         var availableDestinations = allDestinations;
         var activeEnabled = (config.HealthCheck?.Active?.Enabled).GetValueOrDefault();

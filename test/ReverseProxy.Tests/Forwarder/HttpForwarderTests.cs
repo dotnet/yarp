@@ -1837,7 +1837,7 @@ public class HttpForwarderTests
     }
 
     [Fact]
-    public async Task ResponseBodyDestionationErrorFirstRead_Returns502()
+    public async Task ResponseBodyDestinationErrorFirstRead_Returns502()
     {
         TestEventListener.Collect();
         TestLogger.Collect();
@@ -1870,7 +1870,7 @@ public class HttpForwarderTests
     }
 
     [Fact]
-    public async Task ResponseBodyDestionationErrorSecondRead_Aborted()
+    public async Task ResponseBodyDestinationErrorSecondRead_Aborted()
     {
         var events = TestEventListener.Collect();
         TestLogger.Collect();

@@ -54,7 +54,7 @@ public interface IForwarderTelemetryConsumer
     /// Called after transferring the request or response content.
     /// </summary>
     /// <param name="timestamp">Timestamp when the event was fired.</param>
-    /// <param name="isRequest">Indicates whether we transfered the content from the client to the backend or vice-versa.</param>
+    /// <param name="isRequest">Indicates whether we transferred the content from the client to the backend or vice-versa.</param>
     /// <param name="contentLength">Number of bytes transferred.</param>
     /// <param name="iops">Number of read/write pairs performed.</param>
     /// <param name="readTime">Time spent reading from the source.</param>

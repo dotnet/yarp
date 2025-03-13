@@ -198,7 +198,7 @@ public class HeaderTests
 
             var lines = response.Split("\r\n");
             Assert.Equal("HTTP/1.1 200 OK", lines[0]);
-            // Order varies across vesions.
+            // Order varies across versions.
             // Assert.Equal("Content-Length: 0", lines[1]);
             // Assert.Equal("Connection: close", lines[2]);
             // Assert.StartsWith("Date: ", lines[3]);

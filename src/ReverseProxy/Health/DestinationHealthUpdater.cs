@@ -98,7 +98,7 @@ internal sealed class DestinationHealthUpdater : IDestinationHealthUpdater, IDis
         if (healthState.Passive == DestinationHealth.Unhealthy)
         {
             healthState.Passive = DestinationHealth.Unknown;
-            Log.PassiveDestinationHealthResetToUnkownState(_logger, destination.DestinationId);
+            Log.PassiveDestinationHealthResetToUnknownState(_logger, destination.DestinationId);
             _clusterUpdater.UpdateAvailableDestinations(cluster);
         }
 
@@ -112,9 +112,9 @@ internal sealed class DestinationHealthUpdater : IDestinationHealthUpdater, IDis
             EventIds.UnhealthyDestinationIsScheduledForReactivation,
             "Destination `{destinationId}` marked as 'Unhealthy` by the passive health check is scheduled for a reactivation in `{reactivationPeriod}`.");
 
-        private static readonly Action<ILogger, string, Exception?> _passiveDestinationHealthResetToUnkownState = LoggerMessage.Define<string>(
+        private static readonly Action<ILogger, string, Exception?> _passiveDestinationHealthResetToUnknownState = LoggerMessage.Define<string>(
             LogLevel.Information,
-            EventIds.PassiveDestinationHealthResetToUnkownState,
+            EventIds.PassiveDestinationHealthResetToUnknownState,
             "Passive health state of the destination `{destinationId}` is reset to 'Unknown`.");
 
         private static readonly Action<ILogger, string, string, Exception?> _activeDestinationHealthStateIsSetToUnhealthy = LoggerMessage.Define<string, string>(
@@ -142,9 +142,9 @@ internal sealed class DestinationHealthUpdater : IDestinationHealthUpdater, IDis
             _unhealthyDestinationIsScheduledForReactivation(logger, destinationId, reactivationPeriod, null);
         }
 
-        public static void PassiveDestinationHealthResetToUnkownState(ILogger logger, string destinationId)
+        public static void PassiveDestinationHealthResetToUnknownState(ILogger logger, string destinationId)
         {
-            _passiveDestinationHealthResetToUnkownState(logger, destinationId, null);
+            _passiveDestinationHealthResetToUnknownState(logger, destinationId, null);
         }
     }
 }

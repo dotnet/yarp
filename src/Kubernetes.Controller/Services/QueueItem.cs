@@ -16,7 +16,7 @@ public struct QueueItem : IEquatable<QueueItem>
     }
 
     /// <summary>
-    /// This identifies that a change has occured and either configuration requires to be rebuilt, or needs to be dispatched.
+    /// This identifies that a change has occurred and either configuration requires to be rebuilt, or needs to be dispatched.
     /// </summary>
     public string Change { get; }
 

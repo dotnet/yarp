@@ -11,9 +11,9 @@ internal sealed class HealthyOrPanicDestinationsPolicy : HealthyAndUnknownDestin
 {
     public override string Name => HealthCheckConstants.AvailableDestinations.HealthyOrPanic;
 
-    public override IReadOnlyList<DestinationState> GetAvailalableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations)
+    public override IReadOnlyList<DestinationState> GetAvailableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations)
     {
-        var availableDestinations = base.GetAvailalableDestinations(config, allDestinations);
+        var availableDestinations = base.GetAvailableDestinations(config, allDestinations);
         return availableDestinations.Count > 0 ? availableDestinations : allDestinations;
     }
 }
