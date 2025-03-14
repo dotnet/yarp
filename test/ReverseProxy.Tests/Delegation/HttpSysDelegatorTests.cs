@@ -109,7 +109,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
     }
 
     [Fact]
-    public void DelegateRequest_DelegationRuleNotFound_Verify503SatusAndErrorFeatureSet()
+    public void DelegateRequest_DelegationRuleNotFound_Verify503StatusAndErrorFeatureSet()
     {
         var destination = CreateDestination("dest1", "queue1");
         var cluster = CreateCluster("cluster1", destination);
@@ -120,7 +120,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
     }
 
     [Fact]
-    public void DelegateRequest_CreateRuleFailed_Verify503SatusAndErrorFeatureSet()
+    public void DelegateRequest_CreateRuleFailed_Verify503StatusAndErrorFeatureSet()
     {
         var destination = CreateDestination("dest1", "queue1");
         var cluster = CreateCluster("cluster1", destination);

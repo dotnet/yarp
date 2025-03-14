@@ -207,7 +207,7 @@ public class NamespaceCache
 
     public bool TryLookup(NamespacedName key, out ReconcileData data)
     {
-        var endspointsList = new List<Endpoints>();
+        var endpointsList = new List<Endpoints>();
         var servicesList = new List<ServiceData>();
 
         lock (_sync)
@@ -229,7 +229,7 @@ public class NamespaceCache
 
                     if (_endpointsData.TryGetValue(serviceName, out var endpoints))
                     {
-                        endspointsList.Add(endpoints);
+                        endpointsList.Add(endpoints);
                     }
                 }
             }
@@ -240,7 +240,7 @@ public class NamespaceCache
                 return false;
             }
 
-            data = new ReconcileData(ingress, servicesList, endspointsList);
+            data = new ReconcileData(ingress, servicesList, endpointsList);
             return true;
         }
     }

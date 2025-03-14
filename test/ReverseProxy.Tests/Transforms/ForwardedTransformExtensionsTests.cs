@@ -13,7 +13,7 @@ using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.Transforms.Tests;
 
-public class ForwardedTransformExtensionsTests : TransformExtentionsTestsBase
+public class ForwardedTransformExtensionsTests : TransformExtensionsTestsBase
 {
     private readonly ForwardedTransformFactory _factory = new ForwardedTransformFactory(new TestRandomFactory());
 

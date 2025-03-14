@@ -171,7 +171,7 @@ internal abstract class EventListenerService<TService, TTelemetryConsumer, TMetr
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex, "Uncaught exception occured while processing metrics for EventSource {EventSourceName}", EventSourceName);
+                            _logger.LogError(ex, "Uncaught exception occurred while processing metrics for EventSource {EventSourceName}", EventSourceName);
                         }
                     }
                 }

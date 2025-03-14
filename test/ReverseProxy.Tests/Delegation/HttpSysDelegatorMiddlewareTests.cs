@@ -84,7 +84,7 @@ public class HttpSysDelegatorMiddlewareTests : TestAutoMockBase
     }
 
     [Fact]
-    public async Task MultipleDestinations_OneDelegationAndOneProxyDestination_ProxyChoosen_VerifyNextInvokedWithSingleProxyDestination()
+    public async Task MultipleDestinations_OneDelegationAndOneProxyDestination_ProxyChosen_VerifyNextInvokedWithSingleProxyDestination()
     {
         var destination1 = CreateDestination("dest1", "queue1");
         var destination2 = CreateDestination("dest2", queueName: null);
@@ -104,7 +104,7 @@ public class HttpSysDelegatorMiddlewareTests : TestAutoMockBase
     }
 
     [Fact]
-    public async Task MultipleDestinations_OneDelegationAndOneProxyDestination_DelegationChoosen_VerifyProxiedDestinationSetAndNextNotCalled()
+    public async Task MultipleDestinations_OneDelegationAndOneProxyDestination_DelegationChosen_VerifyProxiedDestinationSetAndNextNotCalled()
     {
         var destination1 = CreateDestination("dest1", "queue1");
         var destination2 = CreateDestination("dest2", queueName: null);

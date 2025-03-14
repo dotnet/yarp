@@ -548,9 +548,9 @@ public class WebSocketTests
         return new TestEnvironment()
         {
             TestOutput = _output,
-            ConfigureDestinationServices = destinationServies =>
+            ConfigureDestinationServices = destinationServices =>
             {
-                destinationServies.AddRouting();
+                destinationServices.AddRouting();
             },
             ConfigureDestinationApp = destinationApp =>
             {

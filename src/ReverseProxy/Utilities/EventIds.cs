@@ -15,7 +15,7 @@ internal static class EventIds
     public static readonly EventId Forwarding = new EventId(9, "Forwarding");
     public static readonly EventId ExplicitActiveCheckOfAllClustersHealthFailed = new EventId(10, "ExplicitActiveCheckOfAllClustersHealthFailed");
     public static readonly EventId ActiveHealthProbingFailedOnCluster = new EventId(11, "ActiveHealthProbingFailedOnCluster");
-    public static readonly EventId ErrorOccuredDuringActiveHealthProbingShutdownOnCluster = new EventId(12, "ErrorOccuredDuringActiveHealthProbingShutdownOnCluster");
+    public static readonly EventId ErrorOccurredDuringActiveHealthProbingShutdownOnCluster = new EventId(12, "ErrorOccurredDuringActiveHealthProbingShutdownOnCluster");
     public static readonly EventId ActiveHealthProbeConstructionFailedOnCluster = new EventId(13, "ActiveHealthProbeConstructionFailedOnCluster");
     public static readonly EventId StartingActiveHealthProbingOnCluster = new EventId(14, "StartingActiveHealthProbingOnCluster");
     public static readonly EventId StoppedActiveHealthProbingOnCluster = new EventId(15, "StoppedActiveHealthProbingOnCluster");
@@ -23,7 +23,7 @@ internal static class EventIds
     public static readonly EventId DestinationProbingFailed = new EventId(17, "DestinationActiveProbingFailed");
     public static readonly EventId SendingHealthProbeToEndpointOfDestination = new EventId(18, "SendingHealthProbeToEndpointOfDestination");
     public static readonly EventId UnhealthyDestinationIsScheduledForReactivation = new EventId(19, "UnhealthyDestinationIsScheduledForReactivation");
-    public static readonly EventId PassiveDestinationHealthResetToUnkownState = new EventId(20, "PassiveDestinationHealthResetToUnkownState");
+    public static readonly EventId PassiveDestinationHealthResetToUnknownState = new EventId(20, "PassiveDestinationHealthResetToUnknownState");
     public static readonly EventId ClusterAdded = new EventId(21, "ClusterAdded");
     public static readonly EventId ClusterChanged = new EventId(22, "ClusterChanged");
     public static readonly EventId ClusterRemoved = new EventId(23, "ClusterRemoved");

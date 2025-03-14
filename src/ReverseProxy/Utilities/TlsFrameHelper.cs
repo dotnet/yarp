@@ -67,7 +67,7 @@ public enum TlsAlertDescription : byte
     DecryptError = 51, // error
     ExportRestriction = 60, // reserved
     ProtocolVersion = 70, // error
-    InsuffientSecurity = 71, // error
+    InsufficientSecurity = 71, // error
     InternalError = 80, // error
     UserCanceled = 90, // warning or error
     NoRenegotiation = 100, // warning
@@ -77,7 +77,7 @@ public enum TlsAlertDescription : byte
 public enum ExtensionType : ushort
 {
     ServerName = 0,
-    MaximumFagmentLength = 1,
+    MaximumFragmentLength = 1,
     ClientCertificateUrl = 2,
     TrustedCaKeys = 3,
     TruncatedHmac = 4,
@@ -225,7 +225,7 @@ public static class TlsFrameHelper
                     // max frame for SSLv2 is 32767.
                     // However, we expect something reasonable for initial HELLO
                     // We don't have enough logic to verify full validity,
-                    // the limits bellow are queses.
+                    // the limits below are guesses.
                     if (length > 20 && length < 1000)
                     {
 #pragma warning disable CS0618 // Ssl2 and Ssl3 are obsolete
@@ -712,7 +712,7 @@ public static class TlsFrameHelper
             return false;
         }
 
-        // Get list of protocols we support.I nore the rest.
+        // Get list of protocols we support. Ignore the rest.
         while (extensionData.Length >= VersionLength)
         {
             if (extensionData[ProtocolVersionMajorOffset] == ProtocolVersionTlsMajorValue)

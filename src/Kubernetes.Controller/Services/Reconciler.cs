@@ -53,7 +53,7 @@ public partial class Reconciler : IReconciler
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Uncaught exception occured while reconciling ingress {IngressNamespace}/{IngressName}", ingress.Metadata.NamespaceProperty, ingress.Metadata.Name);
+                    _logger.LogWarning(ex, "Uncaught exception occurred while reconciling ingress {IngressNamespace}/{IngressName}", ingress.Metadata.NamespaceProperty, ingress.Metadata.Name);
                 }
             }
 
@@ -67,7 +67,7 @@ public partial class Reconciler : IReconciler
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Uncaught exception occured while reconciling");
+            _logger.LogWarning(ex, "Uncaught exception occurred while reconciling");
             throw;
         }
     }

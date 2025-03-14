@@ -11,11 +11,11 @@ The subsystems are:
     - Number of requests started
     - Number of request in flight
     - Number of requests that have failed
-- **Kestrel** which is the web server that handles incomming requests. Metrics include:
+- **Kestrel** which is the web server that handles incoming requests. Metrics include:
     - Connection Rate - how many connections are opened a second
     - Total number of connections
     - Number of TLS handshakes
-    - Incomming queue lengths
+    - Incoming queue lengths
 - **Http** which is the HttpClient which makes outgoing requests to the destination servers. Metrics include:
     - Number of outgoing requests started
     - Number of Requests failed
@@ -42,7 +42,7 @@ The subsystems are:
 - **HttpLoadApp**
   - A simple app that uses HttpClient to create load against the 5 default routes defined by the proxy sample
 - **run10destinations**
-  - Scripts for Windows & Linux that will start the sample server listening to endoints http://localhost:10000 to http://localhost:10009
+  - Scripts for Windows & Linux that will start the sample server listening to endpoints http://localhost:10000 to http://localhost:10009
 - **prometheus.yml**
   - A sample config file for Prometheus that includes polling from http://localhost:5000/metrics for the results from the server. 
 

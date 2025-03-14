@@ -12,7 +12,7 @@ public class DestinationStateTests
     [Fact]
     public void DestinationInfoEnumerator()
     {
-        var destinationInfo = new DestinationState("destionation1");
+        var destinationInfo = new DestinationState("destination1");
         var list = new List<DestinationState>();
 
         foreach (var item in destinationInfo)
@@ -25,9 +25,9 @@ public class DestinationStateTests
     }
 
     [Fact]
-    public void DestionationInfoReadOnlyList()
+    public void DestinationInfoReadOnlyList()
     {
-        var destinationInfo = new DestinationState("destionation2");
+        var destinationInfo = new DestinationState("destination2");
 
         IReadOnlyList<DestinationState> list = destinationInfo;
 

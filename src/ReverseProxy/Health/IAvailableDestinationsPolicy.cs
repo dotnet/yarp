@@ -23,5 +23,5 @@ public interface IAvailableDestinationsPolicy
     /// <param name="config">Target cluster.</param>
     /// <param name="allDestinations">All destinations configured for the target cluster.</param>
     /// <returns></returns>
-    IReadOnlyList<DestinationState> GetAvailalableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations);
+    IReadOnlyList<DestinationState> GetAvailableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations);
 }

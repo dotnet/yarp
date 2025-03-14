@@ -40,7 +40,7 @@ internal sealed class WebSocketsScenario : IScenario
             var message = await client.ReceiveAsync(buffer, cancellation);
             if (message.MessageType != WebSocketMessageType.Text)
             {
-                throw new Exception($"Expected to receive a text message, got '{message.MessageType}' intead.");
+                throw new Exception($"Expected to receive a text message, got '{message.MessageType}' instead.");
             }
 
             if (!message.EndOfMessage)
@@ -74,7 +74,7 @@ internal sealed class WebSocketsScenario : IScenario
             var message = await client.ReceiveAsync(buffer, cancellation);
             if (message.MessageType != WebSocketMessageType.Binary)
             {
-                throw new Exception($"Expected to receive a text message, got '{message.MessageType}' intead.");
+                throw new Exception($"Expected to receive a text message, got '{message.MessageType}' instead.");
             }
 
             if (!message.EndOfMessage)

@@ -20,10 +20,10 @@ internal partial class ActiveHealthCheckMonitor
             EventIds.ActiveHealthProbingFailedOnCluster,
             "Active health probing failed on cluster `{clusterId}`.");
 
-        private static readonly Action<ILogger, string, Exception> _errorOccuredDuringActiveHealthProbingShutdownOnCluster = LoggerMessage.Define<string>(
+        private static readonly Action<ILogger, string, Exception> _errorOccurredDuringActiveHealthProbingShutdownOnCluster = LoggerMessage.Define<string>(
             LogLevel.Error,
-            EventIds.ErrorOccuredDuringActiveHealthProbingShutdownOnCluster,
-            "An error occured during shutdown of an active health probing on cluster `{clusterId}`.");
+            EventIds.ErrorOccurredDuringActiveHealthProbingShutdownOnCluster,
+            "An error occurred during shutdown of an active health probing on cluster `{clusterId}`.");
 
         private static readonly Action<ILogger, string, string, Exception> _activeHealthProbeConstructionFailedOnCluster = LoggerMessage.Define<string, string>(
             LogLevel.Error,
@@ -65,9 +65,9 @@ internal partial class ActiveHealthCheckMonitor
             _activeHealthProbingFailedOnCluster(logger, clusterId, ex);
         }
 
-        public static void ErrorOccuredDuringActiveHealthProbingShutdownOnCluster(ILogger logger, string clusterId, Exception ex)
+        public static void ErrorOccurredDuringActiveHealthProbingShutdownOnCluster(ILogger logger, string clusterId, Exception ex)
         {
-            _errorOccuredDuringActiveHealthProbingShutdownOnCluster(logger, clusterId, ex);
+            _errorOccurredDuringActiveHealthProbingShutdownOnCluster(logger, clusterId, ex);
         }
 
         public static void ActiveHealthProbeConstructionFailedOnCluster(ILogger logger, string destinationId, string clusterId, Exception ex)

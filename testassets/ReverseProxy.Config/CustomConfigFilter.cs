@@ -32,7 +32,7 @@ public sealed class CustomConfigFilter : IProxyConfigFilter
             };
         }
 
-        // Or wrap the meatadata in config sugar
+        // Or wrap the metadata in config sugar
         var config = new ConfigurationBuilder().AddInMemoryCollection(cluster.Metadata).Build();
         if (config.GetValue<bool>("CustomHealth"))
         {

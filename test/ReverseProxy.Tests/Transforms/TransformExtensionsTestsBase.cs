@@ -8,7 +8,7 @@ using Yarp.ReverseProxy.Transforms.Builder;
 
 namespace Yarp.ReverseProxy.Transforms.Tests;
 
-public abstract class TransformExtentionsTestsBase
+public abstract class TransformExtensionsTestsBase
 {
     protected static TransformBuilderContext CreateBuilderContext(IServiceProvider services = null) => new()
     {
