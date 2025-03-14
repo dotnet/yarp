@@ -32,7 +32,7 @@
     <KubernetesClientVersion>15.0.1</KubernetesClientVersion>
     <JsonSchemaNetVersion>7.0.2</JsonSchemaNetVersion>
     <!-- Container app dependencies -->
-    <YarpNugetVersion>2.2.0</YarpNugetVersion>
+    <YarpNugetVersion>2.3.0</YarpNugetVersion>
     <MicrosoftExtensionsServiceDiscovery>8.2.2</MicrosoftExtensionsServiceDiscovery>
     <MicrosoftExtensionsServiceDiscoveryYarp>8.2.2</MicrosoftExtensionsServiceDiscoveryYarp>
   </PropertyGroup>
