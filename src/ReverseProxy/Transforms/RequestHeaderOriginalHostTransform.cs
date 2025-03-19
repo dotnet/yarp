@@ -21,7 +21,7 @@ public class RequestHeaderOriginalHostTransform : RequestTransform
     /// <summary>
     /// Creates a new <see cref="RequestHeaderOriginalHostTransform"/>.
     /// </summary>
-    /// <param name="useOriginalHost">True of the original request host header should be used,
+    /// <param name="useOriginalHost">True if the original request host header should be used,
     /// false otherwise.</param>
     private RequestHeaderOriginalHostTransform(bool useOriginalHost)
     {
