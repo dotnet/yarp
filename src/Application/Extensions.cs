@@ -28,15 +28,6 @@ public static class Extensions
 
         builder.Services.AddServiceDiscovery();
 
-        builder.Services.ConfigureHttpClientDefaults(http =>
-        {
-            // Turn on resilience by default
-            http.AddStandardResilienceHandler();
-
-            // Turn on service discovery by default
-            http.AddServiceDiscovery();
-        });
-
         return builder;
     }
 
@@ -59,7 +50,6 @@ public static class Extensions
             .WithTracing(tracing =>
             {
                 tracing.AddAspNetCoreInstrumentation()
-                    .AddGrpcClientInstrumentation()
                     .AddHttpClientInstrumentation()
                     .AddOtlpExporter();
             });
@@ -76,7 +66,7 @@ public static class Extensions
         if (useOtlpExporter)
         {
 
-            if (string.Equals(Environment.GetEnvironmentVariable("YARP_UNSAFE_SKIP_OLTP_CERT_VALIDATION"), "true", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(Environment.GetEnvironmentVariable("YARP_UNSAFE_OLTP_CERT_ACCEPT_ANY_SERVER_CERTIFICATE"), "true", StringComparison.InvariantCultureIgnoreCase))
             {
                 // We cannot use UseOtlpExporter() since it doesn't support configuration via OtlpExporterOptions
                 // https://github.com/open-telemetry/opentelemetry-dotnet/issues/5802
