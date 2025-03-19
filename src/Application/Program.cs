@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 // Load configuration
 if (args.Length != 1)
@@ -23,6 +24,7 @@ var builder = WebApplication.CreateBuilder();
 builder.Configuration.AddJsonFile(fileInfo.FullName, optional: false, reloadOnChange: true);
 
 // Configure YARP
+builder.AddServiceDefaults();
 builder.Services.AddServiceDiscovery();
 builder.Services.AddReverseProxy()
                 .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))

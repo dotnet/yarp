@@ -16,6 +16,13 @@
     <PackageReference Include="Yarp.ReverseProxy" Version="$(YarpNugetVersion)" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftExtensionsServiceDiscovery)" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="$(MicrosoftExtensionsServiceDiscoveryYarp)" />
+
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="$(OpenTelemetryExporterOpenTelemetryProtocol)" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="$(OpenTelemetryExtensionsHosting)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="$(OpenTelemetryInstrumentationAspNetCore)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttp)" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntime)" />
+    <PackageReference Include="AspNetCore.HealthChecks.ApplicationStatus" Version="$(AspNetCoreHealthChecksApplicationStatus)" />
   </ItemGroup>
 
 </Project>
