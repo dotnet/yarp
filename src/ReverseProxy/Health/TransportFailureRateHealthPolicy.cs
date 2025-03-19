@@ -17,7 +17,7 @@ namespace Yarp.ReverseProxy.Health;
 /// Calculates the proxied requests failure rate for each destination and marks it as unhealthy if the specified limit is exceeded.
 /// </summary>
 /// <remarks>
-/// Rate is calculated as a percentage of failured requests to the total number of request proxied to a destination in the given period of time. Failed and total counters are tracked
+/// Rate is calculated as a percentage of failed requests to the total number of request proxied to a destination in the given period of time. Failed and total counters are tracked
 /// in a sliding time window which means that only the recent readings fitting in the window are taken into account. The window is implemented as a linked-list of timestamped records
 /// where each record contains the difference from the previous one in the number of failed and total requests. Additionally, there are 2 destination-wide counters storing aggregated values
 /// to enable a fast calculation of the current failure rate. When a new proxied request is reported, its status firstly affects those 2 aggregated counters and then also gets put

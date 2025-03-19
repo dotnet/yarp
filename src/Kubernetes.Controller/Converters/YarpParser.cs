@@ -294,7 +294,7 @@ internal static class YarpParser
         // CORS
         // GRPC
         // HTTP2
-        // Conneciton limits
+        // Connection limits
         // rate limits
 
         // backend health checks.

@@ -345,11 +345,11 @@
                           },
                           "Set": {
                             "type": "string",
-                            "description": "Name of the route paramter to set the query parameter to."
+                            "description": "Name of the route parameter to set the query parameter to."
                           },
                           "Append": {
                             "type": "string",
-                            "description": "Name of the route paramter to append to the query parameter."
+                            "description": "Name of the route parameter to append to the query parameter."
                           }
                         },
                         "additionalProperties": false,

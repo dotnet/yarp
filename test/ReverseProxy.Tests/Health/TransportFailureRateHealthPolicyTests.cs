@@ -189,7 +189,7 @@ public class TransportFailureRateHealthPolicyTests
         // Initial state
         Assert.All(cluster.Destinations.Values, d => Assert.Equal(DestinationHealth.Unknown, d.Health.Passive));
 
-        // Initial sucessful requests
+        // Initial successful requests
         for (var i = 0; i < 2; i++)
         {
             policy.RequestProxied(new DefaultHttpContext(), cluster, cluster.Destinations.Values.Skip(1).First());

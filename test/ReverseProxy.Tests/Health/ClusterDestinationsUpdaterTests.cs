@@ -97,7 +97,7 @@ public class ClusterDestinationsUpdaterTests
 
         public string Name { get; }
 
-        public IReadOnlyList<DestinationState> GetAvailalableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations)
+        public IReadOnlyList<DestinationState> GetAvailableDestinations(ClusterConfig config, IReadOnlyList<DestinationState> allDestinations)
         {
             IsCalled = true;
             TakenDestinations = allDestinations;

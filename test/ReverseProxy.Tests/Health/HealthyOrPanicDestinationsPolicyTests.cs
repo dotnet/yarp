@@ -23,7 +23,7 @@ public class HealthyOrPanicDestinationsPolicyTests
         };
         var policy = new HealthyOrPanicDestinationsPolicy();
 
-        var availableDestinations = policy.GetAvailalableDestinations(cluster, allDestinations);
+        var availableDestinations = policy.GetAvailableDestinations(cluster, allDestinations);
 
         Assert.Equal(3, availableDestinations.Count);
         Assert.Same(allDestinations[0], availableDestinations[0]);
@@ -45,7 +45,7 @@ public class HealthyOrPanicDestinationsPolicyTests
         };
         var policy = new HealthyOrPanicDestinationsPolicy();
 
-        var availableDestinations = policy.GetAvailalableDestinations(cluster, allDestinations);
+        var availableDestinations = policy.GetAvailableDestinations(cluster, allDestinations);
 
         Assert.Equal(4, availableDestinations.Count);
         Assert.Same(allDestinations[0], availableDestinations[0]);

@@ -17,7 +17,7 @@ The following samples are provided:
 | [Basic Yarp Sample](BasicYarpSample) | A simple sample that shows how to add YARP to the empty ASP.NET sample to create a fully functioning reverse proxy. | 
 | [Configuration](ReverseProxy.Config.Sample) | Shows all the options that are available in the YARP config file |
 | [Minimal](ReverseProxy.Minimal.Sample) | Shows a minimal config-based YARP application using .NET 6's [Minimal Hosting for ASP.NET Core](https://devblogs.microsoft.com/aspnet/asp-net-core-updates-in-net-6-preview-4/#introducing-minimal-apis) |
-| [Http.sys Delegation](ReverseProxy.HttpSysDelegation.Sample) | Shows an example of using YARP to do Http.sys queue delegation in addtion to proxying. |
+| [Http.sys Delegation](ReverseProxy.HttpSysDelegation.Sample) | Shows an example of using YARP to do Http.sys queue delegation in addition to proxying. |
 | [Transforms](ReverseProxy.Transforms.Sample) | Shows how to transform headers as part of the proxy operation | 
 | [Code extensibility](ReverseProxy.Code.Sample) | Shows how you can extend YARP using a custom configuration provider, and a middleware component as part of the YARP pipeline |
 | [Authentication & Authorization](ReverseProxy.Auth.Sample) | Shows how to add authentication and authorization for routes to the proxy |

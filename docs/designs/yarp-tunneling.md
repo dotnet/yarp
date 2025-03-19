@@ -8,7 +8,7 @@ While many organizations are moving their computing to the cloud, there are occa
 
 If all that the cloud needs to access is resources that are exposed over http, then a simpler solution is to have a gateway that can route traffic to the remote resource. Additionally, outbound connections over http(s) are not usually blocked, so having a on-prem gateway make an outbound connection to the cloud, is the easiest way to establish the route. This is the basis behind the [Azure Relay](https://learn.microsoft.com/azure/azure-relay/relay-what-is-it) service offering.
 
-That is the principle of the tunnel feature for YARP. You operate two instances of the YARP proxy service, configured as a tunnel. The advantage over Azure Relay is that using a reverse proxy as an on-prem gateway means that both cloud and back end services can be used without needing to update the application other than addresses. This is particularly useful for services that may have been written by a 3rd party, or are no longer under active development, and so making changes to the configuration is complicated and expensive. Relay requires the sender and reciever to be updated to use its connection protocol.
+That is the principle of the tunnel feature for YARP. You operate two instances of the YARP proxy service, configured as a tunnel. The advantage over Azure Relay is that using a reverse proxy as an on-prem gateway means that both cloud and back end services can be used without needing to update the application other than addresses. This is particularly useful for services that may have been written by a 3rd party, or are no longer under active development, and so making changes to the configuration is complicated and expensive. Relay requires the sender and receiver to be updated to use its connection protocol.
 
 ![Tunnel diagram](https://github.com/assets/95136/52d7491b-6e8a-4a2c-a51d-0734b3e41930)
 
@@ -42,7 +42,7 @@ The Front End should keep the WSS connection alive by sending pings every 30s if
 | back-end | Routes | The back-end needs to have routes defined that will direct traffic to local resources. |
 
 ## front-end 
-The front-end is the proxy that will be called by clients to be able to access resources via the back-end proxy. It will route traffic over a tunnel created using a WSS connection from the back-end proxy. YARP needs a mechanism to know which requests will be routed via the tunnel. This will be achived by extending the existing cluster concept in YARP - The request to create a tunnel will specify the name of a cluster. Once the tunnel is established, it will be treated as a dynmamically created destination for the named cluster. Routes will not need to be changed, they will point at the cluster, and the tunnels will be used in the same way as destinations. 
+The front-end is the proxy that will be called by clients to be able to access resources via the back-end proxy. It will route traffic over a tunnel created using a WSS connection from the back-end proxy. YARP needs a mechanism to know which requests will be routed via the tunnel. This will be achieved by extending the existing cluster concept in YARP - The request to create a tunnel will specify the name of a cluster. Once the tunnel is established, it will be treated as a dynmamically created destination for the named cluster. Routes will not need to be changed, they will point at the cluster, and the tunnels will be used in the same way as destinations. 
 
 Tunnel services must be enabled by the proxy server:
 
@@ -188,7 +188,7 @@ In a large deployment, there needs to be the ability to have multiple front-end 
 
 ## Authentication
 
-The authentcation options for ASP.NET are diverse, and IT departments will likely have their own conditions on what is required to be able to secure a tunnel. So rather than trying to implement the combinatorial matrix of what customers could need, we should use a callback so that the proxy author can decide.
+The authentication options for ASP.NET are diverse, and IT departments will likely have their own conditions on what is required to be able to secure a tunnel. So rather than trying to implement the combinatorial matrix of what customers could need, we should use a callback so that the proxy author can decide.
 
 Samples should be created that show best practices using a secure mechanism such as client a certificate.
 
@@ -204,7 +204,7 @@ The purpose of the tunnel is to simplify service exposure by creating a tunnel t
 
 ## Metrics
 
-? What telemery and events are needed for this?
+? What telemetry and events are needed for this?
 
 ## Error conditions
 

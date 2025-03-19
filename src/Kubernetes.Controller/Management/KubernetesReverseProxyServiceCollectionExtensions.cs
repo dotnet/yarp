@@ -66,7 +66,7 @@ public static class KubernetesReverseProxyServiceCollectionExtensions
     /// Adds the dispatching controller that allows a Yarp "Ingress" application to monitor for changes.
     /// </summary>
     /// <param name="builder">The MVC builder.</param>
-    /// <returns>Rhe same <see cref="IMvcBuilder"/> for chaining.</returns>
+    /// <returns>The same <see cref="IMvcBuilder"/> for chaining.</returns>
     public static IMvcBuilder AddKubernetesDispatchController(this IMvcBuilder builder)
     {
         return builder.AddApplicationPart(typeof(DispatchController).Assembly);

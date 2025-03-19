@@ -20,7 +20,7 @@ The configuration shows two routes and two clusters:
     - It includes [session affinity](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/session-affinity) using a cookie which will ensure subsequent requests from the same client go to the same host.
     - It is configured to have both active and passive [health checks](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/dests-health-checks) - note the second destination will timeout for active checks (unless you have a host with that IP on your network)
     - It includes [HttpClient configuration](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/http-client-config) setting outbound connection properties
-    - HttpRequest properties defaulting to HTTP/2 with a 2min timout
+    - HttpRequest properties defaulting to HTTP/2 with a 2min timeout
 
 The other files in the sample are the same as the getting started instructions.
 
