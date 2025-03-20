@@ -33,52 +33,40 @@ public static class Extensions
 
     public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
     {
-        builder.Logging.AddOpenTelemetry(logging =>
-        {
-            logging.IncludeFormattedMessage = true;
-            logging.IncludeScopes = true;
-        });
-
-        builder.Services.AddOpenTelemetry()
-            .WithMetrics(metrics =>
-            {
-                metrics.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation()
-                    .SetExemplarFilter(ExemplarFilterType.TraceBased);
-            })
-            .WithTracing(tracing =>
-            {
-                tracing.AddAspNetCoreInstrumentation()
-                    .AddHttpClientInstrumentation()
-                    .AddOtlpExporter();
-            });
-
-        builder.AddOpenTelemetryExporters();
-
-        return builder;
-    }
-
-    private static TBuilder AddOpenTelemetryExporters<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
-    {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
         if (useOtlpExporter)
         {
+            builder.Logging.AddOpenTelemetry(logging =>
+            {
+                logging.IncludeFormattedMessage = true;
+                logging.IncludeScopes = true;
+            });
+
+            var telemetryBuilder = builder.Services.AddOpenTelemetry();
+
+            telemetryBuilder
+                .WithLogging(logging => logging.AddOtlpExporter())
+                .WithMetrics(metrics =>
+                {
+                    metrics.AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation()
+                        .AddRuntimeInstrumentation()
+                        .SetExemplarFilter(ExemplarFilterType.TraceBased)
+                        .AddOtlpExporter();
+                })
+                .WithTracing(tracing =>
+                {
+                    tracing.AddAspNetCoreInstrumentation()
+                        .AddHttpClientInstrumentation()
+                        .AddOtlpExporter();
+                });
 
             if (string.Equals(Environment.GetEnvironmentVariable("YARP_UNSAFE_OLTP_CERT_ACCEPT_ANY_SERVER_CERTIFICATE"), "true", StringComparison.InvariantCultureIgnoreCase))
             {
                 // We cannot use UseOtlpExporter() since it doesn't support configuration via OtlpExporterOptions
                 // https://github.com/open-telemetry/opentelemetry-dotnet/issues/5802
                 builder.Services.Configure<OtlpExporterOptions>(ConfigureOtlpExporterOptions);
-                builder.Services.AddOpenTelemetry()
-                    .WithLogging(logging => logging.AddOtlpExporter())
-                    .WithMetrics(metrics => metrics.AddOtlpExporter())
-                    .WithTracing(tracing => tracing.AddOtlpExporter());
-            }
-            else
-            {
-                builder.Services.AddOpenTelemetry().UseOtlpExporter();
             }
         }
 
