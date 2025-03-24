@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Yarp.ReverseProxy.Common;
 
-internal sealed class TestLogger(ILogger xunitLogger, string categoryName) : ILogger
+public sealed class TestLogger(ILogger xunitLogger, string categoryName) : ILogger
 {
     public record LogEntry(string CategoryName, LogLevel LogLevel, EventId EventId, string Message, Exception Exception);
 

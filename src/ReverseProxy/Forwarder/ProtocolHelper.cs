@@ -68,13 +68,20 @@ internal static class ProtocolHelper
     /// </summary>
     internal static string CreateSecWebSocketAccept(string? key)
     {
-        Debug.Assert(CheckSecWebSocketKey(key)); // This should have already been validated elsewhere.
+        if (!CheckSecWebSocketKey(key))
+        {
+            // This could happen if a custom message handler modified headers incorrectly.
+            Debug.Fail("This should have already been validated elsewhere");
+            throw new InvalidOperationException("Unexpected Sec-WebSocket-Key header format.");
+        }
+
         // GUID appended by the server as part of the security key response.  Defined in the RFC.
         var wsServerGuidBytes = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"u8;
         Span<byte> bytes = stackalloc byte[24 /* Base64 guid length */ + wsServerGuidBytes.Length];
 
         // Get the corresponding ASCII bytes for seckey+wsServerGuidBytes
         var encodedSecKeyLength = Encoding.ASCII.GetBytes(key, bytes);
+        Debug.Assert(encodedSecKeyLength == 24);
         wsServerGuidBytes.CopyTo(bytes.Slice(encodedSecKeyLength));
 
         // Hash the seckey+wsServerGuidBytes bytes

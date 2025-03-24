@@ -676,6 +676,11 @@ public class ConfigurationConfigProviderTests
 
         foreach (string file in Directory.EnumerateFiles(repoRoot, "*.json", SearchOption.AllDirectories))
         {
+            if (file.Contains("\\obj\\", StringComparison.Ordinal) || file.Contains("/obj/", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             if (file.Contains("appsettings", StringComparison.OrdinalIgnoreCase))
             {
                 var contents = await File.ReadAllTextAsync(file);
@@ -688,7 +693,7 @@ public class ConfigurationConfigProviderTests
 
                     if (contents.Contains("\"ReverseProxy\"", StringComparison.OrdinalIgnoreCase))
                     {
-                        Assert.True(results.Details.Count > 5);
+                        Assert.True(results.Details.Count > 5, $"No details for '{file}'");
                     }
                 }
                 else
