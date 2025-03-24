@@ -159,6 +159,7 @@ public class TestEnvironment
             {
                 config.AddInMemoryCollection(new Dictionary<string, string>()
                 {
+                    { "Logging:LogLevel:Yarp", "Trace" },
                     { "Logging:LogLevel:Microsoft", "Trace" },
                     { "Logging:LogLevel:Microsoft.AspNetCore.Hosting.Diagnostics", "Information" }
                 });

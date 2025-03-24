@@ -481,20 +481,31 @@ public class WebSocketTests
     [InlineData(HttpProtocols.Http2)] // Checked by proxy
     public async Task InvalidKeyHeader_400(HttpProtocols destinationProtocol)
     {
-        var logs = TestLogger.Collect();
-
         using var cts = CreateTimer();
 
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http1;
         test.DestinationProtocol = destinationProtocol;
+        test.DestinationHttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        test.DestinationHttpVersion = destinationProtocol == HttpProtocols.Http1 ? HttpVersion.Version11 : HttpVersion.Version20;
 
         test.ConfigureProxyApp = builder =>
         {
-            builder.Use((context, next) =>
+            builder.Use(async (context, next) =>
             {
                 context.Request.Headers[HeaderNames.SecWebSocketKey] = "ThisIsAnIncorrectKeyHeaderLongerThan24Bytes";
-                return next(context);
+
+                var logs = TestLogger.Collect();
+                await next(context);
+
+                if (destinationProtocol == HttpProtocols.Http1)
+                {
+                    Assert.DoesNotContain(logs, log => log.EventId == EventIds.InvalidSecWebSocketKeyHeader);
+                }
+                else
+                {
+                    Assert.Contains(logs, log => log.EventId == EventIds.InvalidSecWebSocketKeyHeader);
+                }
             });
         };
 
@@ -510,8 +521,6 @@ public class WebSocketTests
             Assert.Equal(HttpStatusCode.BadRequest, client.HttpStatusCode);
             // TODO: Assert the version https://github.com/dotnet/runtime/issues/75353
         }, cts.Token);
-
-        Assert.Contains(logs, log => log.EventId == EventIds.InvalidSecWebSocketKeyHeader);
     }
 
     [Fact]
@@ -552,13 +561,21 @@ public class WebSocketTests
     [Fact]
     public async Task WebSocket20_To_11_WithInvalidKeyHeader_RequestRejected()
     {
-        var logs = TestLogger.Collect();
-
         using var cts = CreateTimer();
 
         var test = CreateTestEnvironment();
         test.ProxyProtocol = HttpProtocols.Http2;
         test.DestinationProtocol = HttpProtocols.Http1;
+
+        test.ConfigureProxyApp = builder =>
+        {
+            builder.Use(async (context, next) =>
+            {
+                var logs = TestLogger.Collect();
+                await next(context);
+                Assert.Contains(logs, log => log.EventId == EventIds.InvalidSecWebSocketKeyHeader);
+            });
+        };
 
         await test.Invoke(async uri =>
         {
@@ -577,8 +594,6 @@ public class WebSocketTests
             Assert.Equal("The server returned status code '400' when status code '200' was expected.", wse.Message);
             Assert.Equal(HttpStatusCode.BadRequest, client.HttpStatusCode);
         }, cts.Token);
-
-        Assert.Contains(logs, log => log.EventId == EventIds.InvalidSecWebSocketKeyHeader);
     }
 
     private async Task SendWebSocketRequestAsync(ClientWebSocket client, string uri, string destinationProtocol, CancellationToken token)
