@@ -201,6 +201,13 @@ internal sealed class HttpForwarder : IHttpForwarder
                     (destinationRequest, requestContent, _) = await CreateRequestMessageAsync(
                         context, destinationPrefix, transformer, config, isStreamingRequest, activityCancellationSource);
 
+                    // Transforms generated a response, do not proxy.
+                    if (RequestUtilities.IsResponseSet(context.Response))
+                    {
+                        Log.NotProxying(_logger, context.Response.StatusCode);
+                        return ForwarderError.None;
+                    }
+
                     destinationResponse = await httpClient.SendAsync(destinationRequest, activityCancellationSource.Token);
                 }
             }
@@ -471,8 +478,22 @@ internal sealed class HttpForwarder : IHttpForwarder
             {
                 request.Headers.TryAddWithoutValidation(HeaderNames.Connection, HeaderNames.Upgrade);
                 request.Headers.TryAddWithoutValidation(HeaderNames.Upgrade, WebSocketName);
-                var key = ProtocolHelper.CreateSecWebSocketKey();
-                request.Headers.TryAddWithoutValidation(HeaderNames.SecWebSocketKey, key);
+
+                // The client shouldn't be sending a Sec-WebSocket-Key header with H2 WebSockets, but if it did, let's use it.
+                if (RequestUtilities.TryGetValues(request.Headers, HeaderNames.SecWebSocketKey, out var clientKey))
+                {
+                    if (!ProtocolHelper.CheckSecWebSocketKey(clientKey))
+                    {
+                        Log.InvalidSecWebSocketKeyHeader(_logger, clientKey);
+                        // The request will not be forwarded if we change the status code.
+                        context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    }
+                }
+                else
+                {
+                    var key = ProtocolHelper.CreateSecWebSocketKey();
+                    request.Headers.TryAddWithoutValidation(HeaderNames.SecWebSocketKey, key);
+                }
             }
             // H1->H1, re-add the original Connection, Upgrade headers.
             else
