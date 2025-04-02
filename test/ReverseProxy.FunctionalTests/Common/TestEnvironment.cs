@@ -17,6 +17,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Xunit;
 using Xunit.Abstractions;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.Tests.Common;
@@ -73,7 +74,8 @@ public class TestEnvironment
             ConfigureDestinationServices, ConfigureDestinationApp, UseHttpSysOnDestination);
         await destination.StartAsync(cancellationToken);
 
-        using var proxy = CreateProxy(destination.GetAddress());
+        Exception proxyException = null;
+        using var proxy = CreateProxy(destination.GetAddress(), ex => proxyException = ex);
         await proxy.StartAsync(cancellationToken);
 
         try
@@ -85,9 +87,11 @@ public class TestEnvironment
             await proxy.StopAsync(cancellationToken);
             await destination.StopAsync(cancellationToken);
         }
+
+        Assert.Null(proxyException);
     }
 
-    public IHost CreateProxy(string destinationAddress)
+    public IHost CreateProxy(string destinationAddress, Action<Exception> onProxyException = null)
     {
         return CreateHost(ProxyProtocol, UseHttpsOnProxy, HeaderEncoding,
             services =>
@@ -125,6 +129,19 @@ public class TestEnvironment
             },
             app =>
             {
+                app.Use(async (context, next) =>
+                {
+                    try
+                    {
+                        await next();
+                    }
+                    catch (Exception ex)
+                    {
+                        onProxyException?.Invoke(ex);
+                        throw;
+                    }
+                });
+
                 ConfigureProxyApp(app);
                 app.UseRouting();
                 app.UseEndpoints(builder =>
@@ -142,6 +159,7 @@ public class TestEnvironment
             {
                 config.AddInMemoryCollection(new Dictionary<string, string>()
                 {
+                    { "Logging:LogLevel:Yarp", "Trace" },
                     { "Logging:LogLevel:Microsoft", "Trace" },
                     { "Logging:LogLevel:Microsoft.AspNetCore.Hosting.Diagnostics", "Information" }
                 });
@@ -152,7 +170,7 @@ public class TestEnvironment
                 loggingBuilder.AddEventSourceLogger();
                 if (TestOutput != null)
                 {
-                    loggingBuilder.AddXunit(TestOutput);
+                    loggingBuilder.Services.AddSingleton<ILoggerProvider>(new TestLoggerProvider(TestOutput));
                 }
             })
             .ConfigureWebHost(webHostBuilder =>
