@@ -2,50 +2,34 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Threading;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Connections;
 
 namespace Yarp.Kubernetes.Controller.Certificates;
 
 internal class ServerCertificateSelector : IServerCertificateSelector
 {
-    private readonly Dictionary<NamespacedName, CertificateCandidate> _certificates = new();
-    private readonly ReaderWriterLock _readerWriterLock = new();
+    private readonly ConcurrentDictionary<NamespacedName, CertificateCandidate> _certificates = new();
 
     public void AddCertificate(NamespacedName certificateName, X509Certificate2 certificate)
     {
-        _readerWriterLock.AcquireWriterLock(Timeout.Infinite);
-        try
-        {
-            _certificates[certificateName] = new(certificate);
-        }
-        finally
-        {
-            _readerWriterLock.ReleaseWriterLock();
-        }
+        _certificates[certificateName] = new(certificate);
     }
 
     public X509Certificate2 GetCertificate(ConnectionContext connectionContext, string domainName)
     {
-        _readerWriterLock.AcquireReaderLock(Timeout.Infinite);
-        try
+        foreach (var (cert, domainsMatcher) in _certificates.Values)
         {
-            foreach (var (cert, domains) in _certificates.Values)
+            if (domainsMatcher.Any(matcher => matcher.IsMatch(domainName)))
             {
-                if (domains.Contains(domainName))
-                {
-                    return cert;
-                }
+                return cert;
             }
-        }
-        finally
-        {
-            _readerWriterLock.ReleaseReaderLock();
         }
 
         return _certificates.Values.FirstOrDefault()?.Certificate;
@@ -53,27 +37,31 @@ internal class ServerCertificateSelector : IServerCertificateSelector
 
     public void RemoveCertificate(NamespacedName certificateName)
     {
-        _readerWriterLock.AcquireWriterLock(Timeout.Infinite);
-        try
-        {
-            _certificates.Remove(certificateName);
-        }
-        finally
-        {
-            _readerWriterLock.ReleaseWriterLock();
-        }
+        _certificates.Remove(certificateName, out _);
     }
 
     private record CertificateCandidate
     {
-        public IReadOnlySet<string> Domains { get; }
+        public IReadOnlyCollection<Regex> Domains { get; }
 
         public X509Certificate2 Certificate { get; }
 
         public CertificateCandidate(X509Certificate2 certificate)
         {
             Certificate = certificate;
-            Domains = ImmutableHashSet.CreateRange(StringComparer.InvariantCultureIgnoreCase, GetDomains(certificate));
+            Domains = ImmutableList.CreateRange(GetDomains(certificate).Select(ConvertToRegex));
+        }
+
+        private static Regex ConvertToRegex(string domain)
+        {
+            const RegexOptions options = RegexOptions.Compiled | RegexOptions.Singleline | RegexOptions.IgnoreCase |
+                                         RegexOptions.CultureInvariant;
+            if (domain.StartsWith("*."))
+            {
+                return new Regex($"^.*\\.{Regex.Escape(domain[2..])}$", options);
+            }
+
+            return new Regex($"^{Regex.Escape(domain[2..])}$", options);
         }
 
         private static IEnumerable<string> GetDomains(X509Certificate2 certificate)
@@ -109,7 +97,7 @@ internal class ServerCertificateSelector : IServerCertificateSelector
 
         }
 
-        public void Deconstruct(out X509Certificate2 cert, out IReadOnlySet<string> domains)
+        public void Deconstruct(out X509Certificate2 cert, out IReadOnlyCollection<Regex> domains)
         {
             cert = Certificate;
             domains = Domains;
