@@ -8,6 +8,7 @@ using System.Net.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Configuration.ConfigProvider;
 using Yarp.ReverseProxy.Delegation;
@@ -91,10 +92,39 @@ public static class ReverseProxyServiceCollectionExtensions
 
         builder.Services.AddSingleton<IProxyConfigProvider>(sp =>
         {
+            var extensionsOptions = sp.GetRequiredService<IOptions<ConfigExtensionsOptions>>().Value ??
+                                    new ConfigExtensionsOptions();
             // This is required because we're capturing the configuration via a closure
-            return new ConfigurationConfigProvider(sp.GetRequiredService<ILogger<ConfigurationConfigProvider>>(), config);
+            return new ConfigurationConfigProvider(sp.GetRequiredService<ILogger<ConfigurationConfigProvider>>(), config,extensionsOptions);
         });
 
+        return builder;
+    }
+    /// <summary>
+    /// Adds a custom route extension to the reverse proxy configuration.
+    /// </summary>
+    public static IReverseProxyBuilder AddRouteExtensions<TExtension>(
+        this IReverseProxyBuilder builder, string key)
+        where TExtension : IConfigExtension
+    {
+        builder.Services.Configure<ConfigExtensionsOptions>(options =>
+        {
+            options.RouteExtensions[key] = typeof(TExtension);
+        });
+        return builder;
+    }
+
+    /// <summary>
+    /// Adds a custom cluster extension to the reverse proxy configuration.
+    /// </summary>
+    public static IReverseProxyBuilder AddClusterExtensions<TExtension>(
+        this IReverseProxyBuilder builder, string key)
+        where TExtension : IConfigExtension
+    {
+        builder.Services.Configure<ConfigExtensionsOptions>(options =>
+        {
+            options.ClusterExtensions[key] = typeof(TExtension);
+        });
         return builder;
     }
 

@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFrameworks>$(ReleaseTFMs)</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+  <ItemGroup>
+      <ProjectReference Include="..\..\src\ReverseProxy\Yarp.ReverseProxy.csproj" />
+  </ItemGroup>
+
+</Project>
