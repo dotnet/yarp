@@ -20,7 +20,7 @@ internal partial class ServerCertificateSelector
     private readonly ConcurrentDictionary<NamespacedName, X509Certificate2> _certificates = new();
     private bool _hasBeenUpdated;
 
-    private CertificateStore _certificateStore = new(Array.Empty<X509Certificate2>());
+    private ImmutableX509CertificateCache _certificateStore = new(Array.Empty<X509Certificate2>());
 
     public void AddCertificate(NamespacedName certificateName, X509Certificate2 certificate)
     {
@@ -48,7 +48,7 @@ internal partial class ServerCertificateSelector
             if (_hasBeenUpdated)
             {
                 _hasBeenUpdated = false;
-                _certificateStore = new CertificateStore(_certificates.Values);
+                _certificateStore = new ImmutableX509CertificateCache(_certificates.Values);
             }
         }
     }
