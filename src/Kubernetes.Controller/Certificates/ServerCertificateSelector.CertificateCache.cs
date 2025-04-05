@@ -3,6 +3,7 @@
 #nullable enable
 using System.Collections.Generic;
 using System.Formats.Asn1;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Yarp.Kubernetes.Controller.Certificates;
@@ -10,7 +11,17 @@ namespace Yarp.Kubernetes.Controller.Certificates;
 internal partial class ServerCertificateSelector
 {
     private class ImmutableX509CertificateCache(IEnumerable<X509Certificate2> certificates)
-        : ImmutableCertificateCache<X509Certificate2>(certificates, GetDomains);
+        : ImmutableCertificateCache<X509Certificate2>(certificates, GetDomains)
+    {
+        protected override X509Certificate2? GetDefaultCertificate()
+        {
+            if (WildcardCertificates.Count != 0)
+            {
+                return WildcardCertificates[0].Certificate;
+            }
+            return Certificates.Values.FirstOrDefault();
+        }
+    }
 
     private static IEnumerable<string> GetDomains(X509Certificate2 certificate)
     {
