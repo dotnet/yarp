@@ -4,8 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
+
 #nullable enable
 namespace Yarp.Kubernetes.Controller.Certificates;
 
@@ -56,26 +55,17 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
 
     protected IReadOnlyDictionary<string, TCert> Certificates => _certificates;
 
-    protected record WildCardDomain(string Domain, TCert? Certificate);
+    protected record struct WildCardDomain(string Domain, TCert? Certificate);
 
     private bool TryGetCertificateExact(string domain, [NotNullWhen(true)] out TCert? certificate) =>
         _certificates.TryGetValue(domain, out certificate);
 
     private bool TryGetWildcardCertificate(string domain, [NotNullWhen(true)] out TCert? certificate)
     {
-        if (_wildCardDomains.BinarySearch(new WildCardDomain(domain, null!), DomainNameComparer.Instance) is { } index)
+        if (_wildCardDomains.BinarySearch(new WildCardDomain(domain, null!), DomainNameComparer.Instance) is { } index and > -1)
         {
-            if (index > -1)
-            {
-                certificate = _wildCardDomains[index].Certificate!;
-                return true;
-            }
-            // var candidate = _wildCardDomains[~index];
-            // if (domain.EndsWith(candidate.Domain, true, CultureInfo.InvariantCulture))
-            // {
-            //     certificate = candidate.Certificate!;
-            //     return true;
-            // }
+            certificate = _wildCardDomains[index].Certificate!;
+            return true;
         }
 
         certificate = null;
@@ -91,23 +81,20 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
     {
         public static readonly DomainNameComparer Instance = new();
 
-        public int Compare(WildCardDomain? x, WildCardDomain? y)
+        public int Compare(WildCardDomain x, WildCardDomain y)
         {
-            var ret = Compare(x!.Domain.AsSpan(), y!.Domain.AsSpan());
+            var ret = Compare(x.Domain.AsSpan(), y.Domain.AsSpan());
             if (ret != 0)
             {
                 return ret;
             }
 
-            switch (x!.Certificate, y!.Certificate)
+            return (x.Certificate, y.Certificate) switch
             {
-                case (null, {}) when x.Domain.Length > y.Domain.Length:
-                    return 0;
-                case ({}, null) when x.Domain.Length < y.Domain.Length:
-                    return 0;
-                default:
-                    return x.Domain.Length - y.Domain.Length;
-            }
+                (null, not null) when x.Domain.Length > y.Domain.Length => 0,
+                (not null, null) when x.Domain.Length < y.Domain.Length => 0,
+                _ => x.Domain.Length - y.Domain.Length
+            };
         }
 
         private static int Compare(ReadOnlySpan<char> x, ReadOnlySpan<char> y)
