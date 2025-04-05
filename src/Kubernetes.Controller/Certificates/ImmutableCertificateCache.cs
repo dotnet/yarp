@@ -34,27 +34,9 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
         _wildCardDomains.Sort(DomainNameComparer.Instance);
     }
 
-    public bool TryGetCertificateExact(string domain, [NotNullWhen(true)] out TCert? certificate) =>
-        _certificates.TryGetValue(domain, out certificate);
 
-    public bool TryGetWildcardCertificate(string domain, [NotNullWhen(true)] out TCert? certificate)
-    {
-        if (_wildCardDomains.BinarySearch(new WildCardDomain(domain, null!), DomainNameComparer.Instance) is { } index and < -1)
-        {
-            var candidate = _wildCardDomains[~index];
-            if (domain.EndsWith(candidate.Domain, true, CultureInfo.InvariantCulture))
-            {
-                certificate = candidate.Certificate;
-                return true;
-            }
-        }
 
-        certificate = null;
-        return false;
-    }
-
-    public TCert? GetDefaultCertificate() => _wildCardDomains.FirstOrDefault()?.Certificate
-                                                        ?? _certificates.Values.FirstOrDefault();
+    protected abstract TCert? GetDefaultCertificate();
 
     public TCert? GetCertificate(string domain)
     {
@@ -70,7 +52,35 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
         return GetDefaultCertificate();
     }
 
-    private record WildCardDomain(string Domain, TCert Certificate);
+    protected IReadOnlyList<WildCardDomain> WildcardCertificates => _wildCardDomains;
+
+    protected IReadOnlyDictionary<string, TCert> Certificates => _certificates;
+
+    protected record WildCardDomain(string Domain, TCert? Certificate);
+
+    private bool TryGetCertificateExact(string domain, [NotNullWhen(true)] out TCert? certificate) =>
+        _certificates.TryGetValue(domain, out certificate);
+
+    private bool TryGetWildcardCertificate(string domain, [NotNullWhen(true)] out TCert? certificate)
+    {
+        if (_wildCardDomains.BinarySearch(new WildCardDomain(domain, null!), DomainNameComparer.Instance) is { } index)
+        {
+            if (index > -1)
+            {
+                certificate = _wildCardDomains[index].Certificate!;
+                return true;
+            }
+            // var candidate = _wildCardDomains[~index];
+            // if (domain.EndsWith(candidate.Domain, true, CultureInfo.InvariantCulture))
+            // {
+            //     certificate = candidate.Certificate!;
+            //     return true;
+            // }
+        }
+
+        certificate = null;
+        return false;
+    }
 
     /// <summary>
     /// Sorts domain names right to left.
@@ -83,7 +93,21 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
 
         public int Compare(WildCardDomain? x, WildCardDomain? y)
         {
-            return Compare(x!.Domain.AsSpan(), y!.Domain.AsSpan());
+            var ret = Compare(x!.Domain.AsSpan(), y!.Domain.AsSpan());
+            if (ret != 0)
+            {
+                return ret;
+            }
+
+            switch (x!.Certificate, y!.Certificate)
+            {
+                case (null, {}) when x.Domain.Length > y.Domain.Length:
+                    return 0;
+                case ({}, null) when x.Domain.Length < y.Domain.Length:
+                    return 0;
+                default:
+                    return x.Domain.Length - y.Domain.Length;
+            }
         }
 
         private static int Compare(ReadOnlySpan<char> x, ReadOnlySpan<char> y)
@@ -93,8 +117,8 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
 
             for (var i = 1; i <= length; i++)
             {
-                var charA = x[^i] & 0x3F;
-                var charB = y[^i] & 0x3F;
+                var charA = x[^i] & 0x5F;
+                var charB = y[^i] & 0x5F;
 
                 if (charA == charB)
                 {
@@ -104,7 +128,7 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
                 return charB - charA;
             }
 
-            return x.Length - y.Length;
+            return 0;
         }
     }
 }
