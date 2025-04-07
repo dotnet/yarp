@@ -1064,7 +1064,7 @@ public class HttpForwarderTests
     {
         var events = TestEventListener.Collect();
 
-        
+
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Method = "GET";
         httpContext.Request.Headers[HeaderNames.Cookie] = cookies;
@@ -1260,7 +1260,7 @@ public class HttpForwarderTests
     {
         foreach (var header in ResponseMultiHeaderNames())
         {
-            foreach (var version in new[] { "1.1", "2.0" })                
+            foreach (var version in new[] { "1.1", "2.0" })
             {
                 foreach (var value in MultiValues())
                 {
@@ -2567,8 +2567,9 @@ public class HttpForwarderTests
 
         await sut.SendAsync(httpContext, destinationPrefix, client, new ForwarderRequestConfig { Version = Version.Parse(protocol) });
 
+        string[] headers = httpContext.Response.Headers[PreservedHeaderName];
         Assert.Equal((int)HttpStatusCode.OK, httpContext.Response.StatusCode);
-        Assert.Equal(PreservedHeaderValue, string.Join(", ", httpContext.Response.Headers[PreservedHeaderName]));
+        Assert.Equal(PreservedHeaderValue, string.Join(", ", headers));
 
         foreach (var (name, _) in prohibitedHeaders)
         {
