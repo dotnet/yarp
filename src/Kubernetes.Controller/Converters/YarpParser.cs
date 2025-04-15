@@ -95,6 +95,7 @@ internal static class YarpParser
         // make sure cluster is present
         foreach (var subset in subsets ?? Enumerable.Empty<V1EndpointSubset>())
         {
+            var isRoutePresent = false;
             foreach (var port in subset.Ports ?? Enumerable.Empty<Corev1EndpointPort>())
             {
                 if (!MatchesPort(port, servicePort))
@@ -102,10 +103,13 @@ internal static class YarpParser
                     continue;
                 }
 
-                var pathMatch = FixupPathMatch(path);
-                var host = rule.Host;
-
-                routes.Add(CreateRoute(ingressContext, path, cluster, pathMatch, host));
+                if (!isRoutePresent)
+                {
+                    var pathMatch = FixupPathMatch(path);
+                    var host = rule.Host;
+                    routes.Add(CreateRoute(ingressContext, path, cluster, pathMatch, host));
+                    isRoutePresent = true;
+                }
 
                 // Add destination for every endpoint address
                 foreach (var address in subset.Addresses ?? Enumerable.Empty<V1EndpointAddress>())
