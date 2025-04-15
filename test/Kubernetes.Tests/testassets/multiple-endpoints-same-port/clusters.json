@@ -1,0 +1,19 @@
+[
+  {
+    "ClusterId": "frontend.default:80",
+    "LoadBalancingPolicy": null,
+    "SessionAffinity": null,
+    "HealthCheck": null,
+    "HttpClient": null,
+    "HttpRequest": null,
+    "Destinations": {
+      "http://10.244.2.38:80": {
+        "Address": "http://10.244.2.38:80",
+        "Health": null,
+        "Metadata": null
+      }
+    },
+    "Metadata": null
+  }
+]
+
