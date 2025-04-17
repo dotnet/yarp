@@ -14,8 +14,6 @@
 
   <ItemGroup>
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
-    <PackageReference Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
-    <PackageReference Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
     <PackageReference Include="Polly" Version="$(PollyVersion)" />
   </ItemGroup>
 
