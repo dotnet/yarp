@@ -41,7 +41,8 @@ extends:
               karelz@microsoft.com,
               samsp@microsoft.com,
               adityam@microsoft.com,
-              mizupan@microsoft.com
+              mizupan@microsoft.com,
+              bpetit@microsoft.com
             approvers: |-
               karelz@microsoft.com,
               samsp@microsoft.com,
