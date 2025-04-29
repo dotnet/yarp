@@ -11,6 +11,7 @@ variables:
   value: true
 - name: _BuildConfig
   value: Release
+# Rely on task Arcade injects, not auto-injected build step.
 - template: /eng/common/templates/variables/pool-providers.yml@self
 - name: skipComponentGovernanceDetection
   value: true
@@ -39,13 +40,17 @@ resources:
 extends:
   template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
   parameters:
+    featureFlags:
+      autoBaseline: true
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
         image: 1es-windows-2022
         os: windows
-    customBuildTags:
-    - ES365AIMigrationTooling
+      policheck:
+          enabled: true
+      tsa:
+        enabled: true
     stages:
     - stage: build
       displayName: Build
