@@ -18,6 +18,6 @@ Update branding in `main`:
 
 Update the runtimes and SDKs in `global.json` in `main`:
 
-Check that the global.json includes the latest 3.1 runtime versions from [here](https://dotnet.microsoft.com/download/dotnet-core/3.1), and 5.0 from [here](https://dotnet.microsoft.com/download/dotnet/5.0), and 6.0 SDK from [here](https://dotnet.microsoft.com/download/dotnet/6.0).
+Check that the global.json includes the latest 8.0 runtime versions from [here](https://dotnet.microsoft.com/download/dotnet/8.0), and 9.0 from [here](https://dotnet.microsoft.com/download/dotnet/9.0).
 
 [`eng/Versions.props`]: ../../eng/Versions.props

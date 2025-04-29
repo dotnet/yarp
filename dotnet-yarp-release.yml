@@ -1,0 +1,83 @@
+trigger: none
+name: $(Date:yyyyMMdd).$(Rev:r)
+
+variables:
+- name: NuGetApiKey
+  value: 
+- name: NuGetFeed
+  value: https://api.nuget.org/v3/index.json
+
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+  pipelines:
+  - pipeline: yarp-build
+    source: dotnet\yarp\dotnet-yarp-official
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: NetCore1ESPool-Internal
+      image: 1es-windows-2022
+      os: windows
+
+    stages:
+    - stage: release
+      displayName: Release to NuGet
+      jobs:
+      - job: PreDeploymentApprovalJob
+        displayName: Pre-Deployment Approval
+        condition: succeeded()
+        timeoutInMinutes: 2880
+        pool: server
+        steps:
+        - task: ManualValidation@1
+          inputs:
+            notifyUsers: |-
+              karelz@microsoft.com,
+              samsp@microsoft.com,
+              adityam@microsoft.com,
+              mizupan@microsoft.com,
+              bpetit@microsoft.com
+            approvers: |-
+              karelz@microsoft.com,
+              samsp@microsoft.com,
+              adityam@microsoft.com
+
+      - job: NuGetPush
+        dependsOn: PreDeploymentApprovalJob
+        condition: succeeded()
+        timeoutInMinutes: 30
+        templateContext:
+          type: releaseJob
+          isProduction: true
+          inputs:
+          - input: pipelineArtifact
+            pipeline: yarp-build
+            artifactName: artifacts
+        steps:
+        - task: NuGetToolInstaller@1
+          displayName: Prepare NuGet tool
+        - task: PowerShell@2
+          displayName: NuGet push
+          inputs:
+            targetType: inline
+            script: |
+              tree $(Pipeline.Workspace)\Release\Shipping /f
+
+              Get-ChildItem "$(Pipeline.Workspace)\Release\Shipping\*" -Filter *.nupkg -Exclude *.symbols.nupkg | ForEach-Object {
+                  $name = $_.Name
+                  Write-Host "Processing $name ..."
+                  if ($name.StartsWith("Yarp.ReverseProxy.") -or $name.StartsWith("Yarp.Telemetry.Consumption.")) {
+                      Write-Host "  Publishing $name"
+                      nuget push -Source $env:NuGetFeed -ApiKey $env:NuGetApiKey $_.FullName
+                  } else {
+                      Write-Host "  Skipping $name (update the script to change this)"
+                  }
+              }
+          env:
+            NuGetApiKey: $(NuGetApiKey)
