@@ -102,6 +102,20 @@ public sealed record RouteConfig
     /// </summary>
     public IReadOnlyList<IReadOnlyDictionary<string, string>>? Transforms { get; init; }
 
+    /// <summary>
+    /// Arbitrary type-value pairs that further extend this route.
+    /// </summary>
+    public IReadOnlyDictionary<Type, IConfigExtension>? Extensions { get; init; }
+
+    public T? GetExtension<T>() where T : IConfigExtension
+    {
+        if (Extensions?.TryGetValue(typeof(T), out var extension) ?? false)
+        {
+            return (T)extension;
+        }
+
+        return default;
+    }
     public bool Equals(RouteConfig? other)
     {
         if (other is null)
@@ -120,7 +134,8 @@ public sealed record RouteConfig
             && string.Equals(CorsPolicy, other.CorsPolicy, StringComparison.OrdinalIgnoreCase)
             && Match == other.Match
             && CaseSensitiveEqualHelper.Equals(Metadata, other.Metadata)
-            && CaseSensitiveEqualHelper.Equals(Transforms, other.Transforms);
+            && CaseSensitiveEqualHelper.Equals(Transforms, other.Transforms)
+            && CollectionEqualityHelper.Equals(Extensions, other.Extensions);
     }
 
     public override int GetHashCode()
@@ -139,6 +154,7 @@ public sealed record RouteConfig
         hash.Add(Match);
         hash.Add(CaseSensitiveEqualHelper.GetHashCode(Metadata));
         hash.Add(CaseSensitiveEqualHelper.GetHashCode(Transforms));
+        hash.Add(CollectionEqualityHelper.GetHashCode(Extensions));
         return hash.ToHashCode();
     }
 }
