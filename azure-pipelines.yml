@@ -51,6 +51,10 @@ extends:
           enabled: true
       tsa:
         enabled: true
+      binskim:
+        enabled: true
+        analyzeTargetGlob: artifacts/**.dll
+        preReleaseVersion: '4.3.1'
     stages:
     - stage: build
       displayName: Build
