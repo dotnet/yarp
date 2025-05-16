@@ -51,6 +51,8 @@ extends:
           enabled: true
       tsa:
         enabled: true
+      codeql:
+        tsaEnabled: true
       binskim:
         enabled: true
         # See https://dev.azure.com/securitytools/SecurityIntegration/_wiki/wikis/Guardian/1378/Glob-Format
