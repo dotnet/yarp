@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
@@ -24,6 +25,7 @@ namespace Yarp.ReverseProxy.Configuration.ConfigProvider;
 internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDisposable
 {
     private readonly object _lockObject = new();
+    private readonly ConfigExtensionsOptions _extensionsOptions;
     private readonly ILogger<ConfigurationConfigProvider> _logger;
     private readonly IConfiguration _configuration;
     private ConfigurationSnapshot? _snapshot;
@@ -33,10 +35,12 @@ internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDispo
 
     public ConfigurationConfigProvider(
         ILogger<ConfigurationConfigProvider> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        ConfigExtensionsOptions extensionsOptions)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _extensionsOptions = extensionsOptions ?? throw new ArgumentNullException(nameof(extensionsOptions));
     }
 
     public void Dispose()
@@ -75,12 +79,12 @@ internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDispo
 
                 foreach (var section in _configuration.GetSection("Clusters").GetChildren())
                 {
-                    newSnapshot.Clusters.Add(CreateCluster(section));
+                    newSnapshot.Clusters.Add(CreateCluster(section, _extensionsOptions.ClusterExtensions));
                 }
 
                 foreach (var section in _configuration.GetSection("Routes").GetChildren())
                 {
-                    newSnapshot.Routes.Add(CreateRoute(section));
+                    newSnapshot.Routes.Add(CreateRoute(section, _extensionsOptions.RouteExtensions));
                 }
             }
             catch (Exception ex)
@@ -112,7 +116,7 @@ internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDispo
         }
     }
 
-    private static ClusterConfig CreateCluster(IConfigurationSection section)
+    private static ClusterConfig CreateCluster(IConfigurationSection section, Dictionary<string, Type> extensions)
     {
         var destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase);
         foreach (var destination in section.GetSection(nameof(ClusterConfig.Destinations)).GetChildren())
@@ -130,10 +134,11 @@ internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDispo
             HttpRequest = CreateProxyRequestConfig(section.GetSection(nameof(ClusterConfig.HttpRequest))),
             Metadata = section.GetSection(nameof(ClusterConfig.Metadata)).ReadStringDictionary(),
             Destinations = destinations,
+            Extensions = CreateExtensions(section.GetSection(nameof(RouteConfig.Extensions)), extensions),
         };
     }
 
-    private static RouteConfig CreateRoute(IConfigurationSection section)
+    private static RouteConfig CreateRoute(IConfigurationSection section,Dictionary<string,Type> extensions)
     {
         if (!string.IsNullOrEmpty(section["RouteId"]))
         {
@@ -155,6 +160,7 @@ internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDispo
             Metadata = section.GetSection(nameof(RouteConfig.Metadata)).ReadStringDictionary(),
             Transforms = CreateTransforms(section.GetSection(nameof(RouteConfig.Transforms))),
             Match = CreateRouteMatch(section.GetSection(nameof(RouteConfig.Match))),
+            Extensions = CreateExtensions(section.GetSection(nameof(RouteConfig.Extensions)),extensions),
         };
     }
 
@@ -227,6 +233,36 @@ internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDispo
             Mode = section.ReadEnum<QueryParameterMatchMode>(nameof(RouteQueryParameter.Mode)) ?? QueryParameterMatchMode.Exact,
             IsCaseSensitive = section.ReadBool(nameof(RouteQueryParameter.IsCaseSensitive)) ?? false,
         };
+    }
+
+    private static IReadOnlyDictionary<Type, IConfigExtension>? CreateExtensions(IConfigurationSection section,
+        Dictionary<string, Type> extensions)
+    {
+
+        if (section.GetChildren() is var children && !children.Any())
+        {
+            return null;
+        }
+
+        var results = new Dictionary<Type, IConfigExtension>();
+
+        foreach (var extension in extensions)
+        {
+            try
+            {
+                var result = section.GetSection(extension.Key).Get(extension.Value);
+                if (result is IConfigExtension configExtension)
+                {
+                    results[extension.Value] = configExtension;
+                }
+            }
+            catch (Exception)
+            {
+                // ignore or throw
+            }
+        }
+
+        return new ReadOnlyDictionary<Type, IConfigExtension>(results);
     }
 
     private static SessionAffinityConfig? CreateSessionAffinityConfig(IConfigurationSection section)

@@ -81,6 +81,49 @@ internal static class CollectionEqualityHelper
         return true;
     }
 
+    public static bool Equals<T>(IReadOnlyDictionary<Type, T>? dictionary1, IReadOnlyDictionary<Type, T>? dictionary2,
+        IEqualityComparer<T>? valueComparer = null)
+    {
+        if (ReferenceEquals(dictionary1, dictionary2))
+        {
+            return true;
+        }
+
+        if (dictionary1 is null || dictionary2 is null)
+        {
+            return false;
+        }
+
+        if (dictionary1.Count != dictionary2.Count)
+        {
+            return false;
+        }
+
+        if (dictionary1.Count == 0)
+        {
+            return true;
+        }
+
+        valueComparer ??= EqualityComparer<T>.Default;
+
+        foreach (var (key, value1) in dictionary1)
+        {
+            if (dictionary2.TryGetValue(key, out var value2))
+            {
+                if (!valueComparer.Equals(value1, value2))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public static bool Equals<T>(IReadOnlyList<IReadOnlyDictionary<string, T>>? dictionaryList1, IReadOnlyList<IReadOnlyDictionary<string, T>>? dictionaryList2, IEqualityComparer<T>? valueComparer = null)
     {
         if (ReferenceEquals(dictionaryList1, dictionaryList2))
@@ -171,4 +214,29 @@ internal static class CollectionEqualityHelper
         }
         return hashCode.ToHashCode();
     }
+    public static int GetHashCode<T>(IReadOnlyDictionary<Type, T>? dictionary, IEqualityComparer<T>? valueComparer = null)
+    {
+        if (dictionary is null)
+        {
+            return 0;
+        }
+
+        if (dictionary.Count == 0)
+        {
+            return 42;
+        }
+
+        valueComparer ??= EqualityComparer<T>.Default;
+
+        var hashCode = new HashCode();
+
+        foreach (var pair in dictionary)
+        {
+            hashCode.Add(pair.Key, EqualityComparer<Type>.Default);
+            hashCode.Add(pair.Value, valueComparer);
+        }
+
+        return hashCode.ToHashCode();
+    }
+
 }
