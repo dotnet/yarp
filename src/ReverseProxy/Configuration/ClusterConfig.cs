@@ -54,6 +54,21 @@ public sealed record ClusterConfig
     /// </summary>
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
 
+    /// <summary>
+    /// Arbitrary type-value pairs that further extend this cluster.
+    /// </summary>
+    public IReadOnlyDictionary<Type, IConfigExtension>? Extensions { get; init; }
+
+    public T? GetExtension<T>() where T : IConfigExtension
+    {
+        if (Extensions?.TryGetValue(typeof(T), out var extension) ?? false)
+        {
+            return (T)extension;
+        }
+
+        return default;
+    }
+
     public bool Equals(ClusterConfig? other)
     {
         if (other is null)
@@ -62,7 +77,7 @@ public sealed record ClusterConfig
         }
 
         return EqualsExcludingDestinations(other)
-            && CollectionEqualityHelper.Equals(Destinations, other.Destinations);
+               && CollectionEqualityHelper.Equals(Destinations, other.Destinations);
     }
 
     internal bool EqualsExcludingDestinations(ClusterConfig other)
@@ -73,25 +88,29 @@ public sealed record ClusterConfig
         }
 
         return string.Equals(ClusterId, other.ClusterId, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(LoadBalancingPolicy, other.LoadBalancingPolicy, StringComparison.OrdinalIgnoreCase)
-            // CS0252 warning only shows up in VS https://github.com/dotnet/roslyn/issues/49302
-            && SessionAffinity == other.SessionAffinity
-            && HealthCheck == other.HealthCheck
-            && HttpClient == other.HttpClient
-            && HttpRequest == other.HttpRequest
-            && CaseSensitiveEqualHelper.Equals(Metadata, other.Metadata);
+               && string.Equals(LoadBalancingPolicy, other.LoadBalancingPolicy, StringComparison.OrdinalIgnoreCase)
+               // CS0252 warning only shows up in VS https://github.com/dotnet/roslyn/issues/49302
+               && SessionAffinity == other.SessionAffinity
+               && HealthCheck == other.HealthCheck
+               && HttpClient == other.HttpClient
+               && HttpRequest == other.HttpRequest
+               && CaseSensitiveEqualHelper.Equals(Metadata, other.Metadata)
+               && CollectionEqualityHelper.Equals(Extensions, other.Extensions);
     }
 
     public override int GetHashCode()
     {
-        return HashCode.Combine(
-            ClusterId?.GetHashCode(StringComparison.OrdinalIgnoreCase),
-            LoadBalancingPolicy?.GetHashCode(StringComparison.OrdinalIgnoreCase),
-            SessionAffinity,
-            HealthCheck,
-            HttpClient,
-            HttpRequest,
-            CollectionEqualityHelper.GetHashCode(Destinations),
-            CaseSensitiveEqualHelper.GetHashCode(Metadata));
+        // HashCode.Combine(...) takes only 8 arguments
+        var hash = new HashCode();
+        hash.Add(ClusterId?.GetHashCode(StringComparison.OrdinalIgnoreCase));
+        hash.Add(LoadBalancingPolicy?.GetHashCode(StringComparison.OrdinalIgnoreCase));
+        hash.Add(SessionAffinity);
+        hash.Add(HealthCheck);
+        hash.Add(HttpClient);
+        hash.Add(HttpRequest);
+        hash.Add(CollectionEqualityHelper.GetHashCode(Destinations));
+        hash.Add(CaseSensitiveEqualHelper.GetHashCode(Metadata));
+        hash.Add(CollectionEqualityHelper.GetHashCode(Extensions));
+        return hash.ToHashCode();
     }
 }
