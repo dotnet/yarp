@@ -1,0 +1,53 @@
+[
+  {
+    "RouteId": "minimal-ingress.default:/foo",
+    "Match": {
+      "Methods": null,
+      "Hosts": [],
+      "Path": "/foo/{**catch-all}",
+      "Headers": null,
+      "QueryParameters": null
+    },
+    "Order": null,
+    "ClusterId": "frontend.default:443",
+    "AuthorizationPolicy": null,
+    "RateLimiterPolicy": null,
+    "CorsPolicy": null,
+    "Metadata": null,
+    "Transforms": null
+  },
+  {
+    "RouteId": "minimal-ingress.default:/fee",
+    "Match": {
+      "Methods": null,
+      "Hosts": [],
+      "Path": "/fee/{**catch-all}",
+      "Headers": null,
+      "QueryParameters": null
+    },
+    "Order": null,
+    "ClusterId": "frontend.default:https",
+    "AuthorizationPolicy": null,
+    "RateLimiterPolicy": null,
+    "CorsPolicy": null,
+    "Metadata": null,
+    "Transforms": null
+  },
+  {
+    "RouteId": "minimal-ingress.default:/faa",
+    "Match": {
+      "Methods": null,
+      "Hosts": [],
+      "Path": "/faa/{**catch-all}",
+      "Headers": null,
+      "QueryParameters": null
+    },
+    "Order": null,
+    "ClusterId": "frontend.default:80",
+    "AuthorizationPolicy": null,
+    "RateLimiterPolicy": null,
+    "CorsPolicy": null,
+    "Metadata": null,
+    "Transforms": null
+  }
+]
