@@ -42,6 +42,7 @@ public class IngressConversionTests
     [InlineData("multiple-endpoints-ports")]
     [InlineData("multiple-endpoints-same-port")]
     [InlineData("https")]
+    [InlineData("https-service-port-protocol")]
     [InlineData("exact-match")]
     [InlineData("annotations")]
     [InlineData("mapped-port")]

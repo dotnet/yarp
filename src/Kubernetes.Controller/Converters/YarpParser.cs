@@ -122,7 +122,17 @@ internal static class YarpParser
 
     private static void AddDestination(ClusterTransfer cluster, YarpIngressContext ingressContext, string host, int? port)
     {
-        var protocol = ingressContext.Options.Https ? "https" : "http";
+        var protocol = "http";
+
+        if (ingressContext.Options.Https)
+        {
+            protocol = "https";
+        } else if (cluster.ClusterId.Contains(':'))
+        {
+            var portPart = cluster.ClusterId.Split(':').Last().ToLower();
+            protocol = (portPart.EndsWith("443") || portPart.Contains("https")) ? "https" : "http";
+        }
+
         var uri = $"{protocol}://{host}";
         if (port.HasValue)
         {
