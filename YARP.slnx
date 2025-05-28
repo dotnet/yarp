@@ -1,0 +1,62 @@
+<Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/BasicYarpSample/BasicYarpSample.csproj" />
+    <Project Path="samples/ReverseProxy.Auth.Sample/ReverseProxy.Auth.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.Code.Sample/ReverseProxy.Code.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.Config.Sample/ReverseProxy.Config.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.ConfigFilter.Sample/ReverseProxy.ConfigFilter.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.Direct.Sample/ReverseProxy.Direct.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.LetsEncrypt.Sample/ReverseProxy.LetsEncrypt.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.Metrics.Sample/ReverseProxy.Metrics.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.Transforms.Sample/ReverseProxy.Transforms.Sample.csproj" />
+    <Project Path="samples/SampleServer/SampleServer.csproj" />
+  </Folder>
+  <Folder Name="/samples/HttpSys.Sample/">
+    <Project Path="samples/ReverseProxy.HttpSysDelegation.Sample/ReverseProxy/ReverseProxy.HttpSysDelegation.Sample.csproj" />
+    <Project Path="samples/ReverseProxy.HttpSysDelegation.Sample/SampleHttpSysServer/SampleHttpSysServer.csproj" />
+  </Folder>
+  <Folder Name="/samples/KubernetesIngress.Sample/">
+    <File Path="samples/KubernetesIngress.Sample/README.md" />
+  </Folder>
+  <Folder Name="/samples/KubernetesIngress.Sample/Combined/">
+    <Project Path="samples/KubernetesIngress.Sample/Combined/Yarp.Kubernetes.IngressController.csproj" />
+  </Folder>
+  <Folder Name="/samples/KubernetesIngress.Sample/Ingress/">
+    <Project Path="samples/KubernetesIngress.Sample/Ingress/Yarp.Kubernetes.Ingress.csproj" />
+    <Project Path="samples/KubernetesIngress.Sample/Monitor/Yarp.Kubernetes.Monitor.csproj" />
+  </Folder>
+  <Folder Name="/samples/KubernetesIngress.Sample/Sample/">
+    <Project Path="samples/KubernetesIngress.Sample/backend/backend.csproj" />
+  </Folder>
+  <Folder Name="/samples/Prometheus/">
+    <Project Path="samples/Prometheus/HttpLoadApp/HttpLoadApp.csproj" />
+    <Project Path="samples/Prometheus/ReverseProxy.Metrics-Prometheus.Sample/ReverseProxy.Metrics.Prometheus.Sample.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="eng/Versions.props" />
+    <File Path="global.json" />
+    <File Path="NuGet.config" />
+    <File Path="TFMs.props" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Application/Yarp.Application.csproj" />
+    <Project Path="src/Kubernetes.Controller/Yarp.Kubernetes.Controller.csproj" />
+    <Project Path="src/ReverseProxy/Yarp.ReverseProxy.csproj" />
+    <Project Path="src/TelemetryConsumption/Yarp.Telemetry.Consumption.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="test/Kubernetes.Tests/Yarp.Kubernetes.Tests.csproj" />
+    <Project Path="test/ReverseProxy.FunctionalTests/Yarp.ReverseProxy.FunctionalTests.csproj" />
+    <Project Path="test/ReverseProxy.Tests/Yarp.ReverseProxy.Tests.csproj" />
+    <Project Path="test/Tests.Common/Yarp.Tests.Common.csproj" />
+  </Folder>
+  <Folder Name="/testassets/">
+    <Project Path="testassets/BenchmarkApp/BenchmarkApp.csproj" />
+    <Project Path="testassets/ReverseProxy.Code/ReverseProxy.Code.csproj" />
+    <Project Path="testassets/ReverseProxy.Config/ReverseProxy.Config.csproj" />
+    <Project Path="testassets/ReverseProxy.Direct/ReverseProxy.Direct.csproj" />
+    <Project Path="testassets/TestClient/TestClient.csproj" />
+    <Project Path="testassets/TestServer/TestServer.csproj" />
+  </Folder>
+</Solution>
