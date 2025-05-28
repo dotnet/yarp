@@ -22,7 +22,7 @@ We have three relevant components that already have config systems: Kestrel, Url
 - [ReverseProxy](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/samples/IslandGateway.Sample/appsettings.json#L10-L34)
 
 Proposals:
-- The Kestrel config and the Proxy/Gadeway config should remain adjacent, not merged. Inbound and outbound are distinct concerns. As long as both are available in the same broader config system then that's close enough.
+- The Kestrel config and the Proxy/Gateway config should remain adjacent, not merged. Inbound and outbound are distinct concerns. As long as both are available in the same broader config system then that's close enough.
 - UrlRewrite should also remain as is. It's not ideal that it's in a separate file and format from the rest of the config, but we'll wait and see if that is a long term blocker.
 
 ## Route config:
