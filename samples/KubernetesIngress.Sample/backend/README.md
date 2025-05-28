@@ -4,7 +4,7 @@ This directory contains a sample ASP.NET Core application that acts as a "backen
 
 ## Building the Docker Images
 
-From the base directory for this repo (where the .sln file is), run the commands:
+From the base directory for this repo (where the .slnx file is), run the commands:
 
 ```
 docker build -t backend:latest -f ./samples/KubernetesIngress.Sample/backend/Dockerfile .

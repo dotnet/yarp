@@ -16,8 +16,8 @@ SET PATH=%DOTNET_ROOT%;%PATH%
 SET sln=%~1
 
 IF "%sln%"=="" (
-    echo Solution not specified, using YARP.sln
-    SET sln=%~dp0YARP.sln
+    echo Solution not specified, using YARP.slnx
+    SET sln=%~dp0YARP.slnx
 )
 
 IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
