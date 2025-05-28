@@ -10,7 +10,7 @@ NOTE: Yarp Kubernetes can also be configured as a combined (single) deployable. 
 
 ## Building the Docker Images
 
-From the base directory for this repo (where the .sln file is), run the commands:
+From the base directory for this repo (where the .slnx file is), run the commands:
 
 ```
 docker build -t yarp-monitor:latest -f ./samples/KubernetesIngress.Sample/Monitor/Dockerfile .
