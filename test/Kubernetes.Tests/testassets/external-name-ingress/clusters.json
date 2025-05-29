@@ -7,8 +7,8 @@
     "HttpClient": null,
     "HttpRequest": null,
     "Destinations": {
-      "http://external-service.example.com:443": {
-        "Address": "http://external-service.example.com:443",
+      "https://external-service.example.com:443": {
+        "Address": "https://external-service.example.com:443",
         "Health": null,
         "Metadata": null
       }
