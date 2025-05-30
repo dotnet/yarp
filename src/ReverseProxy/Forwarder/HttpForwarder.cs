@@ -157,6 +157,7 @@ internal sealed class HttpForwarder : IHttpForwarder
 
                 try
                 {
+                    // CodeQL [SM03781] SSRF - Request endpoint is controlled by YARP configuration. Sensitive headers are not copied by default.
                     destinationResponse = await httpClient.SendAsync(destinationRequest, activityCancellationSource.Token);
                 }
                 catch (HttpRequestException hre) when (tryDowngradingH2WsOnFailure)
@@ -208,6 +209,7 @@ internal sealed class HttpForwarder : IHttpForwarder
                         return ForwarderError.None;
                     }
 
+                    // CodeQL [SM03781] SSRF - Request endpoint is controlled by YARP configuration. Sensitive headers are not copied by default.
                     destinationResponse = await httpClient.SendAsync(destinationRequest, activityCancellationSource.Token);
                 }
             }
