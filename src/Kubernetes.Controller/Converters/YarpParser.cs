@@ -130,7 +130,7 @@ internal static class YarpParser
         } else if (cluster.ClusterId.Contains(':'))
         {
             var portPart = cluster.ClusterId.Split(':')[^1]. ToLowerInvariant();
-            protocol = (portPart.EndsWith("443") || portPart.Contains("https")) ? "https" : "http";
+            protocol = (portPart.EndsWith("443", StringComparison.Ordinal) || portPart.StartsWith("https", StringComparison.Ordinal)) ? "https" : "http";
         }
 
         var uri = $"{protocol}://{host}";
