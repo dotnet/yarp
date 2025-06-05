@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET BasicYarpSample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/artifacts/bin/BasicYarpSample/Debug/net8.0/BasicYarpSample.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/samples/BasicYarpSample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}
