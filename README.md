@@ -40,6 +40,22 @@ When you're done, you can run the `deactivate` function to undo the changes to y
 
 If you're having trouble building the project, or developing in Visual Studio, please file an issue to let us know and we'll help out (and fix our scripts/tools as needed)!
 
+## Using a devcontainer
+
+YARP includes full support for [VS Code Dev Containers](https://code.visualstudio.com/docs/devcontainers/containers). This is the easiest way to get started on Linux, macOS, or Windows with Docker + VS Code.
+
+To build and run YARP in a devcontainer:
+
+1. **Open the repository in VS Code.**
+2. If prompted, click **"Reopen in Container"**. If not prompted, open the Command Palette (`Ctrl+Shift+P`) and select **"Dev Containers: Reopen in Container"**.
+3. Wait for the container to build and initialize. All required tools (including .NET SDK, Node.js, npm, Git, and ESLint) are pre-installed and available on the `PATH`.
+4. Use the built-in VS Code tasks and launch configurations to build, test, and debug YARP:
+    - Press `Ctrl+Shift+B` to build the solution.
+    - Open the Run and Debug panel to launch and debug any sample or project.
+    - Use the integrated terminal for CLI commands like `dotnet build`, `dotnet test`, or `dotnet run`.
+
+The devcontainer ensures a consistent, ready-to-use environment for YARP development across all platforms.
+
 # Testing
 
 The command to build and run all tests: `build.cmd/sh -test`.
