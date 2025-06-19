@@ -61,7 +61,7 @@ public class ConfigurationConfigProviderTests
                             {
                                 Address = "https://localhost:10000/destB",
                                 Health = "https://localhost:20000/destB",
-                                Metadata = new Dictionary<string, string> { { "destB-K1", "destB-V1" }, { "destB-K2", "destB-V2" } },
+                                Metadata = new Dictionary<string, string> { { "destB-K1", "destB-V1" }, { "destB-K2", "destB-V2" }, { "foo", "42" }, { "bar", "True" } },
                                 Host = "localhost"
                             }
                         }
@@ -244,10 +244,10 @@ public class ConfigurationConfigProviderTests
                         "AffinityKeyName": "Key1",
                         "Cookie": {
                             "Domain": "localhost",
-                            "Expiration": "03:00:00",
+                            "Expiration": "03:0:00",
                             "HttpOnly": true,
-                            "IsEssential": true,
-                            "MaxAge": "1.00:00:00",
+                            "IsEssential": "True",
+                            "MaxAge": "1.00:00:0",
                             "Path": "mypath",
                             "SameSite": "Strict",
                             "SecurePolicy": "None"
@@ -257,7 +257,7 @@ public class ConfigurationConfigProviderTests
                         "Passive": {
                             "Enabled": true,
                             "Policy": "FailureRate",
-                            "ReactivationPeriod": "00:05:00"
+                            "ReactivationPeriod": "0:05:00"
                         },
                         "Active": {
                             "Enabled": true,
@@ -307,7 +307,9 @@ public class ConfigurationConfigProviderTests
                             "Host": "localhost",
                             "Metadata": {
                                 "destB-K1": "destB-V1",
-                                "destB-K2": "destB-V2"
+                                "destB-K2": "destB-V2",
+                                "foo": 42,
+                                "bar": true
                             }
                         }
                     },
@@ -360,7 +362,7 @@ public class ConfigurationConfigProviderTests
                           {
                             "Name": "queryparam1",
                             "Values": [ "value1" ],
-                            "IsCaseSensitive": true,
+                            "IsCaseSensitive": "true",
                             "Mode": "Contains"
                           }
                         ]

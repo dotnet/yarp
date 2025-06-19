@@ -38,7 +38,7 @@
                 },
                 "Timeout": {
                   "type": [ "string", "null" ],
-                  "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                  "pattern": "^\\d*?\\.?\\d\\d?:\\d\\d?:\\d\\d?\\.?\\d{0,7}$",
                   "description": "The Timeout to apply to this route. This overrides any system defaults. Setting both Timeout and TimeoutPolicy is an error. Format: 'hh:mm:ss'."
                 },
                 "TimeoutPolicy": {
@@ -116,7 +116,20 @@
                             ]
                           },
                           "IsCaseSensitive": {
-                            "type": "boolean"
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "true",
+                                  "false",
+                                  "True",
+                                  "False"
+                                ]
+                              }
+                            ]
                           }
                         },
                         "required": [
@@ -154,7 +167,20 @@
                             ]
                           },
                           "IsCaseSensitive": {
-                            "type": "boolean"
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "true",
+                                  "false",
+                                  "True",
+                                  "False"
+                                ]
+                              }
+                            ]
                           }
                         },
                         "required": [
@@ -182,7 +208,7 @@
                   "type": [ "object", "null" ],
                   "description": "Arbitrary key-value pairs for custom route logic.",
                   "additionalProperties": {
-                    "type": "string"
+                    "type": [ "null", "number", "string", "boolean" ]
                   }
                 },
                 "Transforms": {
@@ -227,8 +253,21 @@
                         "description": "Sets whether incoming request headers are copied to the outbound request.",
                         "properties": {
                           "RequestHeadersCopy": {
-                            "type": "boolean",
-                            "description": "If true, copies all request headers to outbound request."
+                            "description": "If true, copies all request headers to outbound request.",
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "true",
+                                  "false",
+                                  "True",
+                                  "False"
+                                ]
+                              }
+                            ]
                           }
                         },
                         "additionalProperties": false,
@@ -241,8 +280,21 @@
                         "description": "Specifies if the incoming request Host header should be copied to the proxy request.",
                         "properties": {
                           "RequestHeaderOriginalHost": {
-                            "type": "boolean",
-                            "description": "If true, preserve the original Host header; otherwise the destination's host is used."
+                            "description": "If true, preserve the original Host header; otherwise the destination's host is used.",
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "true",
+                                  "false",
+                                  "True",
+                                  "False"
+                                ]
+                              }
+                            ]
                           }
                         },
                         "additionalProperties": false,
@@ -267,8 +319,21 @@
                             "description": "Value to append to the given request header."
                           },
                           "Remove": {
-                            "type": "boolean",
-                            "description": "Removes the header if true."
+                            "description": "Removes the header if true.",
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "true",
+                                  "false",
+                                  "True",
+                                  "False"
+                                ]
+                              }
+                            ]
                           }
                         },
                         "additionalProperties": false,
@@ -666,8 +731,21 @@
                         "description": "Transform controlling whether response headers are copied from the original response.",
                         "properties": {
                           "ResponseHeadersCopy": {
-                            "type": "boolean",
-                            "description": "If true, copies all response headers from the destination back to the client."
+                            "description": "If true, copies all response headers from the destination back to the client.",
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "true",
+                                  "false",
+                                  "True",
+                                  "False"
+                                ]
+                              }
+                            ]
                           }
                         },
                         "additionalProperties": false,
@@ -760,8 +838,21 @@
                         "description": "Transform controlling whether trailing response headers are copied from the original response.",
                         "properties": {
                           "ResponseTrailersCopy": {
-                            "type": "boolean",
-                            "description": "If true, copies all trailing response headers from the destination back to the client."
+                            "description": "If true, copies all trailing response headers from the destination back to the client.",
+                            "anyOf": [
+                              {
+                                "type": "boolean"
+                              },
+                              {
+                                "type": "string",
+                                "enum": [
+                                  "true",
+                                  "false",
+                                  "True",
+                                  "False"
+                                ]
+                              }
+                            ]
                           }
                         },
                         "additionalProperties": false,
@@ -891,7 +982,7 @@
                           "type": [ "object", "null" ],
                           "description": "Arbitrary key-value pairs for custom destination logic.",
                           "additionalProperties": {
-                            "type": "string"
+                            "type": [ "null", "number", "string", "boolean" ]
                           }
                         }
                       },
@@ -925,7 +1016,20 @@
                   "description": "Session affinity is a mechanism to bind (affinitize) a causally related request sequence to the destination that handled the first request when the load is balanced among several destinations.",
                   "properties": {
                     "Enabled": {
-                      "type": [ "boolean", "null" ]
+                      "anyOf": [
+                        {
+                          "type": [ "boolean", "null" ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "true",
+                            "false",
+                            "True",
+                            "False"
+                          ]
+                        }
+                      ]
                     },
                     "Policy": {
                       "anyOf": [
@@ -976,12 +1080,12 @@
                         },
                         "Expiration": {
                           "type": [ "string", "null" ],
-                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d?:\\d\\d?:\\d\\d?\\.?\\d{0,7}$",
                           "description": "Specifies the expiration of the cookie. Format: 'hh:mm:ss'."
                         },
                         "MaxAge": {
                           "type": [ "string", "null" ],
-                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d?:\\d\\d?:\\d\\d?\\.?\\d{0,7}$",
                           "description": "Specifies the maximum age of the cookie. Format: 'hh:mm:ss'."
                         },
                         "SecurePolicy": {
@@ -994,7 +1098,20 @@
                           "description": "Specifies the Secure attribute of the cookie."
                         },
                         "HttpOnly": {
-                          "type": [ "boolean", "null" ],
+                          "anyOf": [
+                            {
+                              "type": [ "boolean", "null" ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "true",
+                                "false",
+                                "True",
+                                "False"
+                              ]
+                            }
+                          ],
                           "description": "Specifies whether a cookie is accessible by client-side script."
                         },
                         "SameSite": {
@@ -1008,7 +1125,20 @@
                           "description": "Specifies the SameSite attribute of the cookie."
                         },
                         "IsEssential": {
-                          "type": [ "boolean", "null" ],
+                          "anyOf": [
+                            {
+                              "type": [ "boolean", "null" ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "true",
+                                "false",
+                                "True",
+                                "False"
+                              ]
+                            }
+                          ],
                           "description": "Specifies whether a cookie is essential for the application to function correctly. If true then consent policy checks may be bypassed."
                         }
                       },
@@ -1029,19 +1159,32 @@
                       "description": "Active health checks are based on sending health probing requests.",
                       "properties": {
                         "Enabled": {
-                          "type": [ "boolean", "null" ],
+                          "anyOf": [
+                            {
+                              "type": [ "boolean", "null" ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "true",
+                                "false",
+                                "True",
+                                "False"
+                              ]
+                            }
+                          ],
                           "description": "Determines if active health checks are enabled.",
                           "default": false
                         },
                         "Interval": {
                           "type": [ "string", "null" ],
-                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d?:\\d\\d?:\\d\\d?\\.?\\d{0,7}$",
                           "description": "Period of sending health probing requests. Format: 'hh:mm:ss'.",
                           "default": "00:00:15"
                         },
                         "Timeout": {
                           "type": [ "string", "null" ],
-                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d?:\\d\\d?:\\d\\d?\\.?\\d{0,7}$",
                           "description": "Period of waiting for a health check response. Format: 'hh:mm:ss'.",
                           "default": "00:00:10"
                         },
@@ -1076,7 +1219,20 @@
                       "description": "Passive health checks are based on observing the health of the responses from the destination.",
                       "properties": {
                         "Enabled": {
-                          "type": [ "boolean", "null" ],
+                          "anyOf": [
+                            {
+                              "type": [ "boolean", "null" ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "true",
+                                "false",
+                                "True",
+                                "False"
+                              ]
+                            }
+                          ],
                           "description": "Determines if passive health checks are enabled.",
                           "default": false
                         },
@@ -1096,7 +1252,7 @@
                         },
                         "ReactivationPeriod": {
                           "type": [ "string", "null" ],
-                          "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                          "pattern": "^\\d*?\\.?\\d\\d?:\\d\\d?:\\d\\d?\\.?\\d{0,7}$",
                           "description": "Period after which an unhealthy destination reverts back to an Unknown health state. Format: 'hh:mm:ss'."
                         }
                       },
@@ -1131,7 +1287,20 @@
                       }
                     },
                     "DangerousAcceptAnyServerCertificate": {
-                      "type": [ "boolean", "null" ],
+                      "anyOf": [
+                        {
+                          "type": [ "boolean", "null" ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "true",
+                            "false",
+                            "True",
+                            "False"
+                          ]
+                        }
+                      ],
                       "description": "Determines whether the server's SSL certificate validity is checked by the client. Setting it to true completely disables validation.",
                       "default": false
                     },
@@ -1140,7 +1309,20 @@
                       "description": "Specifies the maximum number of connections per server."
                     },
                     "EnableMultipleHttp2Connections": {
-                      "type": [ "boolean", "null" ],
+                      "anyOf": [
+                        {
+                          "type": [ "boolean", "null" ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "true",
+                            "false",
+                            "True",
+                            "False"
+                          ]
+                        }
+                      ],
                       "description": "Determines if multiple HTTP/2 connections are enabled.",
                       "default": true
                     },
@@ -1161,12 +1343,38 @@
                           "description": "The URI of the proxy server."
                         },
                         "BypassOnLocal": {
-                          "type": [ "boolean", "null" ],
+                          "anyOf": [
+                            {
+                              "type": [ "boolean", "null" ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "true",
+                                "false",
+                                "True",
+                                "False"
+                              ]
+                            }
+                          ],
                           "description": "If true, bypasses the proxy for local addresses.",
                           "default": false
                         },
                         "UseDefaultCredentials": {
-                          "type": [ "boolean", "null" ],
+                          "anyOf": [
+                            {
+                              "type": [ "boolean", "null" ]
+                            },
+                            {
+                              "type": "string",
+                              "enum": [
+                                "true",
+                                "false",
+                                "True",
+                                "False"
+                              ]
+                            }
+                          ],
                           "description": "If true, sends CredentialCache.DefaultCredentials with requests.",
                           "default": false
                         }
@@ -1182,7 +1390,7 @@
                   "properties": {
                     "ActivityTimeout": {
                       "type": [ "string", "null" ],
-                      "pattern": "^\\d*?\\.?\\d\\d:\\d\\d:\\d\\d\\.?\\d{0,7}$",
+                      "pattern": "^\\d*?\\.?\\d\\d?:\\d\\d?:\\d\\d?\\.?\\d{0,7}$",
                       "description": "Specifies how long a request is allowed to remain idle between any operation completing, after which it will be canceled. Format: 'hh:mm:ss'.",
                       "default": "00:01:40"
                     },
@@ -1202,7 +1410,20 @@
                       ]
                     },
                     "AllowResponseBuffering": {
-                      "type": [ "boolean", "null" ],
+                      "anyOf": [
+                        {
+                          "type": [ "boolean", "null" ]
+                        },
+                        {
+                          "type": "string",
+                          "enum": [
+                            "true",
+                            "false",
+                            "True",
+                            "False"
+                          ]
+                        }
+                      ],
                       "description": "Determines if response buffering is allowed."
                     }
                   },
@@ -1212,7 +1433,7 @@
                   "type": [ "object", "null" ],
                   "description": "Arbitrary key-value pairs for custom cluster logic.",
                   "additionalProperties": {
-                    "type": "string"
+                    "type": [ "null", "number", "string", "boolean" ]
                   }
                 }
               },
