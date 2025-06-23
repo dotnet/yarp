@@ -16,7 +16,7 @@ namespace Yarp.ReverseProxy.Configuration;
 /// <summary>
 /// Configuration for <see cref="OutputCacheOptions"/>
 /// </summary>
-public class OutputCacheConfig
+public sealed record OutputCacheConfig
 {
     /// <inheritdoc cref="OutputCacheOptions.SizeLimit"/>
     public long SizeLimit { get; set; } = 100 * 1024 * 1024;
@@ -33,13 +33,13 @@ public class OutputCacheConfig
     /// <summary>
     /// Policies that will be added with <see cref="OutputCacheOptions.AddBasePolicy(Action{OutputCachePolicyBuilder}, bool)"/>
     /// </summary>
-    public IDictionary<string, NamedCacheConfig> NamedPolicies { get; set; } = new Dictionary<string, NamedCacheConfig>(StringComparer.InvariantCultureIgnoreCase);
+    public IDictionary<string, NamedCacheConfig> NamedPolicies { get; set; } = new Dictionary<string, NamedCacheConfig>(StringComparer.OrdinalIgnoreCase);
 }
 
 /// <summary>
 /// Configuration for <see cref="OutputCachePolicyBuilder"/>
 /// </summary>
-public class NamedCacheConfig
+public sealed record NamedCacheConfig
 {
     /// <summary>
     /// Flag to exclude or not the default policy
@@ -84,7 +84,7 @@ public static class OutputCacheConfigExtensions
         return services;
     }
 
-    // <summary>
+    /// <summary>
     /// Add and configure OuputCache
     /// </summary>
     public static IServiceCollection AddOutputCache(this IServiceCollection services, OutputCacheConfig config)
