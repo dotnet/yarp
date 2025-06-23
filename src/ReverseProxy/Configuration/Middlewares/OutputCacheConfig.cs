@@ -47,7 +47,7 @@ public sealed record NamedCacheConfig
     public bool ExcludeDefaultPolicy { get; set; }
 
     /// <inheritdoc cref="OutputCachePolicyBuilder.Expire(TimeSpan)"/>
-    public TimeSpan? Duration { get; set; }
+    public TimeSpan? ExpirationTime { get; set; }
 
     /// <inheritdoc cref="OutputCachePolicyBuilder.NoCache"/>
     public bool NoCache { get; set; }
