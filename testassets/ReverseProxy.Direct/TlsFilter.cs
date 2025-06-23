@@ -3,6 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.IO.Pipelines;
+using System.Security.Authentication;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Logging;
@@ -12,99 +15,181 @@ namespace Yarp.ReverseProxy.Sample;
 
 public static class TlsFilter
 {
+    // Use reasonable limits. Parsing across multiple segments has an O(N^2) worst case, so limit the N.
+    private const int ClientHelloTimeoutMs = 10_000;
+    private const int MaxClientHelloSize = 10 * 1024; // 10 KB
+
     // This sniffs the TLS handshake and rejects requests that meat specific criteria.
     internal static async Task ProcessAsync(ConnectionContext connectionContext, Func<Task> next, ILogger logger)
     {
-        var input = connectionContext.Transport.Input;
-        // Count how many bytes we've examined so we never go backwards, Pipes don't allow that.
-        var minBytesExamined = 0L;
-        while (true)
+        using (var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(connectionContext.ConnectionClosed))
         {
-            var result = await input.ReadAsync();
-            var buffer = result.Buffer;
+            timeoutCts.CancelAfter(ClientHelloTimeoutMs);
 
-            if (result.IsCompleted)
+            var input = connectionContext.Transport.Input;
+
+            // Count how many bytes we've examined so we never go backwards, Pipes don't allow that.
+            var minBytesExamined = 0L;
+
+            while (true)
             {
-                return;
+                var result = await input.ReadAsync(timeoutCts.Token);
+                var buffer = result.Buffer;
+
+                if (result.IsCompleted || result.IsCanceled)
+                {
+                    return;
+                }
+
+                if (buffer.Length == 0)
+                {
+                    continue;
+                }
+
+                if (!TryReadTlsFrame(buffer, logger, out var frameInfo) && frameInfo.ParsingStatus == TlsFrameHelper.ParsingStatus.IncompleteFrame)
+                {
+                    // We didn't find a TLS frame, we need to read more data.
+                    minBytesExamined = buffer.Length;
+
+                    if (minBytesExamined >= MaxClientHelloSize)
+                    {
+                        logger.LogInformation("Client Hello too large. Aborting.");
+                        return;
+                    }
+
+                    input.AdvanceTo(buffer.Start, buffer.End);
+                    continue;
+                }
+
+                // We're done. We either have a frame we can analyze, or we're giving up.
+                var examined = buffer.Slice(buffer.Start, minBytesExamined).End;
+                input.AdvanceTo(buffer.Start, examined);
+
+                if (frameInfo.ParsingStatus != TlsFrameHelper.ParsingStatus.Ok || frameInfo.HandshakeType != TlsHandshakeType.ClientHello)
+                {
+                    logger.LogInformation("Invalid or unexpected TLS frame. Aborting.");
+                    return;
+                }
+
+                // Perform any additional validation on the Client Hello here.
+                // Rate limiting, throttling checks, J4A fingerprinting, logging, etc. can be performed here as well.
+
+                if (!TryProcessClientHello(frameInfo, logger))
+                {
+                    // Abort the connection.
+                    return;
+                }
+
+                // All checks passed, we can continue processing the request.
+
+#if !NET10_0_OR_GREATER
+                // Workaround for https://github.com/dotnet/runtime/issues/107213, which was fixed in .NET 10.
+                if (minBytesExamined > 0)
+                {
+                    connectionContext.Transport = new DuplexPipe(
+                        PipeReader.Create(input.AsStream(), new StreamPipeReaderOptions(bufferSize: Math.Max(4096, (int)minBytesExamined))),
+                        connectionContext.Transport.Output);
+                }
+#endif
+
+                break;
             }
-
-            if (buffer.Length == 0)
-            {
-                continue;
-            }
-
-            if (!TryReadHello(buffer, logger, out var abort))
-            {
-                minBytesExamined = buffer.Length;
-                input.AdvanceTo(buffer.Start, buffer.End);
-                continue;
-            }
-
-            var examined = buffer.Slice(buffer.Start, minBytesExamined).End;
-            input.AdvanceTo(buffer.Start, examined);
-
-            if (abort)
-            {
-                // Close the connection.
-                return;
-            }
-
-            break;
         }
 
         await next();
     }
 
-    private static bool TryReadHello(ReadOnlySequence<byte> buffer, ILogger logger, out bool abort)
+    /// <summary>Process the Client Hello and returns whether it passed validation.</summary>
+    private static bool TryProcessClientHello(TlsFrameHelper.TlsFrameInfo clientHello, ILogger logger)
     {
-        abort = false;
+        // This is a sample demonstrating several checks you can perform on the Client Hello.
+        // Replace the logic in this method with your own validation logic.
 
-        if (!buffer.IsSingleSegment)
-        {
-            throw new NotImplementedException("Multiple buffer segments");
-        }
-        var data = buffer.First.Span;
+        string sni = clientHello.TargetName;
 
-        TlsFrameHelper.TlsFrameInfo info = default;
-        if (!TlsFrameHelper.TryGetFrameInfo(data, ref info))
+        if (string.IsNullOrEmpty(sni))
         {
-            if (info.ParsingStatus == TlsFrameHelper.ParsingStatus.InvalidFrame)
-            {
-                logger.LogInformation("Invalid TLS frame");
-                abort = true;
-            }
+            logger.LogInformation("Expected SNI to be specified.");
             return false;
         }
 
-        if (!info.SupportedVersions.HasFlag(System.Security.Authentication.SslProtocols.Tls12))
+        if (!AllowHost(sni))
         {
-            logger.LogInformation("Unsupported versions: {versions}", info.SupportedVersions);
-            abort = true;
-        }
-        else
-        {
-            logger.LogInformation("Protocol versions: {versions}", info.SupportedVersions);
+            logger.LogInformation("Unexpected SNI: {sni}.", sni);
+            return false;
         }
 
-        if (!AllowHost(info.TargetName))
+        if (!clientHello.SupportedVersions.HasFlag(SslProtocols.Tls12) && !clientHello.SupportedVersions.HasFlag(SslProtocols.Tls13))
         {
-            logger.LogInformation("Disallowed host: {host}", info.TargetName);
-            abort = true;
-        }
-        else
-        {
-            logger.LogInformation("SNI: {host}", info.TargetName);
+            logger.LogInformation("Client for '{sni}' does not support TLS 1.2 or 1.3.", sni);
+            return false;
         }
 
+        if (!clientHello.ApplicationProtocols.HasFlag(TlsFrameHelper.ApplicationProtocolInfo.Http2))
+        {
+            logger.LogInformation("Client for '{sni}' does not support HTTP/2.", sni);
+            return false;
+        }
+
+        // All checks passed, we can continue processing the request.
         return true;
     }
 
     private static bool AllowHost(string targetName)
     {
-        if (string.Equals("localhost", targetName, StringComparison.OrdinalIgnoreCase))
+        return
+            targetName.Equals("localhost", StringComparison.OrdinalIgnoreCase) ||
+            targetName.Equals("contoso.com", StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>Attempt to parse the first TLS frame from the <paramref name="buffer"/> and indicate whether more data is needed.</summary>
+    private static bool TryReadTlsFrame(ReadOnlySequence<byte> buffer, ILogger logger, out TlsFrameHelper.TlsFrameInfo frame)
+    {
+        frame = default;
+
+        // Try to process the first segment first.
+        var data = buffer.First.Span;
+
+        if (TlsFrameHelper.TryGetFrameInfo(data, ref frame))
         {
+            // This is the common fast path.
             return true;
         }
-        return false;
+
+        if (frame.ParsingStatus != TlsFrameHelper.ParsingStatus.IncompleteFrame)
+        {
+            // The input is invalid, reading more data won't help.
+            return false;
+        }
+
+        if (buffer.IsSingleSegment)
+        {
+            // We only have one segment and it didn't contain a valid TLS frame. We'll have to read more data.
+            return false;
+        }
+
+        // We have multiple segments. TlsFrameHelper only works with a single span, so we need to combine them.
+        // This may happen on every new read, which is why we limit how much data we're willing to process.
+
+        var pooledBuffer = ArrayPool<byte>.Shared.Rent((int)buffer.Length);
+        buffer.CopyTo(pooledBuffer);
+        data = pooledBuffer.AsSpan(0, (int)buffer.Length);
+
+        bool success = TlsFrameHelper.TryGetFrameInfo(data, ref frame);
+
+        ArrayPool<byte>.Shared.Return(pooledBuffer);
+
+        if (success)
+        {
+            logger.LogDebug("Parsed multi-segment TLS frame after {length} bytes", buffer.Length);
+        }
+
+        return success;
+    }
+
+    private sealed class DuplexPipe(PipeReader input, PipeWriter output) : IDuplexPipe
+    {
+        public PipeReader Input { get; } = input;
+        public PipeWriter Output { get; } = output;
     }
 }
