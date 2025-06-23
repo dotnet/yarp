@@ -22,9 +22,9 @@ public class OutputCacheConfigTests
         config.MaximumBodySize = 10;
         config.SizeLimit = 20;
         config.UseCaseSensitivePaths = true;
-        config.NamedPolicies.Add("test1", new NamedCacheConfig { Duration = TimeSpan.FromSeconds(5), ExcludeDefaultPolicy = true });
-        config.NamedPolicies.Add("test2", new NamedCacheConfig { Duration = TimeSpan.FromSeconds(15), ExcludeDefaultPolicy = false });
-        config.NamedPolicies.Add("test3", new NamedCacheConfig { Duration = TimeSpan.FromSeconds(3), ExcludeDefaultPolicy = true, VaryByHeaders = new[] { "X-SomeHeader" } });
+        config.NamedPolicies.Add("test1", new NamedCacheConfig { ExpirationTimeSpan = TimeSpan.FromSeconds(5), ExcludeDefaultPolicy = true });
+        config.NamedPolicies.Add("test2", new NamedCacheConfig { ExpirationTimeSpan = TimeSpan.FromSeconds(15), ExcludeDefaultPolicy = false });
+        config.NamedPolicies.Add("test3", new NamedCacheConfig { ExpirationTimeSpan = TimeSpan.FromSeconds(3), ExcludeDefaultPolicy = true, VaryByHeaders = new[] { "X-SomeHeader" } });
 
         var builder = WebApplication.CreateBuilder();
         builder.Services.AddOutputCache(config)
@@ -55,15 +55,15 @@ public class OutputCacheConfigTests
                     "UseCaseSensitivePaths": true,
                     "NamedPolicies": {
                         "test1": {
-                            "Duration": "00:05:00",
+                            "ExpirationTimeSpan": "00:05:00",
                             "ExcludeDefaultPolicy": true
                         },
                         "test2": {
-                            "Duration": "00:15:00",
+                            "ExpirationTimeSpan": "00:15:00",
                             "ExcludeDefaultPolicy": false
                         },
                         "test3": {
-                            "Duration": "00:03:00",
+                            "ExpirationTimeSpan": "00:03:00",
                             "ExcludeDefaultPolicy": true,
                             "VaryByHeaders": [ "X-SomeHeader" ]
                         }

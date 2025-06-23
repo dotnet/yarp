@@ -47,7 +47,7 @@ public sealed record NamedCacheConfig
     public bool ExcludeDefaultPolicy { get; set; }
 
     /// <inheritdoc cref="OutputCachePolicyBuilder.Expire(TimeSpan)"/>
-    public TimeSpan? ExpirationTime { get; set; }
+    public TimeSpan? ExpirationTimeSpan { get; set; }
 
     /// <inheritdoc cref="OutputCachePolicyBuilder.NoCache"/>
     public bool NoCache { get; set; }
@@ -107,8 +107,8 @@ public static class OutputCacheConfigExtensions
 
     private static void PolicyBuilder(OutputCachePolicyBuilder builder, NamedCacheConfig policy)
     {
-        if (policy.Duration.HasValue)
-            builder.Expire(policy.Duration.Value);
+        if (policy.ExpirationTimeSpan.HasValue)
+            builder.Expire(policy.ExpirationTimeSpan.Value);
 
         if (policy.NoCache)
             builder.NoCache();
