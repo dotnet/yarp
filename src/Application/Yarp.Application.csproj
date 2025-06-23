@@ -13,7 +13,6 @@
   <Target Name="ReturnPackageVersion" Returns="$(PackageVersion)" />
 
   <ItemGroup>
-    <PackageReference Include="Yarp.ReverseProxy" Version="$(YarpNugetVersion)" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftExtensionsServiceDiscovery)" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="$(MicrosoftExtensionsServiceDiscoveryYarp)" />
 
@@ -23,6 +22,10 @@
     <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="$(OpenTelemetryInstrumentationHttp)" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="$(OpenTelemetryInstrumentationRuntime)" />
     <PackageReference Include="AspNetCore.HealthChecks.ApplicationStatus" Version="$(AspNetCoreHealthChecksApplicationStatus)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReverseProxy\Yarp.ReverseProxy.csproj" />
   </ItemGroup>
 
 </Project>
