@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -31,9 +32,13 @@ builder.Services.AddReverseProxy()
                 .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
                 .AddServiceDiscoveryDestinationResolver();
 
-Console.WriteLine(builder.Configuration.GetSection("ReverseProxy").Value);
-
 var app = builder.Build();
+var isEnabledStaticFiles = Environment.GetEnvironmentVariable("YARP_ENABLE_STATIC_FILES");
+if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
+{
+    app.UseFileServer();
+}
+app.UseRouting();
 app.MapReverseProxy();
 
 await app.RunAsync();
