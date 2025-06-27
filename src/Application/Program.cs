@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Yarp.ReverseProxy.Configuration;
 
 
 // Load configuration
@@ -27,7 +28,8 @@ builder.Configuration.AddJsonFile(fileInfo.FullName, optional: false, reloadOnCh
 
 // Configure YARP
 builder.AddServiceDefaults();
-builder.Services.AddServiceDiscovery();
+builder.Services.AddServiceDiscovery()
+                .AddOutputCache(builder.Configuration.GetSection("OutputCache"));
 builder.Services.AddReverseProxy()
                 .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
                 .AddServiceDiscoveryDestinationResolver();
