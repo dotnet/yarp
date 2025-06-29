@@ -4,6 +4,7 @@
 using System.Net.Http;
 using System.Threading;
 using Microsoft.AspNetCore.Http;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace Yarp.ReverseProxy.Transforms;
 
@@ -19,6 +20,9 @@ public class ResponseTransformContext
 
     /// <summary>
     /// The proxy response. This can be null if the destination did not respond.
+    /// When null, check <see cref="HttpContext.Features"/> Get&lt;IForwarderErrorFeature&gt;() method 
+    /// or <see cref="HttpContextFeaturesExtensions.GetForwarderErrorFeature"/> method
+    /// for details about the error via the <see cref="IForwarderErrorFeature"/>.
     /// </summary>
     public HttpResponseMessage? ProxyResponse { get; init; }
 
