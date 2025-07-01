@@ -20,7 +20,8 @@ internal class YarpConfigContext
             HealthCheck = c.HealthCheck,
             LoadBalancingPolicy = c.LoadBalancingPolicy,
             SessionAffinity = c.SessionAffinity,
-            HttpClient = c.HttpClientConfig
+            HttpClient = c.HttpClientConfig,
+            HttpRequest = c.HttpRequest
         }).ToList();
     }
 }

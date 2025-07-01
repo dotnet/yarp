@@ -34,7 +34,12 @@
       "WebProxy": null,
       "DangerousAcceptAnyServerCertificate": true
     },
-    "HttpRequest": null,
+    "HttpRequest": {
+      "ActivityTimeout": "00:01:00",
+      "Version": "2.0",
+      "VersionPolicy": "RequestVersionExact",
+      "AllowResponseBuffering": false
+    },
     "Destinations": {
       "http://10.244.2.38:80": {
         "Address": "http://10.244.2.38:80",
