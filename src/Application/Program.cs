@@ -20,6 +20,7 @@ if (args.Length == 1)
         return 2;
     }
     builder.Configuration.AddJsonFile(fileInfo.FullName, optional: false, reloadOnChange: true);
+    builder.Configuration.AddEnvironmentVariables();
 }
 
 // Configure YARP
