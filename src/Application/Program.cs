@@ -7,23 +7,21 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-
-// Load configuration
-if (args.Length != 1)
-{
-    Console.Error.WriteLine("Usage: yarp.exe <config_file>");
-    return 1;
-}
-var configFile = args[0];
-var fileInfo = new FileInfo(configFile);
-if (!fileInfo.Exists)
-{
-    Console.Error.WriteLine($"Could not find '{configFile}'.");
-    return 2;
-}
-
 var builder = WebApplication.CreateBuilder();
-builder.Configuration.AddJsonFile(fileInfo.FullName, optional: false, reloadOnChange: true);
+
+// Load configuration from file if passed
+if (args.Length == 1)
+{
+    var configFile = args[0];
+    var fileInfo = new FileInfo(configFile);
+    if (!fileInfo.Exists)
+    {
+        Console.Error.WriteLine($"Could not find '{configFile}'.");
+        return 2;
+    }
+    builder.Configuration.AddJsonFile(fileInfo.FullName, optional: false, reloadOnChange: true);
+    builder.Configuration.AddEnvironmentVariables();
+}
 
 // Configure YARP
 builder.AddServiceDefaults();
