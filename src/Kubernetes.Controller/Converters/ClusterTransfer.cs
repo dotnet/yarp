@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace Yarp.Kubernetes.Controller.Converters;
 
@@ -14,4 +15,5 @@ internal sealed class ClusterTransfer
     public SessionAffinityConfig SessionAffinity { get; set; }
     public HealthCheckConfig HealthCheck { get; set; }
     public HttpClientConfig HttpClientConfig { get; set; }
+    public ForwarderRequestConfig HttpRequest { get; set; }
 }

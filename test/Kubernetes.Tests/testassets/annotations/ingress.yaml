@@ -22,6 +22,12 @@ metadata:
       MaxConnectionsPerServer: 2
       DangerousAcceptAnyServerCertificate: true
 
+    yarp.ingress.kubernetes.io/http-request: |
+      ActivityTimeout: '00:01:00'
+      Version: '2.0'
+      VersionPolicy: 'RequestVersionExact'
+      AllowResponseBuffering: false
+
     yarp.ingress.kubernetes.io/session-affinity: |
       Enabled: true
       Policy: Cookie

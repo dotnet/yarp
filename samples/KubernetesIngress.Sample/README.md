@@ -95,6 +95,7 @@ The table below lists the available annotations.
 |yarp.ingress.kubernetes.io/cors-policy|string|
 |yarp.ingress.kubernetes.io/health-check|[ActivateHealthCheckConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.activehealthcheckconfig)|
 |yarp.ingress.kubernetes.io/http-client|[HttpClientConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.httpclientconfig)|
+|yarp.ingress.kubernetes.io/http-request|[ForwarderRequestConfig](https://learn.microsoft.com/en-us/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig)|
 |yarp.ingress.kubernetes.io/load-balancing|string|
 |yarp.ingress.kubernetes.io/route-metadata|Dictionary<string, string>|
 |yarp.ingress.kubernetes.io/session-affinity|[SessionAffinityConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.sessionaffinityconfig)|
@@ -159,6 +160,20 @@ yarp.ingress.kubernetes.io/http-client: |
   SslProtocols: Ssl3
   MaxConnectionsPerServer: 2
   DangerousAcceptAnyServerCertificate: true
+```
+
+#### HTTP Request
+
+Configures the HTTP request that will be sent to the destination service.
+
+See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig.
+
+```
+yarp.ingress.kubernetes.io/http-request: |
+  ActivityTimeout: '00:01:00'
+  Version: '2.0'
+  VersionPolicy: 'RequestVersionExact'
+  AllowResponseBuffering: false
 ```
 
 #### Load Balancing

@@ -10,6 +10,7 @@ using YamlDotNet.Serialization;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.Kubernetes.Controller.Caching;
 using System.Runtime.InteropServices;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace Yarp.Kubernetes.Controller.Converters;
 
@@ -177,6 +178,7 @@ internal static class YarpParser
         cluster.SessionAffinity = ingressContext.Options.SessionAffinity;
         cluster.HealthCheck = ingressContext.Options.HealthCheck;
         cluster.HttpClientConfig = ingressContext.Options.HttpClientConfig;
+        cluster.HttpRequest = ingressContext.Options.HttpRequest;
         return cluster;
     }
 
@@ -269,6 +271,10 @@ internal static class YarpParser
         if (annotations.TryGetValue("yarp.ingress.kubernetes.io/http-client", out var httpClientConfig))
         {
             options.HttpClientConfig = YamlDeserializer.Deserialize<HttpClientConfig>(httpClientConfig);
+        }
+        if (annotations.TryGetValue("yarp.ingress.kubernetes.io/http-request", out var httpRequest))
+        {
+            options.HttpRequest = YamlDeserializer.Deserialize<ForwarderRequestConfig>(httpRequest);
         }
         if (annotations.TryGetValue("yarp.ingress.kubernetes.io/health-check", out var healthCheck))
         {

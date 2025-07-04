@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace Yarp.Kubernetes.Controller.Converters;
 
@@ -16,6 +17,7 @@ internal sealed class YarpIngressOptions
     public string OutputCachePolicy { get; set; }
     public SessionAffinityConfig SessionAffinity { get; set; }
     public HttpClientConfig HttpClientConfig { get; set; }
+    public ForwarderRequestConfig HttpRequest { get; set; }
     public string LoadBalancingPolicy { get; set; }
     public string CorsPolicy { get; set; }
     public string TimeoutPolicy { get; set; }
