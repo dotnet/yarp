@@ -166,7 +166,7 @@ yarp.ingress.kubernetes.io/http-client: |
 
 Configures the HTTP request that will be sent to the destination service.
 
-See https://learn.microsoft.com/en-us/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig.
+See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig.
 
 ```
 yarp.ingress.kubernetes.io/http-request: |
