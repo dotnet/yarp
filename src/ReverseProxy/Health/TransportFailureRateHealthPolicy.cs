@@ -39,9 +39,12 @@ internal sealed class TransportFailureRateHealthPolicy : IPassiveHealthCheckPoli
         TimeProvider timeProvider,
         IDestinationHealthUpdater healthUpdater)
     {
-        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
-        _policyOptions = policyOptions?.Value ?? throw new ArgumentNullException(nameof(policyOptions));
-        _healthUpdater = healthUpdater ?? throw new ArgumentNullException(nameof(healthUpdater));
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
+        ArgumentNullException.ThrowIfNull(policyOptions?.Value);
+        _policyOptions = policyOptions?.Value;
+        ArgumentNullException.ThrowIfNull(healthUpdater);
+        _healthUpdater = healthUpdater;
     }
 
     public void RequestProxied(HttpContext context, ClusterState cluster, DestinationState destination)

@@ -25,7 +25,8 @@ internal sealed class QueryParameterMatcherPolicy : MatcherPolicy, IEndpointComp
     /// <inheritdoc/>
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        _ = endpoints ?? throw new ArgumentNullException(nameof(endpoints));
+        ArgumentNullException.ThrowIfNull(endpoints);
+        _ = endpoints;
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         if (ContainsDynamicEndpoints(endpoints))
@@ -48,8 +49,10 @@ internal sealed class QueryParameterMatcherPolicy : MatcherPolicy, IEndpointComp
     /// <inheritdoc/>
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        _ = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
-        _ = candidates ?? throw new ArgumentNullException(nameof(candidates));
+        ArgumentNullException.ThrowIfNull(httpContext);
+        _ = httpContext;
+        ArgumentNullException.ThrowIfNull(candidates);
+        _ = candidates;
 
         var query = httpContext.Request.Query;
 

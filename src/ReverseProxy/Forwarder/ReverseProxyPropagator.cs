@@ -22,7 +22,8 @@ public sealed class ReverseProxyPropagator : DistributedContextPropagator
     /// </summary>
     public ReverseProxyPropagator(DistributedContextPropagator innerPropagator)
     {
-        _innerPropagator = innerPropagator ?? throw new ArgumentNullException(nameof(innerPropagator));
+        ArgumentNullException.ThrowIfNull(innerPropagator);
+        _innerPropagator = innerPropagator;
         _headersToRemove = _innerPropagator.Fields.ToArray();
     }
 

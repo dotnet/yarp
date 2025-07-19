@@ -29,8 +29,10 @@ internal sealed class SessionAffinityMiddleware
         IEnumerable<IAffinityFailurePolicy> affinityFailurePolicies,
         ILogger<SessionAffinityMiddleware> logger)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(next);
+        _next = next;
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
         _sessionAffinityPolicies = sessionAffinityPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(sessionAffinityPolicies));
         _affinityFailurePolicies = affinityFailurePolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(affinityFailurePolicies));
     }

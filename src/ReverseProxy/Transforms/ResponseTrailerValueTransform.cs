@@ -20,7 +20,8 @@ public class ResponseTrailerValueTransform : ResponseTrailersTransform
         }
 
         HeaderName = headerName;
-        Value = value ?? throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
+        Value = value;
         Append = append;
         Condition = condition;
     }

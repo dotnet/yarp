@@ -26,8 +26,10 @@ public sealed class ClusterModel
         ClusterConfig config,
         HttpMessageInvoker httpClient)
     {
-        Config = config ?? throw new ArgumentNullException(nameof(config));
-        HttpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        ArgumentNullException.ThrowIfNull(config);
+        Config = config;
+        ArgumentNullException.ThrowIfNull(httpClient);
+        HttpClient = httpClient;
     }
 
     /// <summary>

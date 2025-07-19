@@ -97,8 +97,10 @@ public struct NamespacedName : IEquatable<NamespacedName>
     /// <returns>NamespacedName.</returns>
     public static NamespacedName From(V1ObjectMeta metadata, [NotNull] V1OwnerReference ownerReference, bool? clusterScoped = null)
     {
-        _ = metadata ?? throw new ArgumentNullException(nameof(metadata));
-        _ = ownerReference ?? throw new ArgumentNullException(nameof(ownerReference));
+        ArgumentNullException.ThrowIfNull(metadata);
+        _ = metadata;
+        ArgumentNullException.ThrowIfNull(ownerReference);
+        _ = ownerReference;
 
         return new NamespacedName(
             clusterScoped ?? false ? null : metadata.NamespaceProperty,

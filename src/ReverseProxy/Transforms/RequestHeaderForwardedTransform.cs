@@ -27,7 +27,8 @@ public class RequestHeaderForwardedTransform : RequestTransform
 
     public RequestHeaderForwardedTransform(IRandomFactory randomFactory, NodeFormat forFormat, NodeFormat byFormat, bool host, bool proto, ForwardedTransformActions action)
     {
-        _randomFactory = randomFactory ?? throw new ArgumentNullException(nameof(randomFactory));
+        ArgumentNullException.ThrowIfNull(randomFactory);
+        _randomFactory = randomFactory;
         ForFormat = forFormat;
         ByFormat = byFormat;
         HostEnabled = host;

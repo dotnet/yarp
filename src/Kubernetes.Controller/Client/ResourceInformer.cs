@@ -55,7 +55,8 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
         : base(hostApplicationLifetime, logger)
     {
         Client = client;
-        _selector = selector ?? throw new ArgumentNullException(nameof(selector));
+        ArgumentNullException.ThrowIfNull(selector);
+        _selector = selector;
         _names = GroupApiVersionKind.From<TResource>();
     }
 

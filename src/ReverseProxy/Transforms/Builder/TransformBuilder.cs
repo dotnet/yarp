@@ -23,7 +23,8 @@ internal sealed class TransformBuilder : ITransformBuilder
     /// </summary>
     public TransformBuilder(IServiceProvider services, IEnumerable<ITransformFactory> factories, IEnumerable<ITransformProvider> providers)
     {
-        _services = services ?? throw new ArgumentNullException(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
+        _services = services;
         _factories = factories?.ToList() ?? throw new ArgumentNullException(nameof(factories));
         _providers = providers?.ToList() ?? throw new ArgumentNullException(nameof(providers));
     }

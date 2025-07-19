@@ -20,7 +20,8 @@ public class QueryTransformContext
 
     public QueryTransformContext(HttpRequest request)
     {
-        _request = request ?? throw new ArgumentNullException(nameof(request));
+        ArgumentNullException.ThrowIfNull(request);
+        _request = request;
         _originalQueryString = request.QueryString;
         _modifiedQueryParameters = null;
     }
