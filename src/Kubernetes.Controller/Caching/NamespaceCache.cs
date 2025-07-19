@@ -26,10 +26,7 @@ public class NamespaceCache
 
     public void Update(WatchEventType eventType, V1Ingress ingress)
     {
-        if (ingress is null)
-        {
-            throw new ArgumentNullException(nameof(ingress));
-        }
+        ArgumentNullException.ThrowIfNull(ingress);
 
         var serviceNames = ImmutableList<string>.Empty;
 
@@ -121,10 +118,7 @@ public class NamespaceCache
 
     public ImmutableList<string> Update(WatchEventType eventType, V1Service service)
     {
-        if (service is null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
+        ArgumentNullException.ThrowIfNull(service);
 
         var serviceName = service.Name();
         lock (_sync)
@@ -151,10 +145,7 @@ public class NamespaceCache
 
     public void GetKeys(string ns, List<NamespacedName> keys)
     {
-        if (keys is null)
-        {
-            throw new ArgumentNullException(nameof(keys));
-        }
+        ArgumentNullException.ThrowIfNull(keys);
 
         lock (_sync)
         {
@@ -167,10 +158,7 @@ public class NamespaceCache
 
     public ImmutableList<string> Update(WatchEventType eventType, V1Endpoints endpoints)
     {
-        if (endpoints is null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         var serviceName = endpoints.Name();
         lock (_sync)

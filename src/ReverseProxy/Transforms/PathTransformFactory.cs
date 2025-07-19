@@ -20,7 +20,8 @@ internal sealed class PathTransformFactory : ITransformFactory
 
     public PathTransformFactory(TemplateBinderFactory binderFactory)
     {
-        _binderFactory = binderFactory ?? throw new ArgumentNullException(nameof(binderFactory));
+        ArgumentNullException.ThrowIfNull(binderFactory);
+        _binderFactory = binderFactory;
     }
 
     public bool Validate(TransformRouteValidationContext context, IReadOnlyDictionary<string, string> transformValues)
@@ -99,10 +100,7 @@ internal sealed class PathTransformFactory : ITransformFactory
 
     private static PathString MakePathString(string path)
     {
-        if (path is null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullException.ThrowIfNull(path);
         if (!path.StartsWith('/'))
         {
             path = "/" + path;
