@@ -30,12 +30,13 @@ internal partial class ActiveHealthCheckMonitor : IActiveHealthCheckMonitor, ICl
         ILogger<ActiveHealthCheckMonitor> logger)
     {
         ArgumentNullException.ThrowIfNull(monitorOptions?.Value);
-        _monitorOptions = monitorOptions?.Value;
         ArgumentNullException.ThrowIfNull(policies);
-        _policies = policies.ToDictionaryByUniqueId(p => p.Name);
         ArgumentNullException.ThrowIfNull(probingRequestFactory);
-        _probingRequestFactory = probingRequestFactory;
         ArgumentNullException.ThrowIfNull(logger);
+
+        _monitorOptions = monitorOptions.Value;
+        _policies = policies.ToDictionaryByUniqueId(p => p.Name);
+        _probingRequestFactory = probingRequestFactory;
         _logger = logger;
         Scheduler = new EntityActionScheduler<ClusterState>(cluster => ProbeCluster(cluster), autoStart: false, runOnce: false, timeProvider);
     }

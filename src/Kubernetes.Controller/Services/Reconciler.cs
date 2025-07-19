@@ -28,10 +28,11 @@ public partial class Reconciler : IReconciler
     public Reconciler(ICache cache, IUpdateConfig updateConfig, IIngressResourceStatusUpdater ingressResourceStatusUpdater, ILogger<Reconciler> logger)
     {
         ArgumentNullException.ThrowIfNull(cache);
-        _cache = cache;
         ArgumentNullException.ThrowIfNull(updateConfig);
-        _updateConfig = updateConfig;
         ArgumentNullException.ThrowIfNull(ingressResourceStatusUpdater);
+
+        _cache = cache;
+        _updateConfig = updateConfig;
         _ingressResourceStatusUpdater = ingressResourceStatusUpdater;
         _logger = logger;
     }

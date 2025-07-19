@@ -34,8 +34,9 @@ internal sealed class HttpForwarder : IHttpForwarder
     public HttpForwarder(ILogger<HttpForwarder> logger, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         ArgumentNullException.ThrowIfNull(timeProvider);
+
+        _logger = logger;
         _timeProvider = timeProvider;
     }
 
