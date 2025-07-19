@@ -19,10 +19,7 @@ public class PathStringTransform : RequestTransform
     /// <param name="value">The path value used to update the existing value.</param>
     public PathStringTransform(PathTransformMode mode, PathString value)
     {
-        if (value.Value is null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value.Value);
 
         Mode = mode;
         Value = value;
@@ -35,10 +32,7 @@ public class PathStringTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         switch (Mode)
         {

@@ -26,7 +26,8 @@ internal sealed class YarpRateLimiterPolicyProvider : IYarpRateLimiterPolicyProv
 
     public YarpRateLimiterPolicyProvider(IOptions<RateLimiterOptions> rateLimiterOptions)
     {
-        _rateLimiterOptions = rateLimiterOptions?.Value ?? throw new ArgumentNullException(nameof(rateLimiterOptions));
+        ArgumentNullException.ThrowIfNull(rateLimiterOptions?.Value);
+        _rateLimiterOptions = rateLimiterOptions.Value;
 
         var type = typeof(RateLimiterOptions);
         var flags = BindingFlags.Instance | BindingFlags.NonPublic;

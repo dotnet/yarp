@@ -11,7 +11,8 @@ internal sealed class ActionTransformProvider : ITransformProvider
 
     public ActionTransformProvider(Action<TransformBuilderContext> action)
     {
-        _action = action ?? throw new ArgumentNullException(nameof(action));
+        ArgumentNullException.ThrowIfNull(action);
+        _action = action;
     }
 
     public void Apply(TransformBuilderContext transformBuildContext)

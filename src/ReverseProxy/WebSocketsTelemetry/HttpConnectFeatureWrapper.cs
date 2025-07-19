@@ -26,9 +26,12 @@ internal sealed class HttpConnectFeatureWrapper : IHttpExtendedConnectFeature
 
     public HttpConnectFeatureWrapper(TimeProvider timeProvider, HttpContext httpContext, IHttpExtendedConnectFeature connectFeature)
     {
-        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
-        HttpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
-        InnerConnectFeature = connectFeature ?? throw new ArgumentNullException(nameof(connectFeature));
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
+        ArgumentNullException.ThrowIfNull(httpContext);
+        HttpContext = httpContext;
+        ArgumentNullException.ThrowIfNull(connectFeature);
+        InnerConnectFeature = connectFeature;
     }
 
     public async ValueTask<Stream> AcceptAsync()

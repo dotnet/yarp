@@ -20,8 +20,10 @@ internal abstract class BaseEncryptedSessionAffinityPolicy<T> : ISessionAffinity
 
     protected BaseEncryptedSessionAffinityPolicy(IDataProtectionProvider dataProtectionProvider, ILogger logger)
     {
-        _dataProtector = dataProtectionProvider?.CreateProtector(GetType().FullName!) ?? throw new ArgumentNullException(nameof(dataProtectionProvider));
-        Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(dataProtectionProvider);
+        _dataProtector = dataProtectionProvider.CreateProtector(GetType().FullName!);
+        ArgumentNullException.ThrowIfNull(logger);
+        Logger = logger;
     }
 
     public abstract string Name { get; }

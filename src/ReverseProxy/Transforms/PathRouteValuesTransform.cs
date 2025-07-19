@@ -25,8 +25,10 @@ public class PathRouteValuesTransform : RequestTransform
     public PathRouteValuesTransform(
         [StringSyntax("Route")] string pattern, TemplateBinderFactory binderFactory)
     {
-        _ = pattern ?? throw new ArgumentNullException(nameof(pattern));
-        _binderFactory = binderFactory ?? throw new ArgumentNullException(nameof(binderFactory));
+        ArgumentNullException.ThrowIfNull(pattern);
+        
+        ArgumentNullException.ThrowIfNull(binderFactory);
+        _binderFactory = binderFactory;
         Pattern = RoutePatternFactory.Parse(pattern);
     }
 

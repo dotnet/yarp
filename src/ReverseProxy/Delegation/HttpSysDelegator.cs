@@ -30,7 +30,8 @@ internal sealed class HttpSysDelegator : IHttpSysDelegator, IClusterChangeListen
             IServer server,
             ILogger<HttpSysDelegator> logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
 
         // IServerDelegationFeature isn't added to DI https://github.com/dotnet/aspnetcore/issues/40043
         // IServerDelegationFeature may not be set if not http.sys server or the OS doesn't support delegation
@@ -55,8 +56,10 @@ internal sealed class HttpSysDelegator : IHttpSysDelegator, IClusterChangeListen
 
     public void DelegateRequest(HttpContext context, DestinationState destination)
     {
-        _ = context ?? throw new ArgumentNullException(nameof(context));
-        _ = destination ?? throw new ArgumentNullException(nameof(destination));
+        ArgumentNullException.ThrowIfNull(context);
+        
+        ArgumentNullException.ThrowIfNull(destination);
+        
 
         var requestDelegationFeature = context.Features.Get<IHttpSysRequestDelegationFeature>()
                     ?? throw new InvalidOperationException($"{typeof(IHttpSysRequestDelegationFeature).FullName} is missing.");

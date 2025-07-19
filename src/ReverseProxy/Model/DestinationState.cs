@@ -36,7 +36,8 @@ public sealed class DestinationState : IReadOnlyList<DestinationState>
     /// <exception cref="ArgumentNullException"><paramref name="model"/> is <see langword="null"/>.</exception>
     public DestinationState(string destinationId, DestinationModel model) : this(destinationId)
     {
-        Model = model ?? throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
+        Model = model;
     }
 
     /// <summary>

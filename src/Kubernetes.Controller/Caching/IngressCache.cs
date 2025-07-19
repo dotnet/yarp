@@ -32,10 +32,15 @@ public class IngressCache : ICache
 
     public IngressCache(IOptions<YarpOptions> options, IServerCertificateSelector certificateSelector, ICertificateHelper certificateHelper, ILogger<IngressCache> logger)
     {
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        _certificateSelector = certificateSelector ?? throw new ArgumentNullException(nameof(certificateSelector));
-        _certificateHelper = certificateHelper ?? throw new ArgumentNullException(nameof(certificateHelper));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(options?.Value);
+        ArgumentNullException.ThrowIfNull(certificateSelector);
+        ArgumentNullException.ThrowIfNull(certificateHelper);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _options = options.Value;
+        _certificateSelector = certificateSelector;
+        _certificateHelper = certificateHelper;
+        _logger = logger;
     }
 
     public void Update(WatchEventType eventType, V1IngressClass ingressClass)

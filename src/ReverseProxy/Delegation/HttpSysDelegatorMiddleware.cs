@@ -24,15 +24,20 @@ internal sealed class HttpSysDelegatorMiddleware
         HttpSysDelegator delegator,
         IRandomFactory randomFactory)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _delegator = delegator ?? throw new ArgumentNullException(nameof(delegator));
-        _randomFactory = randomFactory ?? throw new ArgumentNullException(nameof(randomFactory));
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(delegator);
+        ArgumentNullException.ThrowIfNull(randomFactory);
+        _next = next;
+        _logger = logger;
+        _delegator = delegator;
+        _randomFactory = randomFactory;
     }
 
     public Task Invoke(HttpContext context)
     {
-        _ = context ?? throw new ArgumentNullException(nameof(context));
+        ArgumentNullException.ThrowIfNull(context);
+        
         var reverseProxyFeature = context.GetReverseProxyFeature();
         var destinations = reverseProxyFeature.AvailableDestinations
             ?? throw new InvalidOperationException($"The {nameof(IReverseProxyFeature)} Destinations collection was not set.");
