@@ -16,8 +16,9 @@ internal sealed class WebSocketsTelemetryMiddleware
     public WebSocketsTelemetryMiddleware(RequestDelegate next, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(next);
-        _next = next;
         ArgumentNullException.ThrowIfNull(timeProvider);
+
+        _next = next;
         _timeProvider = timeProvider;
     }
 
