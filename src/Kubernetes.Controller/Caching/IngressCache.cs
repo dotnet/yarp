@@ -37,7 +37,7 @@ public class IngressCache : ICache
         ArgumentNullException.ThrowIfNull(certificateHelper);
         ArgumentNullException.ThrowIfNull(logger);
 
-        _options = options?.Value;
+        _options = options.Value;
         _certificateSelector = certificateSelector;
         _certificateHelper = certificateHelper;
         _logger = logger;

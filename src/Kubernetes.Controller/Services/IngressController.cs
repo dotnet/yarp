@@ -84,9 +84,9 @@ public class IngressController : BackgroundHostedService
         _queue = new ProcessingRateLimitedQueue<QueueItem>(perSecond: 0.5, burst: 1);
 
         ArgumentNullException.ThrowIfNull(cache);
+        ArgumentNullException.ThrowIfNull(reconciler);
 
         _cache = cache;
-        ArgumentNullException.ThrowIfNull(reconciler);
         _reconciler = reconciler;
 
         _ingressChangeQueueItem = new QueueItem("Ingress Change");

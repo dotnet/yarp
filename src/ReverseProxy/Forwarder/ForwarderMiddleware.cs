@@ -24,12 +24,12 @@ internal sealed class ForwarderMiddleware
     public ForwarderMiddleware(RequestDelegate next, ILogger<ForwarderMiddleware> logger, IHttpForwarder forwarder, IRandomFactory randomFactory)
     {
         ArgumentNullException.ThrowIfNull(next);
-        _next = next;
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         ArgumentNullException.ThrowIfNull(forwarder);
-        _forwarder = forwarder;
         ArgumentNullException.ThrowIfNull(randomFactory);
+        _next = next;
+        _logger = logger;
+        _forwarder = forwarder;
         _randomFactory = randomFactory;
     }
 

@@ -25,12 +25,12 @@ internal sealed class HttpSysDelegatorMiddleware
         IRandomFactory randomFactory)
     {
         ArgumentNullException.ThrowIfNull(next);
-        _next = next;
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         ArgumentNullException.ThrowIfNull(delegator);
-        _delegator = delegator;
         ArgumentNullException.ThrowIfNull(randomFactory);
+        _next = next;
+        _logger = logger;
+        _delegator = delegator;
         _randomFactory = randomFactory;
     }
 

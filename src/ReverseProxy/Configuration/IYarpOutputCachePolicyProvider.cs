@@ -32,7 +32,7 @@ internal sealed class YarpOutputCachePolicyProvider : IYarpOutputCachePolicyProv
     public YarpOutputCachePolicyProvider(IOptions<OutputCacheOptions> outputCacheOptions)
     {
         ArgumentNullException.ThrowIfNull(outputCacheOptions?.Value);
-        _outputCacheOptions = outputCacheOptions?.Value;
+        _outputCacheOptions = outputCacheOptions.Value;
 
         var property = s_OutputCacheOptionsType.GetProperty("NamedPolicies", BindingFlags.Instance | BindingFlags.NonPublic);
         if (property == null || !typeof(IDictionary).IsAssignableFrom(property.PropertyType))

@@ -36,8 +36,8 @@ internal sealed class ConfigurationConfigProvider : IProxyConfigProvider, IDispo
         IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         ArgumentNullException.ThrowIfNull(configuration);
+        _logger = logger;
         _configuration = configuration;
     }
 

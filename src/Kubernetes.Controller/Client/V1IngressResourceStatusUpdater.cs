@@ -26,7 +26,7 @@ internal sealed class V1IngressResourceStatusUpdater : IIngressResourceStatusUpd
         ILogger<V1ServiceResourceInformer> logger)
     {
         ArgumentNullException.ThrowIfNull(options?.Value);
-        _options = options?.Value;
+        _options = options.Value;
         _client = client;
         _cache = cache;
         _logger = logger;

@@ -36,8 +36,8 @@ public abstract class BackgroundHostedService : IHostedService, IDisposable
         ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(hostApplicationLifetime);
-        _hostApplicationLifetime = hostApplicationLifetime;
         ArgumentNullException.ThrowIfNull(logger);
+        _hostApplicationLifetime = hostApplicationLifetime;
         Logger = logger;
 
         // register the stoppingToken to become cancelled as soon as the
