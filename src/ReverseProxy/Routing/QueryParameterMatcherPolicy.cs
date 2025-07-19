@@ -26,7 +26,7 @@ internal sealed class QueryParameterMatcherPolicy : MatcherPolicy, IEndpointComp
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-        _ = endpoints;
+        
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         if (ContainsDynamicEndpoints(endpoints))
@@ -50,9 +50,9 @@ internal sealed class QueryParameterMatcherPolicy : MatcherPolicy, IEndpointComp
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-        _ = httpContext;
+        
         ArgumentNullException.ThrowIfNull(candidates);
-        _ = candidates;
+        
 
         var query = httpContext.Request.Query;
 

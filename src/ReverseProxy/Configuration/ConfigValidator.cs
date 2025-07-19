@@ -31,7 +31,6 @@ internal sealed class ConfigValidator : IConfigValidator
     public async ValueTask<IList<Exception>> ValidateRouteAsync(RouteConfig route)
     {
         ArgumentNullException.ThrowIfNull(route);
-        _ = route;
         var errors = new List<Exception>();
 
         if (string.IsNullOrEmpty(route.RouteId))
@@ -64,7 +63,7 @@ internal sealed class ConfigValidator : IConfigValidator
     public async ValueTask<IList<Exception>> ValidateClusterAsync(ClusterConfig cluster)
     {
         ArgumentNullException.ThrowIfNull(cluster);
-        _ = cluster;
+        
         var errors = new List<Exception>();
 
         if (string.IsNullOrEmpty(cluster.ClusterId))

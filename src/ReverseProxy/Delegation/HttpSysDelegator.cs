@@ -57,9 +57,9 @@ internal sealed class HttpSysDelegator : IHttpSysDelegator, IClusterChangeListen
     public void DelegateRequest(HttpContext context, DestinationState destination)
     {
         ArgumentNullException.ThrowIfNull(context);
-        _ = context;
+        
         ArgumentNullException.ThrowIfNull(destination);
-        _ = destination;
+        
 
         var requestDelegationFeature = context.Features.Get<IHttpSysRequestDelegationFeature>()
                     ?? throw new InvalidOperationException($"{typeof(IHttpSysRequestDelegationFeature).FullName} is missing.");

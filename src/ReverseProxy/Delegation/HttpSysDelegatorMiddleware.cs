@@ -37,7 +37,7 @@ internal sealed class HttpSysDelegatorMiddleware
     public Task Invoke(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        _ = context;
+        
         var reverseProxyFeature = context.GetReverseProxyFeature();
         var destinations = reverseProxyFeature.AvailableDestinations
             ?? throw new InvalidOperationException($"The {nameof(IReverseProxyFeature)} Destinations collection was not set.");

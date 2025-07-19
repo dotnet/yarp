@@ -26,7 +26,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     public void Add(Action<EndpointBuilder> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
-        _ = convention;
+        
 
         _conventions.Add(convention);
     }
@@ -39,7 +39,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     public ReverseProxyConventionBuilder ConfigureEndpoints(Action<IEndpointConventionBuilder> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
-        _ = convention;
+        
 
         void Action(EndpointBuilder endpointBuilder)
         {
@@ -60,7 +60,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     public ReverseProxyConventionBuilder ConfigureEndpoints(Action<IEndpointConventionBuilder, RouteConfig> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
-        _ = convention;
+        
 
         void Action(EndpointBuilder endpointBuilder)
         {
@@ -82,7 +82,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     public ReverseProxyConventionBuilder ConfigureEndpoints(Action<IEndpointConventionBuilder, RouteConfig, ClusterConfig?> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
-        _ = convention;
+        
 
         void Action(EndpointBuilder endpointBuilder)
         {

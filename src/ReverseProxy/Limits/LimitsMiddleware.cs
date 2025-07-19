@@ -32,7 +32,7 @@ internal sealed class LimitsMiddleware
     public Task Invoke(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        _ = context;
+        
 
         var config = context.GetRouteModel().Config;
 

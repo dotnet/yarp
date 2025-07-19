@@ -38,11 +38,10 @@ internal abstract class EventListenerService<TService, TTelemetryConsumer, TMetr
         IEnumerable<IMetricsConsumer<TMetrics>> metricsConsumers)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         ArgumentNullException.ThrowIfNull(telemetryConsumers);
-        _ = telemetryConsumers;
         ArgumentNullException.ThrowIfNull(metricsConsumers);
-        _ = metricsConsumers;
+        
+        _logger = logger;
 
         _telemetryConsumers = telemetryConsumers.ToArray();
         _metricsConsumers = metricsConsumers.ToArray();
