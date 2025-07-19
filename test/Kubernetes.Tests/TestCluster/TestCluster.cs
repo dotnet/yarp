@@ -18,10 +18,7 @@ public class TestCluster : ITestCluster
 
     public TestCluster(IOptions<TestClusterOptions> options)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         foreach (var resource in options.Value.InitialResources)
         {
@@ -36,20 +33,9 @@ public class TestCluster : ITestCluster
 
     public virtual Task<ListResult> ListResourcesAsync(string group, string version, string plural, ListParameters parameters)
     {
-        if (string.IsNullOrEmpty(version))
-        {
-            throw new ArgumentException($"'{nameof(version)}' cannot be null or empty", nameof(version));
-        }
-
-        if (string.IsNullOrEmpty(plural))
-        {
-            throw new ArgumentException($"'{nameof(plural)}' cannot be null or empty", nameof(plural));
-        }
-
-        if (parameters is null)
-        {
-            throw new ArgumentNullException(nameof(parameters));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(version);
+        ArgumentException.ThrowIfNullOrEmpty(plural);
+        ArgumentNullException.ThrowIfNull(parameters);
 
         return Task.FromResult(new ListResult
         {

@@ -28,10 +28,7 @@ public class Receiver : BackgroundHostedService
         ILogger<Receiver> logger,
         IUpdateConfig proxyConfigProvider) : base(hostApplicationLifetime, logger)
     {
-        if (options is null)
-        {
-            throw new ArgumentNullException(nameof(options));
-        }
+        ArgumentNullException.ThrowIfNull(options);
 
         _options = options.Value;
 

@@ -40,7 +40,8 @@ internal class KubernetesConfigProvider : IProxyConfigProvider, IUpdateConfig
 
         public MessageConfig(IReadOnlyList<RouteConfig> routes, IReadOnlyList<ClusterConfig> clusters, string revisionId)
         {
-            RevisionId = revisionId ?? throw new ArgumentNullException(nameof(revisionId));
+            ArgumentNullException.ThrowIfNull(revisionId);
+            RevisionId = revisionId;
             Routes = routes;
             Clusters = clusters;
             ChangeToken = new CancellationChangeToken(_cts.Token);

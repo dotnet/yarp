@@ -16,7 +16,8 @@ internal sealed class SessionAffinityValidator : IClusterValidator
 
     public SessionAffinityValidator(IEnumerable<IAffinityFailurePolicy> affinityFailurePolicies)
     {
-        _affinityFailurePolicies = affinityFailurePolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(affinityFailurePolicies));
+        ArgumentNullException.ThrowIfNull(affinityFailurePolicies);
+        _affinityFailurePolicies = affinityFailurePolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public ValueTask ValidateAsync(ClusterConfig cluster, IList<Exception> errors)

@@ -19,10 +19,7 @@ public class ResponseHeadersAllowedTransform : ResponseTransform
 {
     public ResponseHeadersAllowedTransform(string[] allowedHeaders)
     {
-        if (allowedHeaders is null)
-        {
-            throw new ArgumentNullException(nameof(allowedHeaders));
-        }
+        ArgumentNullException.ThrowIfNull(allowedHeaders);
 
         AllowedHeaders = allowedHeaders;
         AllowedHeadersSet = new HashSet<string>(allowedHeaders, StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -35,10 +32,7 @@ public class ResponseHeadersAllowedTransform : ResponseTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(ResponseTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (context.ProxyResponse is null)
         {

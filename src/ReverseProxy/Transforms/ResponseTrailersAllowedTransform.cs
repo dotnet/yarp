@@ -20,10 +20,7 @@ public class ResponseTrailersAllowedTransform : ResponseTrailersTransform
 {
     public ResponseTrailersAllowedTransform(string[] allowedHeaders)
     {
-        if (allowedHeaders is null)
-        {
-            throw new ArgumentNullException(nameof(allowedHeaders));
-        }
+        ArgumentNullException.ThrowIfNull(allowedHeaders);
 
         AllowedHeaders = allowedHeaders;
         AllowedHeadersSet = new HashSet<string>(allowedHeaders, StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -36,10 +33,7 @@ public class ResponseTrailersAllowedTransform : ResponseTrailersTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(ResponseTrailersTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         Debug.Assert(context.ProxyResponse is not null);
         Debug.Assert(!context.HeadersCopied);

@@ -18,10 +18,7 @@ internal sealed class QueryParameterMatcher
     /// </summary>
     public QueryParameterMatcher(string name, IReadOnlyList<string>? values, QueryParameterMatchMode mode, bool isCaseSensitive)
     {
-        if (string.IsNullOrEmpty(name))
-        {
-            throw new ArgumentException("A query parameter name is required.", nameof(name));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(name);
         if (mode != QueryParameterMatchMode.Exists
             && (values is null || values.Count == 0))
         {

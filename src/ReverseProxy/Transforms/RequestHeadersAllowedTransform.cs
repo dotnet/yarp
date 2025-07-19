@@ -17,10 +17,7 @@ public class RequestHeadersAllowedTransform : RequestTransform
 {
     public RequestHeadersAllowedTransform(string[] allowedHeaders)
     {
-        if (allowedHeaders is null)
-        {
-            throw new ArgumentNullException(nameof(allowedHeaders));
-        }
+        ArgumentNullException.ThrowIfNull(allowedHeaders);
 
         AllowedHeaders = allowedHeaders;
         AllowedHeadersSet = new HashSet<string>(allowedHeaders, StringComparer.OrdinalIgnoreCase).ToFrozenSet(StringComparer.OrdinalIgnoreCase);
@@ -33,10 +30,7 @@ public class RequestHeadersAllowedTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         Debug.Assert(!context.HeadersCopied);
 

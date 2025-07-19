@@ -22,7 +22,8 @@ public sealed class ClusterState
     /// </summary>
     public ClusterState(string clusterId)
     {
-        ClusterId = clusterId ?? throw new ArgumentNullException(nameof(clusterId));
+        ArgumentNullException.ThrowIfNull(clusterId);
+        ClusterId = clusterId;
     }
 
     /// <summary>
@@ -32,7 +33,8 @@ public sealed class ClusterState
     /// <exception cref="ArgumentNullException"><paramref name="model"/> is <see langword="null"/>.</exception>
     public ClusterState(string clusterId, ClusterModel model) : this(clusterId)
     {
-        Model = model ?? throw new ArgumentNullException(nameof(model));
+        ArgumentNullException.ThrowIfNull(model);
+        Model = model;
     }
 
     /// <summary>

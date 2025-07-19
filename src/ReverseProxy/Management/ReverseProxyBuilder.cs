@@ -17,7 +17,8 @@ internal sealed class ReverseProxyBuilder : IReverseProxyBuilder
     /// <param name="services">Services collection.</param>
     public ReverseProxyBuilder(IServiceCollection services)
     {
-        Services = services ?? throw new ArgumentNullException(nameof(services));
+        ArgumentNullException.ThrowIfNull(services);
+        Services = services;
     }
 
     /// <summary>

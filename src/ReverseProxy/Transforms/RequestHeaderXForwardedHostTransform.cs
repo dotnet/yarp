@@ -20,10 +20,7 @@ public class RequestHeaderXForwardedHostTransform : RequestTransform
     /// <param name="action">Action to applied to the header.</param>
     public RequestHeaderXForwardedHostTransform(string headerName, ForwardedTransformActions action)
     {
-        if (string.IsNullOrEmpty(headerName))
-        {
-            throw new ArgumentException($"'{nameof(headerName)}' cannot be null or empty.", nameof(headerName));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(headerName);
 
         HeaderName = headerName;
         Debug.Assert(action != ForwardedTransformActions.Off);
@@ -36,10 +33,7 @@ public class RequestHeaderXForwardedHostTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var host = context.HttpContext.Request.Host;
 

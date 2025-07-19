@@ -19,7 +19,8 @@ public class CertificateHelper : ICertificateHelper
 
     public CertificateHelper(ILogger<CertificateHelper> logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
     }
 
     public X509Certificate2 ConvertCertificate(NamespacedName namespacedName, V1Secret secret)

@@ -24,7 +24,8 @@ public sealed class DestinationModel
     /// </summary>
     public DestinationModel(DestinationConfig destination)
     {
-        Config = destination ?? throw new ArgumentNullException(nameof(destination));
+        ArgumentNullException.ThrowIfNull(destination);
+        Config = destination;
     }
 
     /// <summary>

@@ -14,10 +14,7 @@ public struct Endpoints
 {
     public Endpoints(V1Endpoints endpoints)
     {
-        if (endpoints is null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         Name = endpoints.Name();
         Subsets = endpoints.Subsets;

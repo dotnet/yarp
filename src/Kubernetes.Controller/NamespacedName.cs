@@ -80,10 +80,7 @@ public struct NamespacedName : IEquatable<NamespacedName>
     /// <returns>NamespacedName.</returns>
     public static NamespacedName From(IKubernetesObject<V1ObjectMeta> resource)
     {
-        if (resource is null)
-        {
-            throw new ArgumentNullException(nameof(resource));
-        }
+        ArgumentNullException.ThrowIfNull(resource);
 
         return new NamespacedName(resource.Namespace(), resource.Name());
     }
@@ -97,8 +94,8 @@ public struct NamespacedName : IEquatable<NamespacedName>
     /// <returns>NamespacedName.</returns>
     public static NamespacedName From(V1ObjectMeta metadata, [NotNull] V1OwnerReference ownerReference, bool? clusterScoped = null)
     {
-        _ = metadata ?? throw new ArgumentNullException(nameof(metadata));
-        _ = ownerReference ?? throw new ArgumentNullException(nameof(ownerReference));
+        ArgumentNullException.ThrowIfNull(metadata);
+        ArgumentNullException.ThrowIfNull(ownerReference);
 
         return new NamespacedName(
             clusterScoped ?? false ? null : metadata.NamespaceProperty,

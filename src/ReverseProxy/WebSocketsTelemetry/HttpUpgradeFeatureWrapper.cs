@@ -25,9 +25,12 @@ internal sealed class HttpUpgradeFeatureWrapper : IHttpUpgradeFeature
 
     public HttpUpgradeFeatureWrapper(TimeProvider timeProvider, HttpContext httpContext, IHttpUpgradeFeature upgradeFeature)
     {
-        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
-        HttpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
-        InnerUpgradeFeature = upgradeFeature ?? throw new ArgumentNullException(nameof(upgradeFeature));
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
+        ArgumentNullException.ThrowIfNull(httpContext);
+        HttpContext = httpContext;
+        ArgumentNullException.ThrowIfNull(upgradeFeature);
+        InnerUpgradeFeature = upgradeFeature;
     }
 
     public async Task<Stream> UpgradeAsync()

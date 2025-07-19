@@ -38,10 +38,7 @@ public class DispatchActionResult : IActionResult, IDispatchTarget
 
     public async Task ExecuteResultAsync(ActionContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var cancellationToken = context.HttpContext.RequestAborted;
 

@@ -70,8 +70,7 @@ public class TestAutoMockBase : IDisposable
     public void Provide<TService>(TService instance)
         where TService : class
     {
-        _ = instance ?? throw new ArgumentNullException(nameof(instance));
-
+        ArgumentNullException.ThrowIfNull(instance);
         AutoMock.Provide(instance);
     }
 

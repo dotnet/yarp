@@ -14,7 +14,8 @@ public readonly struct DestinationProbingResult
 {
     public DestinationProbingResult(DestinationState destination, HttpResponseMessage? response, Exception? exception)
     {
-        Destination = destination ?? throw new ArgumentNullException(nameof(destination));
+        ArgumentNullException.ThrowIfNull(destination);
+        Destination = destination;
         Response = response;
         Exception = exception;
     }

@@ -20,7 +20,8 @@ public class ResponseHeaderValueTransform : ResponseTransform
         }
 
         HeaderName = headerName;
-        Value = value ?? throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
+        Value = value;
         Append = append;
         Condition = condition;
     }
@@ -37,10 +38,7 @@ public class ResponseHeaderValueTransform : ResponseTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(ResponseTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (Condition == ResponseCondition.Always
             || Success(context) == (Condition == ResponseCondition.Success))

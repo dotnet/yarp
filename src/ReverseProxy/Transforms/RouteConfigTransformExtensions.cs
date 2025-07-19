@@ -18,10 +18,7 @@ public static class RouteConfigTransformExtensions
     /// <returns>The cloned route with the new transform.</returns>
     public static RouteConfig WithTransform(this RouteConfig route, Action<IDictionary<string, string>> createTransform)
     {
-        if (createTransform is null)
-        {
-            throw new ArgumentNullException(nameof(createTransform));
-        }
+        ArgumentNullException.ThrowIfNull(createTransform);
 
         List<IReadOnlyDictionary<string, string>> transforms;
         if (route.Transforms is null)

@@ -159,6 +159,7 @@ internal sealed class ProxyEndpointFactory
 
     public void SetProxyPipeline(RequestDelegate pipeline)
     {
-        _pipeline = pipeline ?? throw new ArgumentNullException(nameof(pipeline));
+        ArgumentNullException.ThrowIfNull(pipeline);
+        _pipeline = pipeline;
     }
 }

@@ -26,9 +26,11 @@ public sealed class RouteModel
         ClusterState? cluster,
         HttpTransformer transformer)
     {
-        Config = config ?? throw new ArgumentNullException(nameof(config));
+        ArgumentNullException.ThrowIfNull(config);
+        Config = config;
         Cluster = cluster;
-        Transformer = transformer ?? throw new ArgumentNullException(nameof(transformer));
+        ArgumentNullException.ThrowIfNull(transformer);
+        Transformer = transformer;
     }
 
     // May not be populated if the cluster config is missing. https://github.com/dotnet/yarp/issues/797

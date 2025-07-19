@@ -23,8 +23,10 @@ internal sealed class ConsecutiveFailuresHealthPolicy : IActiveHealthCheckPolicy
 
     public ConsecutiveFailuresHealthPolicy(IOptions<ConsecutiveFailuresHealthPolicyOptions> options, IDestinationHealthUpdater healthUpdater)
     {
-        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
-        _healthUpdater = healthUpdater ?? throw new ArgumentNullException(nameof(healthUpdater));
+        ArgumentNullException.ThrowIfNull(options?.Value);
+        ArgumentNullException.ThrowIfNull(healthUpdater);
+        _options = options.Value;
+        _healthUpdater = healthUpdater;
     }
 
     public void ProbingCompleted(ClusterState cluster, IReadOnlyList<DestinationProbingResult> probingResults)

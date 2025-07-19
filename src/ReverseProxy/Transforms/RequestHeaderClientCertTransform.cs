@@ -26,10 +26,7 @@ public class RequestHeaderClientCertTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         RemoveHeader(context, HeaderName);
 

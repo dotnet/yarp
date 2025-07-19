@@ -20,9 +20,13 @@ internal sealed class HealthCheckValidator : IClusterValidator
         IEnumerable<IActiveHealthCheckPolicy> activeHealthCheckPolicies,
         IEnumerable<IPassiveHealthCheckPolicy> passiveHealthCheckPolicies)
     {
-        _availableDestinationsPolicies = availableDestinationsPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(availableDestinationsPolicies));
-        _activeHealthCheckPolicies = activeHealthCheckPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(availableDestinationsPolicies));
-        _passiveHealthCheckPolicies = passiveHealthCheckPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(availableDestinationsPolicies));
+        ArgumentNullException.ThrowIfNull(availableDestinationsPolicies);
+        ArgumentNullException.ThrowIfNull(activeHealthCheckPolicies);
+        ArgumentNullException.ThrowIfNull(passiveHealthCheckPolicies);
+
+        _availableDestinationsPolicies = availableDestinationsPolicies.ToDictionaryByUniqueId(p => p.Name);
+        _activeHealthCheckPolicies = activeHealthCheckPolicies.ToDictionaryByUniqueId(p => p.Name);
+        _passiveHealthCheckPolicies = passiveHealthCheckPolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public ValueTask ValidateAsync(ClusterConfig cluster, IList<Exception> errors)

@@ -32,10 +32,7 @@ public class ResponseTrailerRemoveTransform : ResponseTrailersTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(ResponseTrailersTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         Debug.Assert(context.ProxyResponse is not null);
 

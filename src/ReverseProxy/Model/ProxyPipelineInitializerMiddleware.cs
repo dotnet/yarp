@@ -24,10 +24,14 @@ internal sealed class ProxyPipelineInitializerMiddleware
 
     public ProxyPipelineInitializerMiddleware(RequestDelegate next, ILogger<ProxyPipelineInitializerMiddleware> logger, IOptionsMonitor<RequestTimeoutOptions> timeoutOptions)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _next = next ?? throw new ArgumentNullException(nameof(next));
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
+        ArgumentNullException.ThrowIfNull(next);
+        _next = next;
 
-        _timeoutOptions = timeoutOptions ?? throw new ArgumentNullException(nameof(timeoutOptions));
+        ArgumentNullException.ThrowIfNull(timeoutOptions);
+
+        _timeoutOptions = timeoutOptions;
     }
 
     public Task Invoke(HttpContext context)

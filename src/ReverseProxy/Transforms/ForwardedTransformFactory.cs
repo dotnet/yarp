@@ -28,7 +28,8 @@ internal sealed class ForwardedTransformFactory : ITransformFactory
 
     public ForwardedTransformFactory(IRandomFactory randomFactory)
     {
-        _randomFactory = randomFactory ?? throw new ArgumentNullException(nameof(randomFactory));
+        ArgumentNullException.ThrowIfNull(randomFactory);
+        _randomFactory = randomFactory;
     }
 
     public bool Validate(TransformRouteValidationContext context, IReadOnlyDictionary<string, string> transformValues)

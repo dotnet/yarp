@@ -29,10 +29,14 @@ internal sealed class SessionAffinityMiddleware
         IEnumerable<IAffinityFailurePolicy> affinityFailurePolicies,
         ILogger<SessionAffinityMiddleware> logger)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _sessionAffinityPolicies = sessionAffinityPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(sessionAffinityPolicies));
-        _affinityFailurePolicies = affinityFailurePolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(affinityFailurePolicies));
+        ArgumentNullException.ThrowIfNull(next);
+        _next = next;
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
+        ArgumentNullException.ThrowIfNull(sessionAffinityPolicies);
+        ArgumentNullException.ThrowIfNull(affinityFailurePolicies);
+        _sessionAffinityPolicies = sessionAffinityPolicies.ToDictionaryByUniqueId(p => p.Name);
+        _affinityFailurePolicies = affinityFailurePolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public Task Invoke(HttpContext context)

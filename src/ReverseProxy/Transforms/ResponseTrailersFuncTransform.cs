@@ -15,7 +15,8 @@ public class ResponseTrailersFuncTransform : ResponseTrailersTransform
 
     public ResponseTrailersFuncTransform(Func<ResponseTrailersTransformContext, ValueTask> func)
     {
-        _func = func ?? throw new ArgumentNullException(nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
+        _func = func;
     }
 
     /// <inheritdoc/>

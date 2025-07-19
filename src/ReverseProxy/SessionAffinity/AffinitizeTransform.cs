@@ -19,7 +19,8 @@ internal sealed class AffinitizeTransform : ResponseTransform
 
     public AffinitizeTransform(ISessionAffinityPolicy sessionAffinityPolicy)
     {
-        _sessionAffinityPolicy = sessionAffinityPolicy ?? throw new ArgumentNullException(nameof(sessionAffinityPolicy));
+        ArgumentNullException.ThrowIfNull(sessionAffinityPolicy);
+        _sessionAffinityPolicy = sessionAffinityPolicy;
     }
 
     public override ValueTask ApplyAsync(ResponseTransformContext context)

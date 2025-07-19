@@ -15,7 +15,8 @@ internal sealed class LoadBalancingValidator : IClusterValidator
     private readonly FrozenDictionary<string, ILoadBalancingPolicy> _loadBalancingPolicies;
     public LoadBalancingValidator(IEnumerable<ILoadBalancingPolicy> loadBalancingPolicies)
     {
-        _loadBalancingPolicies = loadBalancingPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(loadBalancingPolicies));
+        ArgumentNullException.ThrowIfNull(loadBalancingPolicies);
+        _loadBalancingPolicies = loadBalancingPolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public ValueTask ValidateAsync(ClusterConfig cluster, IList<Exception> errors)

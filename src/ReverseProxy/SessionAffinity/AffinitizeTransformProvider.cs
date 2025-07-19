@@ -15,8 +15,8 @@ internal sealed class AffinitizeTransformProvider : ITransformProvider
 
     public AffinitizeTransformProvider(IEnumerable<ISessionAffinityPolicy> sessionAffinityPolicies)
     {
-        _sessionAffinityPolicies = sessionAffinityPolicies?.ToDictionaryByUniqueId(p => p.Name)
-            ?? throw new ArgumentNullException(nameof(sessionAffinityPolicies));
+        ArgumentNullException.ThrowIfNull(sessionAffinityPolicies);
+        _sessionAffinityPolicies = sessionAffinityPolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public void ValidateRoute(TransformRouteValidationContext context)

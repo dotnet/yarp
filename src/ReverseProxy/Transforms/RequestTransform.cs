@@ -57,15 +57,8 @@ public abstract class RequestTransform
     /// </summary>
     public static void AddHeader(RequestTransformContext context, string headerName, StringValues values)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (string.IsNullOrEmpty(headerName))
-        {
-            throw new ArgumentException($"'{nameof(headerName)}' cannot be null or empty.", nameof(headerName));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentException.ThrowIfNullOrEmpty(headerName);
 
         RequestUtilities.AddHeader(context.ProxyRequest, headerName, values);
     }
@@ -75,15 +68,8 @@ public abstract class RequestTransform
     /// </summary>
     public static void RemoveHeader(RequestTransformContext context, string headerName)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (string.IsNullOrEmpty(headerName))
-        {
-            throw new ArgumentException($"'{nameof(headerName)}' cannot be null or empty.", nameof(headerName));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentException.ThrowIfNullOrEmpty(headerName);
 
         RequestUtilities.RemoveHeader(context.ProxyRequest, headerName);
     }

@@ -14,7 +14,8 @@ internal sealed class CallbackHttpClientFactory : ForwarderHttpClientFactory
     internal CallbackHttpClientFactory(ILogger<ForwarderHttpClientFactory> logger,
         Action<ForwarderHttpClientContext, SocketsHttpHandler> configureClient) : base(logger)
     {
-        _configureClient = configureClient ?? throw new ArgumentNullException(nameof(configureClient));
+        ArgumentNullException.ThrowIfNull(configureClient);
+        _configureClient = configureClient;
     }
 
     protected override void ConfigureHandler(ForwarderHttpClientContext context, SocketsHttpHandler handler)

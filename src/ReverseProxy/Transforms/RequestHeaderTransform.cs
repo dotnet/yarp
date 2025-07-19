@@ -25,10 +25,7 @@ public abstract class RequestHeaderTransform : RequestTransform
 
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var value = GetValue(context);
         if (value is null)

@@ -13,10 +13,7 @@ public struct IngressClassData
 {
     public IngressClassData(V1IngressClass ingressClass)
     {
-        if (ingressClass is null)
-        {
-            throw new ArgumentNullException(nameof(ingressClass));
-        }
+        ArgumentNullException.ThrowIfNull(ingressClass);
 
         IngressClass = ingressClass;
         IsDefault = GetDefaultAnnotation(ingressClass);
