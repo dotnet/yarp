@@ -26,9 +26,12 @@ internal sealed class LoadBalancingMiddleware
         ILogger<LoadBalancingMiddleware> logger,
         IEnumerable<ILoadBalancingPolicy> loadBalancingPolicies)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _loadBalancingPolicies = loadBalancingPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(loadBalancingPolicies));
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(loadBalancingPolicies);
+        _next = next;
+        _logger = logger;
+        _loadBalancingPolicies = loadBalancingPolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public Task Invoke(HttpContext context)

@@ -17,8 +17,10 @@ public class PassiveHealthCheckMiddleware
 
     public PassiveHealthCheckMiddleware(RequestDelegate next, IEnumerable<IPassiveHealthCheckPolicy> policies)
     {
-        _next = next ?? throw new ArgumentNullException(nameof(next));
-        _policies = policies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(policies));
+        ArgumentNullException.ThrowIfNull(next);
+        ArgumentNullException.ThrowIfNull(policies);
+        _next = next;
+        _policies = policies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public async Task Invoke(HttpContext context)

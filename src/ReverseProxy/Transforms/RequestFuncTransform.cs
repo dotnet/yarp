@@ -15,7 +15,8 @@ public class RequestFuncTransform : RequestTransform
 
     public RequestFuncTransform(Func<RequestTransformContext, ValueTask> func)
     {
-        _func = func ?? throw new ArgumentNullException(nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
+        _func = func;
     }
 
     /// <inheritdoc/>
