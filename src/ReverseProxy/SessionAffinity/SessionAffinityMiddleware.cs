@@ -33,8 +33,10 @@ internal sealed class SessionAffinityMiddleware
         _next = next;
         ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
-        _sessionAffinityPolicies = sessionAffinityPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(sessionAffinityPolicies));
-        _affinityFailurePolicies = affinityFailurePolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(affinityFailurePolicies));
+        ArgumentNullException.ThrowIfNull(sessionAffinityPolicies);
+        ArgumentNullException.ThrowIfNull(affinityFailurePolicies);
+        _sessionAffinityPolicies = sessionAffinityPolicies.ToDictionaryByUniqueId(p => p.Name);
+        _affinityFailurePolicies = affinityFailurePolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public Task Invoke(HttpContext context)

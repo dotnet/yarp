@@ -31,7 +31,8 @@ internal partial class ActiveHealthCheckMonitor : IActiveHealthCheckMonitor, ICl
     {
         ArgumentNullException.ThrowIfNull(monitorOptions?.Value);
         _monitorOptions = monitorOptions?.Value;
-        _policies = policies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(policies));
+        ArgumentNullException.ThrowIfNull(policies);
+        _policies = policies.ToDictionaryByUniqueId(p => p.Name);
         ArgumentNullException.ThrowIfNull(probingRequestFactory);
         _probingRequestFactory = probingRequestFactory;
         ArgumentNullException.ThrowIfNull(logger);
