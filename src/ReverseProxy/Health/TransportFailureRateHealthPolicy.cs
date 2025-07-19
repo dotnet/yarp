@@ -40,10 +40,11 @@ internal sealed class TransportFailureRateHealthPolicy : IPassiveHealthCheckPoli
         IDestinationHealthUpdater healthUpdater)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
-        _timeProvider = timeProvider;
         ArgumentNullException.ThrowIfNull(policyOptions?.Value);
-        _policyOptions = policyOptions?.Value;
         ArgumentNullException.ThrowIfNull(healthUpdater);
+
+        _timeProvider = timeProvider;
+        _policyOptions = policyOptions.Value;
         _healthUpdater = healthUpdater;
     }
 

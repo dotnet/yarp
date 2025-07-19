@@ -13,7 +13,8 @@ namespace Yarp.Sample
 
         public WebSocketsTelemetryConsumer(ILogger<WebSocketsTelemetryConsumer> logger)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            ArgumentNullException.ThrowIfNull(logger);
+            _logger = logger;
         }
 
         public void OnWebSocketClosed(DateTime timestamp, DateTime establishedTime, WebSocketCloseReason closeReason, long messagesRead, long messagesWritten)

@@ -12,10 +12,7 @@ public static class MessageConfigProviderExtensions
 {
     public static IReverseProxyBuilder LoadFromMessages(this IReverseProxyBuilder builder)
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         var provider = new KubernetesConfigProvider();
         builder.Services.AddSingleton<IProxyConfigProvider>(provider);

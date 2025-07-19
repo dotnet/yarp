@@ -18,15 +18,8 @@ public static class TransformBuilderContextFuncExtensions
     /// </summary>
     public static TransformBuilderContext AddRequestTransform(this TransformBuilderContext context, Func<RequestTransformContext, ValueTask> func)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (func is null)
-        {
-            throw new ArgumentNullException(nameof(func));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(func);
 
         context.RequestTransforms.Add(new RequestFuncTransform(func));
         return context;
@@ -37,15 +30,8 @@ public static class TransformBuilderContextFuncExtensions
     /// </summary>
     public static TransformBuilderContext AddResponseTransform(this TransformBuilderContext context, Func<ResponseTransformContext, ValueTask> func)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (func is null)
-        {
-            throw new ArgumentNullException(nameof(func));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(func);
 
         context.ResponseTransforms.Add(new ResponseFuncTransform(func));
         return context;
@@ -56,15 +42,8 @@ public static class TransformBuilderContextFuncExtensions
     /// </summary>
     public static TransformBuilderContext AddResponseTrailersTransform(this TransformBuilderContext context, Func<ResponseTrailersTransformContext, ValueTask> func)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
-
-        if (func is null)
-        {
-            throw new ArgumentNullException(nameof(func));
-        }
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(func);
 
         context.ResponseTrailersTransforms.Add(new ResponseTrailersFuncTransform(func));
         return context;

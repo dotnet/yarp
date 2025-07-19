@@ -13,10 +13,7 @@ public struct ServiceData
 {
     public ServiceData(V1Service service)
     {
-        if (service is null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
+        ArgumentNullException.ThrowIfNull(service);
 
         Spec = service.Spec;
         Metadata = service.Metadata;

@@ -73,24 +73,28 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
         IDestinationResolver destinationResolver)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
-        _providers = providers?.ToArray() ?? throw new ArgumentNullException(nameof(providers));
-        _clusterChangeListeners = (clusterChangeListeners as IClusterChangeListener[])
-            ?? clusterChangeListeners?.ToArray() ?? throw new ArgumentNullException(nameof(clusterChangeListeners));
-        _filters = (filters as IProxyConfigFilter[]) ?? filters?.ToArray() ?? throw new ArgumentNullException(nameof(filters));
+        ArgumentNullException.ThrowIfNull(providers);
+        ArgumentNullException.ThrowIfNull(clusterChangeListeners);
+        ArgumentNullException.ThrowIfNull(filters);
         ArgumentNullException.ThrowIfNull(configValidator);
-        _configValidator = configValidator;
         ArgumentNullException.ThrowIfNull(proxyEndpointFactory);
-        _proxyEndpointFactory = proxyEndpointFactory;
         ArgumentNullException.ThrowIfNull(transformBuilder);
-        _transformBuilder = transformBuilder;
         ArgumentNullException.ThrowIfNull(httpClientFactory);
-        _httpClientFactory = httpClientFactory;
         ArgumentNullException.ThrowIfNull(activeHealthCheckMonitor);
-        _activeHealthCheckMonitor = activeHealthCheckMonitor;
         ArgumentNullException.ThrowIfNull(clusterDestinationsUpdater);
-        _clusterDestinationsUpdater = clusterDestinationsUpdater;
         ArgumentNullException.ThrowIfNull(destinationResolver);
+
+        _logger = logger;
+        _providers = providers.ToArray();
+        _clusterChangeListeners = (clusterChangeListeners as IClusterChangeListener[])
+            ?? clusterChangeListeners.ToArray();
+        _filters = (filters as IProxyConfigFilter[]) ?? filters.ToArray();
+        _configValidator = configValidator;
+        _proxyEndpointFactory = proxyEndpointFactory;
+        _transformBuilder = transformBuilder;
+        _httpClientFactory = httpClientFactory;
+        _activeHealthCheckMonitor = activeHealthCheckMonitor;
+        _clusterDestinationsUpdater = clusterDestinationsUpdater;
         _destinationResolver = destinationResolver;
         _configChangeListeners = configChangeListeners?.ToArray() ?? Array.Empty<IConfigChangeListener>();
 
@@ -830,10 +834,7 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
     [MemberNotNull(nameof(_endpoints))]
     private void UpdateEndpoints(List<Endpoint> endpoints)
     {
-        if (endpoints is null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         lock (_syncRoot)
         {

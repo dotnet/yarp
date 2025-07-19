@@ -80,10 +80,7 @@ public struct NamespacedName : IEquatable<NamespacedName>
     /// <returns>NamespacedName.</returns>
     public static NamespacedName From(IKubernetesObject<V1ObjectMeta> resource)
     {
-        if (resource is null)
-        {
-            throw new ArgumentNullException(nameof(resource));
-        }
+        ArgumentNullException.ThrowIfNull(resource);
 
         return new NamespacedName(resource.Namespace(), resource.Name());
     }

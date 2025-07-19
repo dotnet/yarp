@@ -26,7 +26,6 @@ public class PathRouteValuesTransform : RequestTransform
         [StringSyntax("Route")] string pattern, TemplateBinderFactory binderFactory)
     {
         ArgumentNullException.ThrowIfNull(pattern);
-        
         ArgumentNullException.ThrowIfNull(binderFactory);
         _binderFactory = binderFactory;
         Pattern = RoutePatternFactory.Parse(pattern);
@@ -37,10 +36,7 @@ public class PathRouteValuesTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         // TemplateBinder.BindValues will modify the RouteValueDictionary
         // We make a copy so that the original request is not modified by the transform

@@ -22,9 +22,12 @@ internal sealed class ConfigValidator : IConfigValidator
         IEnumerable<IClusterValidator> clusterValidators)
     {
         ArgumentNullException.ThrowIfNull(transformBuilder);
+        ArgumentNullException.ThrowIfNull(routeValidators);
+        ArgumentNullException.ThrowIfNull(clusterValidators);
+
         _transformBuilder = transformBuilder;
-        _routeValidators = routeValidators?.ToArray() ?? throw new ArgumentNullException(nameof(routeValidators));
-        _clusterValidators = clusterValidators?.ToArray() ?? throw new ArgumentNullException(nameof(clusterValidators));
+        _routeValidators = routeValidators.ToArray();
+        _clusterValidators = clusterValidators.ToArray();
     }
 
     // Note this performs all validation steps without short-circuiting in order to report all possible errors.
@@ -63,7 +66,7 @@ internal sealed class ConfigValidator : IConfigValidator
     public async ValueTask<IList<Exception>> ValidateClusterAsync(ClusterConfig cluster)
     {
         ArgumentNullException.ThrowIfNull(cluster);
-        
+
         var errors = new List<Exception>();
 
         if (string.IsNullOrEmpty(cluster.ClusterId))

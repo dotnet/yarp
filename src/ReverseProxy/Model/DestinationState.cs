@@ -22,10 +22,7 @@ public sealed class DestinationState : IReadOnlyList<DestinationState>
     /// </summary>
     public DestinationState(string destinationId)
     {
-        if (string.IsNullOrEmpty(destinationId))
-        {
-            throw new ArgumentNullException(nameof(destinationId));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(destinationId);
         DestinationId = destinationId;
     }
 

@@ -45,10 +45,7 @@ public class IngressCache : ICache
 
     public void Update(WatchEventType eventType, V1IngressClass ingressClass)
     {
-        if (ingressClass is null)
-        {
-            throw new ArgumentNullException(nameof(ingressClass));
-        }
+        ArgumentNullException.ThrowIfNull(ingressClass);
 
         if (!string.Equals(_options.ControllerClass, ingressClass.Spec.Controller, StringComparison.OrdinalIgnoreCase))
         {
@@ -77,10 +74,7 @@ public class IngressCache : ICache
 
     public bool Update(WatchEventType eventType, V1Ingress ingress)
     {
-        if (ingress is null)
-        {
-            throw new ArgumentNullException(nameof(ingress));
-        }
+        ArgumentNullException.ThrowIfNull(ingress);
 
         Namespace(ingress.Namespace()).Update(eventType, ingress);
         return true;
@@ -89,10 +83,7 @@ public class IngressCache : ICache
 
     public ImmutableList<string> Update(WatchEventType eventType, V1Service service)
     {
-        if (service is null)
-        {
-            throw new ArgumentNullException(nameof(service));
-        }
+        ArgumentNullException.ThrowIfNull(service);
 
         return Namespace(service.Namespace()).Update(eventType, service);
     }
