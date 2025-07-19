@@ -33,12 +33,13 @@ public class IngressCache : ICache
     public IngressCache(IOptions<YarpOptions> options, IServerCertificateSelector certificateSelector, ICertificateHelper certificateHelper, ILogger<IngressCache> logger)
     {
         ArgumentNullException.ThrowIfNull(options?.Value);
-        _options = options?.Value;
         ArgumentNullException.ThrowIfNull(certificateSelector);
-        _certificateSelector = certificateSelector;
         ArgumentNullException.ThrowIfNull(certificateHelper);
-        _certificateHelper = certificateHelper;
         ArgumentNullException.ThrowIfNull(logger);
+
+        _options = options?.Value;
+        _certificateSelector = certificateSelector;
+        _certificateHelper = certificateHelper;
         _logger = logger;
     }
 
