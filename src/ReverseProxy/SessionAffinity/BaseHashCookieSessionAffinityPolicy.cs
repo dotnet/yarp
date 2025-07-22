@@ -19,8 +19,9 @@ internal abstract class BaseHashCookieSessionAffinityPolicy : ISessionAffinityPo
     public BaseHashCookieSessionAffinityPolicy(TimeProvider timeProvider, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
-        _timeProvider = timeProvider;
         ArgumentNullException.ThrowIfNull(logger);
+
+        _timeProvider = timeProvider;
         _logger = logger;
     }
 
