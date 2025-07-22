@@ -13,8 +13,9 @@ public sealed class ClusterDestinationsState
         IReadOnlyList<DestinationState> availableDestinations)
     {
         ArgumentNullException.ThrowIfNull(allDestinations);
-        AllDestinations = allDestinations;
         ArgumentNullException.ThrowIfNull(availableDestinations);
+
+        AllDestinations = allDestinations;
         AvailableDestinations = availableDestinations;
     }
 
