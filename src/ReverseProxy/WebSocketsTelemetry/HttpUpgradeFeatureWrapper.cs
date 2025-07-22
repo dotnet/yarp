@@ -26,10 +26,11 @@ internal sealed class HttpUpgradeFeatureWrapper : IHttpUpgradeFeature
     public HttpUpgradeFeatureWrapper(TimeProvider timeProvider, HttpContext httpContext, IHttpUpgradeFeature upgradeFeature)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
-        _timeProvider = timeProvider;
         ArgumentNullException.ThrowIfNull(httpContext);
-        HttpContext = httpContext;
         ArgumentNullException.ThrowIfNull(upgradeFeature);
+
+        _timeProvider = timeProvider;
+        HttpContext = httpContext;
         InnerUpgradeFeature = upgradeFeature;
     }
 
