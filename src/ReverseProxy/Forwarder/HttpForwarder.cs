@@ -33,8 +33,11 @@ internal sealed class HttpForwarder : IHttpForwarder
 
     public HttpForwarder(ILogger<HttpForwarder> logger, TimeProvider timeProvider)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
+        _logger = logger;
+        _timeProvider = timeProvider;
     }
 
     /// <summary>
@@ -98,11 +101,11 @@ internal sealed class HttpForwarder : IHttpForwarder
         HttpTransformer transformer,
         CancellationToken cancellationToken)
     {
-        _ = context ?? throw new ArgumentNullException(nameof(context));
-        _ = destinationPrefix ?? throw new ArgumentNullException(nameof(destinationPrefix));
-        _ = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _ = requestConfig ?? throw new ArgumentNullException(nameof(requestConfig));
-        _ = transformer ?? throw new ArgumentNullException(nameof(transformer));
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(destinationPrefix);
+        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(requestConfig);
+        ArgumentNullException.ThrowIfNull(transformer);
 
         if (RequestUtilities.IsResponseSet(context.Response))
         {

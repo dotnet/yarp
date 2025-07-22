@@ -11,10 +11,7 @@ internal static class ServiceLookupHelper
 {
     public static FrozenDictionary<string, T> ToDictionaryByUniqueId<T>(this IEnumerable<T> services, Func<T, string> idSelector)
     {
-        if (services is null)
-        {
-            throw new ArgumentNullException(nameof(services));
-        }
+        ArgumentNullException.ThrowIfNull(services);
 
         var result = new Dictionary<string, T>(StringComparer.OrdinalIgnoreCase);
 

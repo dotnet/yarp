@@ -15,10 +15,7 @@ internal sealed class RouteState
 
     public RouteState(string routeId)
     {
-        if (string.IsNullOrEmpty(routeId))
-        {
-            throw new ArgumentNullException(nameof(routeId));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(routeId);
         RouteId = routeId;
     }
 
@@ -31,7 +28,7 @@ internal sealed class RouteState
     internal RouteModel Model
     {
         get => _model;
-        set => _model = value ?? throw new ArgumentNullException(nameof(value));
+        set { ArgumentNullException.ThrowIfNull(value); _model = value; }
     }
 
     /// <summary>

@@ -31,10 +31,7 @@ public class RequestHeaderXForwardedPrefixTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var pathBase = context.HttpContext.Request.PathBase;
 

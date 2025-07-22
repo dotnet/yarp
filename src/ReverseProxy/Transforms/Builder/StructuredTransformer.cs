@@ -26,12 +26,16 @@ internal sealed class StructuredTransformer : HttpTransformer
         IList<ResponseTransform> responseTransforms,
         IList<ResponseTrailersTransform> responseTrailerTransforms)
     {
+        ArgumentNullException.ThrowIfNull(requestTransforms);
+        ArgumentNullException.ThrowIfNull(responseTransforms);
+        ArgumentNullException.ThrowIfNull(responseTrailerTransforms);
+
         ShouldCopyRequestHeaders = copyRequestHeaders;
         ShouldCopyResponseHeaders = copyResponseHeaders;
         ShouldCopyResponseTrailers = copyResponseTrailers;
-        RequestTransforms = requestTransforms?.ToArray() ?? throw new ArgumentNullException(nameof(requestTransforms));
-        ResponseTransforms = responseTransforms?.ToArray() ?? throw new ArgumentNullException(nameof(responseTransforms));
-        ResponseTrailerTransforms = responseTrailerTransforms?.ToArray() ?? throw new ArgumentNullException(nameof(responseTrailerTransforms));
+        RequestTransforms = requestTransforms.ToArray();
+        ResponseTransforms = responseTransforms.ToArray();
+        ResponseTrailerTransforms = responseTrailerTransforms.ToArray();
     }
 
     /// <summary>

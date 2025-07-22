@@ -31,10 +31,7 @@ public abstract class ResponseTransform
     /// <returns>The response header value, or StringValues.Empty if none.</returns>
     public static StringValues TakeHeader(ResponseTransformContext context, string headerName)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (string.IsNullOrEmpty(headerName))
         {

@@ -15,7 +15,9 @@ public class QueryParameterFromStaticTransform : QueryParameterTransform
             throw new ArgumentException($"'{nameof(key)}' cannot be null or empty.", nameof(key));
         }
 
-        Value = value ?? throw new ArgumentNullException(nameof(value));
+        ArgumentNullException.ThrowIfNull(value);
+
+        Value = value;
     }
 
     internal string Value { get; }

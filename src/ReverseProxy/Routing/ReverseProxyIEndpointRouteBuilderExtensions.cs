@@ -38,14 +38,8 @@ public static class ReverseProxyIEndpointRouteBuilderExtensions
     /// </summary>
     public static ReverseProxyConventionBuilder MapReverseProxy(this IEndpointRouteBuilder endpoints, Action<IReverseProxyApplicationBuilder> configureApp)
     {
-        if (endpoints is null)
-        {
-            throw new ArgumentNullException(nameof(endpoints));
-        }
-        if (configureApp is null)
-        {
-            throw new ArgumentNullException(nameof(configureApp));
-        }
+        ArgumentNullException.ThrowIfNull(endpoints);
+        ArgumentNullException.ThrowIfNull(configureApp);
 
         var proxyAppBuilder = new ReverseProxyApplicationBuilder(endpoints.CreateApplicationBuilder());
         proxyAppBuilder.UseMiddleware<ProxyPipelineInitializerMiddleware>();

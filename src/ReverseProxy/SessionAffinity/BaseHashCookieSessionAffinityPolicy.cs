@@ -18,8 +18,11 @@ internal abstract class BaseHashCookieSessionAffinityPolicy : ISessionAffinityPo
 
     public BaseHashCookieSessionAffinityPolicy(TimeProvider timeProvider, ILogger logger)
     {
-        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _timeProvider = timeProvider;
+        _logger = logger;
     }
 
     public abstract string Name { get; }

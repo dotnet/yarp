@@ -26,10 +26,7 @@ public class QueryParameterRemoveTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         context.Query.Collection.Remove(Key);
 

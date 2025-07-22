@@ -24,10 +24,7 @@ public static class IHttpForwarderExtensions
     public static ValueTask<ForwarderError> SendAsync(this IHttpForwarder forwarder, HttpContext context, string destinationPrefix,
         HttpMessageInvoker httpClient)
     {
-        if (forwarder is null)
-        {
-            throw new ArgumentNullException(nameof(forwarder));
-        }
+        ArgumentNullException.ThrowIfNull(forwarder);
 
         return forwarder.SendAsync(context, destinationPrefix, httpClient, ForwarderRequestConfig.Empty, HttpTransformer.Default);
     }
@@ -44,10 +41,7 @@ public static class IHttpForwarderExtensions
     public static ValueTask<ForwarderError> SendAsync(this IHttpForwarder forwarder, HttpContext context, string destinationPrefix,
         HttpMessageInvoker httpClient, ForwarderRequestConfig requestConfig)
     {
-        if (forwarder is null)
-        {
-            throw new ArgumentNullException(nameof(forwarder));
-        }
+        ArgumentNullException.ThrowIfNull(forwarder);
 
         return forwarder.SendAsync(context, destinationPrefix, httpClient, requestConfig, HttpTransformer.Default);
     }

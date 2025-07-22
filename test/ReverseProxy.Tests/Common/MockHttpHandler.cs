@@ -14,7 +14,8 @@ internal class MockHttpHandler : HttpMessageHandler
 
     public MockHttpHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> func)
     {
-        _func = func ?? throw new ArgumentNullException(nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
+        _func = func;
     }
 
     public static HttpMessageInvoker CreateClient(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> func)

@@ -84,10 +84,7 @@ public static class ReverseProxyServiceCollectionExtensions
     /// </summary>
     public static IReverseProxyBuilder LoadFromConfig(this IReverseProxyBuilder builder, IConfiguration config)
     {
-        if (config is null)
-        {
-            throw new ArgumentNullException(nameof(config));
-        }
+        ArgumentNullException.ThrowIfNull(config);
 
         builder.Services.AddSingleton<IProxyConfigProvider>(sp =>
         {
@@ -104,10 +101,7 @@ public static class ReverseProxyServiceCollectionExtensions
     /// <typeparam name="TService">A class that implements IProxyConfigFilter.</typeparam>
     public static IReverseProxyBuilder AddConfigFilter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TService>(this IReverseProxyBuilder builder) where TService : class, IProxyConfigFilter
     {
-        if (builder is null)
-        {
-            throw new ArgumentNullException(nameof(builder));
-        }
+        ArgumentNullException.ThrowIfNull(builder);
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IProxyConfigFilter, TService>());
         return builder;
@@ -120,10 +114,7 @@ public static class ReverseProxyServiceCollectionExtensions
     /// </summary>
     public static IReverseProxyBuilder AddTransforms(this IReverseProxyBuilder builder, Action<TransformBuilderContext> action)
     {
-        if (action is null)
-        {
-            throw new ArgumentNullException(nameof(action));
-        }
+        ArgumentNullException.ThrowIfNull(action);
 
         builder.Services.AddSingleton<ITransformProvider>(new ActionTransformProvider(action));
         return builder;
@@ -157,10 +148,7 @@ public static class ReverseProxyServiceCollectionExtensions
     /// </summary>
     public static IReverseProxyBuilder ConfigureHttpClient(this IReverseProxyBuilder builder, Action<ForwarderHttpClientContext, SocketsHttpHandler> configure)
     {
-        if (configure is null)
-        {
-            throw new ArgumentNullException(nameof(configure));
-        }
+        ArgumentNullException.ThrowIfNull(configure);
 
         // Avoid overriding any other custom factories. This does not handle the case where a IForwarderHttpClientFactory
         // is registered after this call.

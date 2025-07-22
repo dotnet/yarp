@@ -18,9 +18,13 @@ internal sealed class ParsedMetadataEntry<T>
 
     public ParsedMetadataEntry(Parser parser, ClusterState cluster, string metadataName)
     {
-        _parser = parser ?? throw new ArgumentNullException(nameof(parser));
-        _cluster = cluster ?? throw new ArgumentNullException(nameof(cluster));
-        _metadataName = metadataName ?? throw new ArgumentNullException(nameof(metadataName));
+        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(cluster);
+        ArgumentNullException.ThrowIfNull(metadataName);
+
+        _parser = parser;
+        _cluster = cluster;
+        _metadataName = metadataName;
     }
 
     public T GetParsedOrDefault(T defaultValue)

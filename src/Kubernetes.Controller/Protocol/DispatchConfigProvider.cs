@@ -20,7 +20,8 @@ public class DispatchConfigProvider : IUpdateConfig
 
     public DispatchConfigProvider(IDispatcher dispatcher)
     {
-        _dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
+        ArgumentNullException.ThrowIfNull(dispatcher);
+        _dispatcher = dispatcher;
     }
 
     public async Task UpdateAsync(IReadOnlyList<RouteConfig> routes, IReadOnlyList<ClusterConfig> clusters, CancellationToken cancellationToken)
