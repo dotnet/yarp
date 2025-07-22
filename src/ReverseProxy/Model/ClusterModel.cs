@@ -27,8 +27,9 @@ public sealed class ClusterModel
         HttpMessageInvoker httpClient)
     {
         ArgumentNullException.ThrowIfNull(config);
-        Config = config;
         ArgumentNullException.ThrowIfNull(httpClient);
+
+        Config = config;
         HttpClient = httpClient;
     }
 
