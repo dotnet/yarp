@@ -88,6 +88,7 @@ public static class PathTransformExtensions
     public static RouteConfig WithTransformPathRouteValues(this RouteConfig route, [StringSyntax("Route")] PathString pattern)
     {
         ArgumentNullException.ThrowIfNull(pattern.Value);
+
         return route.WithTransform(transform =>
         {
             transform[PathTransformFactory.PathPatternKey] = pattern.Value;
