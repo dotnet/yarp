@@ -27,7 +27,6 @@ internal sealed class HeaderMatcherPolicy : MatcherPolicy, IEndpointComparerPoli
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-        
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         if (ContainsDynamicEndpoints(endpoints))
