@@ -24,7 +24,6 @@ namespace Yarp.Sample
         // Time the request was started via the pipeline
         public DateTime StartTime { get; set; }
 
-
         // Offset Tics for each part of the proxy operation
         public float RouteInvokeOffset { get; set; }
         public float ProxyStartOffset { get; set; }

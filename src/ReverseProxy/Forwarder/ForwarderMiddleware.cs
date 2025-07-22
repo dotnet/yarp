@@ -37,7 +37,6 @@ internal sealed class ForwarderMiddleware
     public async Task Invoke(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        
 
         var reverseProxyFeature = context.GetReverseProxyFeature();
         var destinations = reverseProxyFeature.AvailableDestinations

@@ -14,7 +14,8 @@ internal class YarpConfigContext
 
     public List<ClusterConfig> BuildClusterConfig()
     {
-        return ClusterTransfers.Values.Select(c => new ClusterConfig() {
+        return ClusterTransfers.Values.Select(c => new ClusterConfig()
+        {
             Destinations = c.Destinations,
             ClusterId = c.ClusterId,
             HealthCheck = c.HealthCheck,

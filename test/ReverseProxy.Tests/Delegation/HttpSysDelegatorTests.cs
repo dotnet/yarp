@@ -20,9 +20,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
 {
     private readonly HttpSysDelegator _delegator;
     private readonly IClusterChangeListener _changeListener;
-
     private readonly DefaultHttpContext _context;
-
 
     public HttpSysDelegatorTests()
     {

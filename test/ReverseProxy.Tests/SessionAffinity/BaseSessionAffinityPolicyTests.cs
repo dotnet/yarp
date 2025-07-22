@@ -167,7 +167,7 @@ public class BaseSesstionAffinityPolicyTests
 
         public ProviderStub(IDataProtectionProvider dataProtectionProvider, ILogger logger)
             : base(dataProtectionProvider, logger)
-        {}
+        { }
 
         public override string Name => "Stub";
 

@@ -246,7 +246,6 @@ public class HttpTransformer
         return default;
     }
 
-
     private static void CopyResponseHeaders(HttpHeaders source, IHeaderDictionary destination)
     {
         // We want to append to any prior values, if any.

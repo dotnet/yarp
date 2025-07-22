@@ -11,7 +11,7 @@ string[] planets = { "Mercury", "Venus", "Earth", "Mars", "Jupiter" };
 
 foreach (var planet in planets)
 {
-    _ = Task.Run( () =>
+    _ = Task.Run(() =>
     {
         CreateLoad("http://localhost:5000/" + planet);
     });
@@ -21,7 +21,7 @@ var c = Console.ReadKey();
 async void CreateLoad(string UrlPrefix)
 {
     var i = 0;
-    while(true)
+    while (true)
     {
         var url = UrlPrefix + "/" + i;
         var resp = await client.GetAsync(url);

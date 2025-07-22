@@ -56,7 +56,7 @@ internal static class EventIds
     public static readonly EventId ActiveDestinationHealthStateIsSet = new EventId(50, "ActiveDestinationHealthStateIsSet");
     public static readonly EventId DelegationQueueInitializationFailed = new EventId(51, "DelegationQueueInitializationFailed");
     public static readonly EventId DelegationQueueNotFound = new EventId(52, "DelegationQueueNotFound");
-    public static readonly EventId DelegationQueueNotInitialized  = new EventId(53, "DelegationQueueNotInitialized");
+    public static readonly EventId DelegationQueueNotInitialized = new EventId(53, "DelegationQueueNotInitialized");
     public static readonly EventId DelegatingRequest = new EventId(54, "DelegatingRequest");
     public static readonly EventId DelegationFailed = new EventId(55, "DelegationFailed");
     public static readonly EventId ResponseReceived = new EventId(56, "ResponseReceived");

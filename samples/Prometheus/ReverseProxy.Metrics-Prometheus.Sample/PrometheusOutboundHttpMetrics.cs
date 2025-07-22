@@ -1,10 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
 using System;
 using Yarp.Telemetry.Consumption;
 using Prometheus;
@@ -28,7 +24,7 @@ namespace Yarp.Sample
             "Number of outbound requests failed"
             );
 
-        private static readonly Gauge _outboundCurrentRequests =Metrics.CreateGauge(
+        private static readonly Gauge _outboundCurrentRequests = Metrics.CreateGauge(
             "yarp_outbound_http_current_requests",
             "Number of active outbound requests that have started but not yet completed or failed"
             );
@@ -38,12 +34,12 @@ namespace Yarp.Sample
             "Number of currently open HTTP 1.1 connections"
             );
 
-        private static readonly Gauge _outboundCurrentHttp20Connections= Metrics.CreateGauge(
+        private static readonly Gauge _outboundCurrentHttp20Connections = Metrics.CreateGauge(
             "yarp_outbound_http20_connections",
             "Number of active proxy requests that have started but not yet completed or failed"
             );
 
-        private static readonly Histogram _outboundHttp11RequestQueueDuration= Metrics.CreateHistogram(
+        private static readonly Histogram _outboundHttp11RequestQueueDuration = Metrics.CreateHistogram(
             "yarp_outbound_http11_request_queue_duration",
             "Average time spent on queue for HTTP 1.1 requests that hit the MaxConnectionsPerServer limit in the last metrics interval",
             new HistogramConfiguration

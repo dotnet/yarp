@@ -366,7 +366,6 @@ internal sealed class HttpSysDelegator : IHttpSysDelegator, IClusterChangeListen
         public override int GetHashCode() => _hashCode;
     }
 
-
     private static class Log
     {
         private static readonly Action<ILogger, string, string, string, Exception?> _queueInitFailed = LoggerMessage.Define<string, string, string>(

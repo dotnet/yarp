@@ -64,7 +64,6 @@ public class BackgroundHostedServiceTests
         await runTask;
     }
 
-
     [Fact]
     public async Task IfRunAsyncThrowsItComesBackFromHost()
     {

@@ -129,7 +129,6 @@ public class WorkQueueTests
         Assert.Equal(0, queue.Len());
     }
 
-
     [Fact]
     public async Task GetCompletesOnceAddIsCalled()
     {

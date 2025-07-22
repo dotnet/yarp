@@ -855,7 +855,8 @@ public class ConfigValidatorTests
     [InlineData("Disable")]
     public async Task Accepts_BuiltInRateLimiterPolicy(string rateLimiterPolicy)
     {
-        var route = new RouteConfig {
+        var route = new RouteConfig
+        {
             RouteId = "route1",
             Match = new RouteMatch
             {
@@ -905,14 +906,16 @@ public class ConfigValidatorTests
     [InlineData("NotAPolicy")]
     public async Task Rejects_InvalidRateLimiterPolicy(string rateLimiterPolicy)
     {
-        var route = new RouteConfig {
+        var route = new RouteConfig
+        {
             RouteId = "route1",
             Match = new RouteMatch
             {
                 Hosts = new[] { "localhost" },
             },
             ClusterId = "cluster1",
-            RateLimiterPolicy = rateLimiterPolicy };
+            RateLimiterPolicy = rateLimiterPolicy
+        };
 
         var services = CreateServices();
         var validator = services.GetRequiredService<IConfigValidator>();
@@ -945,7 +948,8 @@ public class ConfigValidatorTests
         var services = CreateServices();
         var validator = services.GetRequiredService<IConfigValidator>();
 
-        var cluster = new ClusterConfig {
+        var cluster = new ClusterConfig
+        {
             ClusterId = "cluster1",
             Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase) {
                 { "destination1", new DestinationConfig { Address = "https://localhost:1234" } }
@@ -965,7 +969,8 @@ public class ConfigValidatorTests
         var services = CreateServices();
         var validator = services.GetRequiredService<IConfigValidator>();
 
-        var cluster = new ClusterConfig {
+        var cluster = new ClusterConfig
+        {
             ClusterId = "cluster1",
             Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase) {
                 { "destination1", new DestinationConfig { Address = address } }

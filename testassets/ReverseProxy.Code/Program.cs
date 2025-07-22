@@ -129,7 +129,7 @@ app.MapReverseProxy(proxyPipeline =>
         {
             var availableDestinationsFeature = context.Features.Get<IReverseProxyFeature>();
             var destination = availableDestinationsFeature.AvailableDestinations[0]; // PickDestination(availableDestinationsFeature.Destinations);
-                                                                                        // Load balancing will no-op if we've already reduced the list of available destinations to 1.
+                                                                                     // Load balancing will no-op if we've already reduced the list of available destinations to 1.
             availableDestinationsFeature.AvailableDestinations = destination;
         }
 

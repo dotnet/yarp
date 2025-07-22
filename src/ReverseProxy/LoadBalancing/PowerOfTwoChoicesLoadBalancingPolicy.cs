@@ -26,7 +26,7 @@ internal sealed class PowerOfTwoChoicesLoadBalancingPolicy : ILoadBalancingPolic
         {
             return null;
         }
-        
+
         if (destinationCount == 1)
         {
             return availableDestinations[0];

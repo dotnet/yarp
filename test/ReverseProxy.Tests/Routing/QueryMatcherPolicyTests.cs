@@ -75,7 +75,6 @@ public class QueryParameterMatcherPolicyTests
                 new QueryParameterMatcher("queryparam", new[] { "abc" }, QueryParameterMatchMode.Prefix, isCaseSensitive: true),
                 new QueryParameterMatcher("queryparam", new[] { "abc" }, QueryParameterMatchMode.Contains, isCaseSensitive: true),
                 new QueryParameterMatcher("queryparam", new[] { "abc" }, QueryParameterMatchMode.Exact, isCaseSensitive: true)
-
             })),
 
             (1, CreateEndpoint(new[]
@@ -92,7 +91,6 @@ public class QueryParameterMatcherPolicyTests
             (2, CreateEndpoint("queryparam", new[] { "abc" })),
 
             (3, CreateEndpoint(Array.Empty<QueryParameterMatcher>())),
-
         };
         var sut = new QueryParameterMatcherPolicy();
 
