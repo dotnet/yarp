@@ -82,6 +82,7 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
         ArgumentNullException.ThrowIfNull(httpClientFactory);
         ArgumentNullException.ThrowIfNull(activeHealthCheckMonitor);
         ArgumentNullException.ThrowIfNull(clusterDestinationsUpdater);
+        ArgumentNullException.ThrowIfNull(configChangeListeners);
         ArgumentNullException.ThrowIfNull(destinationResolver);
 
         _logger = logger;
@@ -95,7 +96,7 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
         _activeHealthCheckMonitor = activeHealthCheckMonitor;
         _clusterDestinationsUpdater = clusterDestinationsUpdater;
         _destinationResolver = destinationResolver;
-        _configChangeListeners = configChangeListeners?.ToArray() ?? Array.Empty<IConfigChangeListener>();
+        _configChangeListeners = configChangeListeners.ToArray();
 
         if (_providers.Length == 0)
         {
