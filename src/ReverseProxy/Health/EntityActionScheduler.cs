@@ -38,9 +38,10 @@ internal sealed class EntityActionScheduler<T> : IDisposable where T : notnull
     public EntityActionScheduler(Func<T, Task> action, bool autoStart, bool runOnce, TimeProvider timeProvider)
     {
         ArgumentNullException.ThrowIfNull(action);
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         _action = action;
         _runOnce = runOnce;
-        ArgumentNullException.ThrowIfNull(timeProvider);
         _timeProvider = timeProvider;
         _status = autoStart ? Started : NotStarted;
         _weakThisRef = new WeakReference<EntityActionScheduler<T>>(this);

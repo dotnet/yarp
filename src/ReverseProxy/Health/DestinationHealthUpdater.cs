@@ -21,9 +21,10 @@ internal sealed class DestinationHealthUpdater : IDestinationHealthUpdater, IDis
         IClusterDestinationsUpdater clusterDestinationsUpdater,
         ILogger<DestinationHealthUpdater> logger)
     {
-        _scheduler = new EntityActionScheduler<(ClusterState Cluster, DestinationState Destination)>(d => Reactivate(d.Cluster, d.Destination), autoStart: true, runOnce: true, timeProvider);
         ArgumentNullException.ThrowIfNull(clusterDestinationsUpdater);
         ArgumentNullException.ThrowIfNull(logger);
+
+        _scheduler = new EntityActionScheduler<(ClusterState Cluster, DestinationState Destination)>(d => Reactivate(d.Cluster, d.Destination), autoStart: true, runOnce: true, timeProvider);
         _clusterUpdater = clusterDestinationsUpdater;
         _logger = logger;
     }

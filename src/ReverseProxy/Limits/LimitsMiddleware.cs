@@ -23,8 +23,9 @@ internal sealed class LimitsMiddleware
     public LimitsMiddleware(RequestDelegate next, ILogger<LimitsMiddleware> logger)
     {
         ArgumentNullException.ThrowIfNull(next);
-        _next = next;
         ArgumentNullException.ThrowIfNull(logger);
+
+        _next = next;
         _logger = logger;
     }
 
@@ -32,7 +33,6 @@ internal sealed class LimitsMiddleware
     public Task Invoke(HttpContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        
 
         var config = context.GetRouteModel().Config;
 

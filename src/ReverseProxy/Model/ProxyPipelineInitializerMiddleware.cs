@@ -25,12 +25,11 @@ internal sealed class ProxyPipelineInitializerMiddleware
     public ProxyPipelineInitializerMiddleware(RequestDelegate next, ILogger<ProxyPipelineInitializerMiddleware> logger, IOptionsMonitor<RequestTimeoutOptions> timeoutOptions)
     {
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         ArgumentNullException.ThrowIfNull(next);
-        _next = next;
-
         ArgumentNullException.ThrowIfNull(timeoutOptions);
 
+        _logger = logger;
+        _next = next;
         _timeoutOptions = timeoutOptions;
     }
 

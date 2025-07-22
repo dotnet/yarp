@@ -27,9 +27,10 @@ public sealed class RouteModel
         HttpTransformer transformer)
     {
         ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(transformer);
+
         Config = config;
         Cluster = cluster;
-        ArgumentNullException.ThrowIfNull(transformer);
         Transformer = transformer;
     }
 
