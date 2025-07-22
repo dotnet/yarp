@@ -26,7 +26,6 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     public void Add(Action<EndpointBuilder> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
-        
 
         _conventions.Add(convention);
     }
