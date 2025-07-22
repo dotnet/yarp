@@ -102,15 +102,10 @@ internal sealed class HttpForwarder : IHttpForwarder
         CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(context);
-        
         ArgumentNullException.ThrowIfNull(destinationPrefix);
-        
         ArgumentNullException.ThrowIfNull(httpClient);
-        
         ArgumentNullException.ThrowIfNull(requestConfig);
-        
         ArgumentNullException.ThrowIfNull(transformer);
-        
 
         if (RequestUtilities.IsResponseSet(context.Response))
         {
