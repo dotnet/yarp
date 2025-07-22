@@ -26,7 +26,6 @@ internal sealed class QueryParameterMatcherPolicy : MatcherPolicy, IEndpointComp
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-        
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         if (ContainsDynamicEndpoints(endpoints))
