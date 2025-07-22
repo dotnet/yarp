@@ -30,11 +30,12 @@ internal sealed class SessionAffinityMiddleware
         ILogger<SessionAffinityMiddleware> logger)
     {
         ArgumentNullException.ThrowIfNull(next);
-        _next = next;
         ArgumentNullException.ThrowIfNull(logger);
-        _logger = logger;
         ArgumentNullException.ThrowIfNull(sessionAffinityPolicies);
         ArgumentNullException.ThrowIfNull(affinityFailurePolicies);
+
+        _next = next;
+        _logger = logger;
         _sessionAffinityPolicies = sessionAffinityPolicies.ToDictionaryByUniqueId(p => p.Name);
         _affinityFailurePolicies = affinityFailurePolicies.ToDictionaryByUniqueId(p => p.Name);
     }
