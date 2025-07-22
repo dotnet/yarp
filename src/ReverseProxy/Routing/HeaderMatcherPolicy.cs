@@ -50,9 +50,7 @@ internal sealed class HeaderMatcherPolicy : MatcherPolicy, IEndpointComparerPoli
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-        
         ArgumentNullException.ThrowIfNull(candidates);
-        
 
         var headers = httpContext.Request.Headers;
 
