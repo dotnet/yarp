@@ -50,9 +50,7 @@ internal sealed class QueryParameterMatcherPolicy : MatcherPolicy, IEndpointComp
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-        
         ArgumentNullException.ThrowIfNull(candidates);
-        
 
         var query = httpContext.Request.Query;
 
