@@ -58,7 +58,6 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     public ReverseProxyConventionBuilder ConfigureEndpoints(Action<IEndpointConventionBuilder, RouteConfig> convention)
     {
         ArgumentNullException.ThrowIfNull(convention);
-        
 
         void Action(EndpointBuilder endpointBuilder)
         {
