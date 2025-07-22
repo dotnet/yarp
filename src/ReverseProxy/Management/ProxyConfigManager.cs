@@ -86,9 +86,8 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
 
         _logger = logger;
         _providers = providers.ToArray();
-        _clusterChangeListeners = (clusterChangeListeners as IClusterChangeListener[])
-            ?? clusterChangeListeners.ToArray();
-        _filters = (filters as IProxyConfigFilter[]) ?? filters.ToArray();
+        _clusterChangeListeners = clusterChangeListeners.ToArray();
+        _filters = filters.ToArray();
         _configValidator = configValidator;
         _proxyEndpointFactory = proxyEndpointFactory;
         _transformBuilder = transformBuilder;
