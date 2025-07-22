@@ -55,9 +55,10 @@ internal sealed class StreamCopyHttpContent : HttpContent
     public StreamCopyHttpContent(HttpContext context, bool isStreamingRequest, TimeProvider timeProvider, ILogger logger, ActivityCancellationTokenSource activityToken)
     {
         ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(timeProvider);
+
         _context = context;
         _isStreamingRequest = isStreamingRequest;
-        ArgumentNullException.ThrowIfNull(timeProvider);
         _timeProvider = timeProvider;
         _logger = logger;
         _activityToken = activityToken;
