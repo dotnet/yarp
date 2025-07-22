@@ -27,10 +27,11 @@ internal sealed class HttpConnectFeatureWrapper : IHttpExtendedConnectFeature
     public HttpConnectFeatureWrapper(TimeProvider timeProvider, HttpContext httpContext, IHttpExtendedConnectFeature connectFeature)
     {
         ArgumentNullException.ThrowIfNull(timeProvider);
-        _timeProvider = timeProvider;
         ArgumentNullException.ThrowIfNull(httpContext);
-        HttpContext = httpContext;
         ArgumentNullException.ThrowIfNull(connectFeature);
+
+        _timeProvider = timeProvider;
+        HttpContext = httpContext;
         InnerConnectFeature = connectFeature;
     }
 
