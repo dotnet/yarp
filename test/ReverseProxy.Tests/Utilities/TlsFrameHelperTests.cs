@@ -108,7 +108,6 @@ public class TlsFrameHelperTests
             }
         }
         Assert.Equal(3, expectedCiphersCount);
-
     }
 
     [Fact]
@@ -125,9 +124,9 @@ public class TlsFrameHelperTests
         Assert.Equal(TlsHandshakeType.ClientHello, info.HandshakeType);
     }
 
-     [Fact]
-     public void TlsFrameHelper_TlsClientHelloNoExtensions_Ok()
-     {
+    [Fact]
+    public void TlsFrameHelper_TlsClientHelloNoExtensions_Ok()
+    {
         TlsFrameHelper.TlsFrameInfo info = default;
         Assert.True(TlsFrameHelper.TryGetFrameInfo(s_TlsClientHelloNoExtensions, ref info));
         Assert.Equal(TlsFrameHelper.ParsingStatus.Ok, info.ParsingStatus);
@@ -136,7 +135,7 @@ public class TlsFrameHelperTests
         Assert.Equal(TlsContentType.Handshake, info.Header.Type);
         Assert.Equal(TlsFrameHelper.ApplicationProtocolInfo.None, info.ApplicationProtocols);
         Assert.Equal(TlsHandshakeType.ClientHello, info.HandshakeType);
-     }
+    }
 
     [Fact]
     public void TlsFrameHelper_Tls12ServerHello_Ok()

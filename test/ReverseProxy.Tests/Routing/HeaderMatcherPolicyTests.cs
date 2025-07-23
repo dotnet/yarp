@@ -87,7 +87,6 @@ public class HeaderMatcherPolicyTests
             (2, CreateEndpoint("header", new[] { "abc" })),
 
             (3, CreateEndpoint(Array.Empty<HeaderMatcher>())),
-
         };
         var sut = new HeaderMatcherPolicy();
 

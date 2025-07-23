@@ -332,7 +332,7 @@ public class TransformBuilderTests
             // Otherwise, fall back to the destination config host, which will be null if it's not set.
             Assert.Equal(destinationHost, proxyRequest.Headers.Host);
         }
-        else 
+        else
         {
             // Otherwise, the host should be null
             Assert.Null(proxyRequest.Headers.Host);

@@ -32,7 +32,6 @@ internal sealed class V1IngressResourceStatusUpdater : IIngressResourceStatusUpd
         _logger = logger;
     }
 
-
     public async Task UpdateStatusAsync(CancellationToken cancellationToken)
     {
         var service = await _client.CoreV1.ReadNamespacedServiceStatusAsync(_options.ControllerServiceName, _options.ControllerServiceNamespace, cancellationToken: cancellationToken);

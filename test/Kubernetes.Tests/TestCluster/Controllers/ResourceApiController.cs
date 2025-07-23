@@ -24,7 +24,6 @@ public class ResourceApiController : ControllerBase
     [FromRoute]
     public string Plural { get; set; }
 
-
     [HttpGet]
     public async Task<IActionResult> ListAsync(ListParameters parameters)
     {

@@ -126,7 +126,6 @@ public class HttpSysTestEnvironment
                     }
                 });
             });
-
     }
 
     private static IHost CreateHttpSysHost(

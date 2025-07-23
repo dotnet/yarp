@@ -80,7 +80,6 @@ public class IngressCache : ICache
         return true;
     }
 
-
     public ImmutableList<string> Update(WatchEventType eventType, V1Service service)
     {
         ArgumentNullException.ThrowIfNull(service);
@@ -163,7 +162,6 @@ public class IngressCache : ICache
         {
             return _ingressClassData.ContainsKey(ingress.Spec.IngressClassName);
         }
-
     }
 
     private NamespaceCache Namespace(string key)

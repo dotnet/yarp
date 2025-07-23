@@ -22,7 +22,6 @@ builder.Services.AddReverseProxy()
 
 var app = builder.Build();
 
-
 app.Map("/update", context =>
 {
     context.RequestServices.GetRequiredService<InMemoryConfigProvider>().Update(GetRoutes(), GetClusters());

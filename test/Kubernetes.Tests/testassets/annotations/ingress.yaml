@@ -16,7 +16,6 @@ metadata:
         Policy: ConsecutiveFailures
         Path: "/api/health"
 
-
     yarp.ingress.kubernetes.io/http-client: |
       SslProtocols: Ssl3
       MaxConnectionsPerServer: 2
@@ -42,7 +41,6 @@ metadata:
         Path: mypath
         SameSite: Strict
         SecurePolicy: Always
-
 
     yarp.ingress.kubernetes.io/transforms: |
       - PathPrefix: "/apis"

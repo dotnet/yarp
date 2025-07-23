@@ -236,7 +236,7 @@ public class Expect100ContinueTests
 
         await test.Invoke(async uri =>
         {
-            await ProcessHttpRequest(new Uri(uri), proxyProtocol, contentString, useContentLength, 400, cancelResponse:false, contentRead: false, async response =>
+            await ProcessHttpRequest(new Uri(uri), proxyProtocol, contentString, useContentLength, 400, cancelResponse: false, contentRead: false, async response =>
             {
                 Assert.Equal(400, (int)response.StatusCode);
 

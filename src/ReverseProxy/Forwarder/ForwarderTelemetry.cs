@@ -94,7 +94,6 @@ internal sealed class ForwarderTelemetry : EventSource
         }
     }
 
-
     protected override void OnEventCommand(EventCommandEventArgs command)
     {
         if (command.Command == EventCommand.Enable)
@@ -121,7 +120,6 @@ internal sealed class ForwarderTelemetry : EventSource
             };
         }
     }
-
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode",
         Justification = "Parameters to this method are primitive and are trimmer safe.")]

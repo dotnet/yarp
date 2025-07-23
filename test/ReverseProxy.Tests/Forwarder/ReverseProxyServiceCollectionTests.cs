@@ -19,7 +19,7 @@ public class ReverseProxyServiceCollectionTests
             .ConfigureHttpClient((_, _) => { });
     }
 
-    [Fact] 
+    [Fact]
     public void ConfigureHttpClient_ThrowIfCustomServiceAdded()
     {
         Assert.Throws<InvalidOperationException>(() =>

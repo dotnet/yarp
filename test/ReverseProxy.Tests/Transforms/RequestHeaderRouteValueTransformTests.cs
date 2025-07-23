@@ -15,13 +15,13 @@ namespace Yarp.ReverseProxy.Tests.Transforms;
 public class RequestHeaderRouteValueTransformTests
 {
     [Theory]
-    [InlineData("defaultHeader","value","/{a}/{b}/{c}", "a", "value;6", true)]
-    [InlineData("defaultHeader","value","/{a}/{b}/{c}", "notInRoute", "value", true)]
-    [InlineData("defaultHeader","value","/{a}/{b}/{c}", "notInRoute", "value", false)]
-    [InlineData("defaultHeader","value","/{a}/{b}/{c}", "a", "6", false)]
-    [InlineData("h1","value","/{a}/{b}/{c}", "a", "6", false)]
-    [InlineData("h1","value","/{a}/{b}/{c}", "b", "7", false)]
-    [InlineData("h1","value","/{a}/{*remainder}", "remainder", "7/8", false)]
+    [InlineData("defaultHeader", "value", "/{a}/{b}/{c}", "a", "value;6", true)]
+    [InlineData("defaultHeader", "value", "/{a}/{b}/{c}", "notInRoute", "value", true)]
+    [InlineData("defaultHeader", "value", "/{a}/{b}/{c}", "notInRoute", "value", false)]
+    [InlineData("defaultHeader", "value", "/{a}/{b}/{c}", "a", "6", false)]
+    [InlineData("h1", "value", "/{a}/{b}/{c}", "a", "6", false)]
+    [InlineData("h1", "value", "/{a}/{b}/{c}", "b", "7", false)]
+    [InlineData("h1", "value", "/{a}/{*remainder}", "remainder", "7/8", false)]
     public async Task AddsRequestHeaderRouteValue_SetHeader(string headerName, string defaultHeaderStartValue, string pattern, string routeValueKey, string expected, bool append)
     {
         // Arrange

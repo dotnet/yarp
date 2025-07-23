@@ -40,7 +40,7 @@ internal abstract class EventListenerService<TService, TTelemetryConsumer, TMetr
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(telemetryConsumers);
         ArgumentNullException.ThrowIfNull(metricsConsumers);
-        
+
         _logger = logger;
         _telemetryConsumers = telemetryConsumers.ToArray();
         _metricsConsumers = metricsConsumers.ToArray();

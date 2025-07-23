@@ -13,7 +13,6 @@ namespace Yarp.Sample
             "Number of outgoing (Connect) Socket connections established"
             );
 
-
         private static readonly Counter _incomingConnectionsEstablished = Metrics.CreateCounter(
             "yarp_sockets_incoming_connections_established",
             "Number of incoming (Accept) Socket connections established"

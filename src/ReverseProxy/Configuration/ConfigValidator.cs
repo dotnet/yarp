@@ -56,7 +56,7 @@ internal sealed class ConfigValidator : IConfigValidator
 
         foreach (var routeValidator in _routeValidators)
         {
-           await routeValidator.ValidateAsync(route, errors);
+            await routeValidator.ValidateAsync(route, errors);
         }
 
         return errors;
@@ -78,7 +78,7 @@ internal sealed class ConfigValidator : IConfigValidator
 
         foreach (var clusterValidator in _clusterValidators)
         {
-           await clusterValidator.ValidateAsync(cluster, errors);
+            await clusterValidator.ValidateAsync(cluster, errors);
         }
 
         return errors;

@@ -51,7 +51,6 @@ public class HeaderTests
                     customReceived.SetException(new Exception($"Missing 'custom' header in request"));
                 }
 
-
                 return Task.CompletedTask;
             })
         {
@@ -589,7 +588,7 @@ public class HeaderTests
         {
             foreach (var value in MultiValues())
             {
-                yield return new object[] { header, value, string.Join(", ", value).TrimEnd() }; 
+                yield return new object[] { header, value, string.Join(", ", value).TrimEnd() };
             }
         }
 
