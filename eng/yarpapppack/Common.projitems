@@ -24,7 +24,7 @@
   <PropertyGroup>
       <YarpArchiveBaseName>$(YarpAppArtifactsOutputDir)/$(YarpAppRuntime)/reverse-proxy-$(YarpAppRuntime)</YarpArchiveBaseName>
       <YarpArchiveZipName>$(YarpArchiveBaseName).zip</YarpArchiveZipName>
-      <YarpArchiveSha512Name>$(YarpArchiveBaseName).sha512</YarpArchiveSha512Name>
+      <YarpArchiveSha512Name>$(YarpArchiveZipName).sha512</YarpArchiveSha512Name>
   </PropertyGroup>
 
   <Target Name="BeforeBuild" BeforeTargets="Build">
