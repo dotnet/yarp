@@ -21,10 +21,7 @@ public static class PathTransformExtensions
     /// </summary>
     public static RouteConfig WithTransformPathSet(this RouteConfig route, PathString path)
     {
-        if (path.Value is null)
-        {
-            throw new ArgumentNullException(nameof(path));
-        }
+        ArgumentNullException.ThrowIfNull(path.Value);
 
         return route.WithTransform(transform =>
         {
@@ -46,10 +43,7 @@ public static class PathTransformExtensions
     /// </summary>
     public static RouteConfig WithTransformPathPrefix(this RouteConfig route, PathString prefix)
     {
-        if (prefix.Value is null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix.Value);
 
         return route.WithTransform(transform =>
         {
@@ -71,10 +65,7 @@ public static class PathTransformExtensions
     /// </summary>
     public static RouteConfig WithTransformPathRemovePrefix(this RouteConfig route, PathString prefix)
     {
-        if (prefix.Value is null)
-        {
-            throw new ArgumentNullException(nameof(prefix));
-        }
+        ArgumentNullException.ThrowIfNull(prefix.Value);
 
         return route.WithTransform(transform =>
         {
@@ -96,10 +87,7 @@ public static class PathTransformExtensions
     /// </summary>
     public static RouteConfig WithTransformPathRouteValues(this RouteConfig route, [StringSyntax("Route")] PathString pattern)
     {
-        if (pattern.Value is null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern.Value);
 
         return route.WithTransform(transform =>
         {
@@ -112,10 +100,7 @@ public static class PathTransformExtensions
     /// </summary>
     public static TransformBuilderContext AddPathRouteValues(this TransformBuilderContext context, [StringSyntax("Route")] PathString pattern)
     {
-        if (pattern.Value is null)
-        {
-            throw new ArgumentNullException(nameof(pattern));
-        }
+        ArgumentNullException.ThrowIfNull(pattern.Value);
 
         var binder = context.Services.GetRequiredService<TemplateBinderFactory>();
         context.RequestTransforms.Add(new PathRouteValuesTransform(pattern.Value, binder));

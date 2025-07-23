@@ -158,8 +158,10 @@ internal static class StreamCopier
 
         public StreamCopierTelemetry(bool isRequest, TimeProvider timeProvider)
         {
+            ArgumentNullException.ThrowIfNull(timeProvider);
+
             _isRequest = isRequest;
-            _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+            _timeProvider = timeProvider;
             _firstReadTime = -1;
 
             ForwarderTelemetry.Log.ForwarderStage(isRequest ? ForwarderStage.RequestContentTransferStart : ForwarderStage.ResponseContentTransferStart);

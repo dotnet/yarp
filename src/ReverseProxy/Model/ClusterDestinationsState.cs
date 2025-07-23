@@ -12,8 +12,11 @@ public sealed class ClusterDestinationsState
         IReadOnlyList<DestinationState> allDestinations,
         IReadOnlyList<DestinationState> availableDestinations)
     {
-        AllDestinations = allDestinations ?? throw new ArgumentNullException(nameof(allDestinations));
-        AvailableDestinations = availableDestinations ?? throw new ArgumentNullException(nameof(availableDestinations));
+        ArgumentNullException.ThrowIfNull(allDestinations);
+        ArgumentNullException.ThrowIfNull(availableDestinations);
+
+        AllDestinations = allDestinations;
+        AvailableDestinations = availableDestinations;
     }
 
     public IReadOnlyList<DestinationState> AllDestinations { get; }

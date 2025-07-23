@@ -13,10 +13,7 @@ public struct IngressData
 {
     public IngressData(V1Ingress ingress)
     {
-        if (ingress is null)
-        {
-            throw new ArgumentNullException(nameof(ingress));
-        }
+        ArgumentNullException.ThrowIfNull(ingress);
 
         Spec = ingress.Spec;
         Metadata = ingress.Metadata;

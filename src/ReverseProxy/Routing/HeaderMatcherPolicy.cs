@@ -26,7 +26,7 @@ internal sealed class HeaderMatcherPolicy : MatcherPolicy, IEndpointComparerPoli
     /// <inheritdoc/>
     bool IEndpointSelectorPolicy.AppliesToEndpoints(IReadOnlyList<Endpoint> endpoints)
     {
-        _ = endpoints ?? throw new ArgumentNullException(nameof(endpoints));
+        ArgumentNullException.ThrowIfNull(endpoints);
 
         // When the node contains dynamic endpoints we can't make any assumptions.
         if (ContainsDynamicEndpoints(endpoints))
@@ -49,8 +49,8 @@ internal sealed class HeaderMatcherPolicy : MatcherPolicy, IEndpointComparerPoli
     /// <inheritdoc/>
     public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
     {
-        _ = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
-        _ = candidates ?? throw new ArgumentNullException(nameof(candidates));
+        ArgumentNullException.ThrowIfNull(httpContext);
+        ArgumentNullException.ThrowIfNull(candidates);
 
         var headers = httpContext.Request.Headers;
 

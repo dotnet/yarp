@@ -15,7 +15,8 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
 
     internal ReverseProxyConventionBuilder(List<Action<EndpointBuilder>> conventions)
     {
-        _conventions = conventions ?? throw new ArgumentNullException(nameof(conventions));
+        ArgumentNullException.ThrowIfNull(conventions);
+        _conventions = conventions;
     }
 
     /// <summary>
@@ -24,7 +25,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     /// <param name="convention">The convention to add to the builder.</param>
     public void Add(Action<EndpointBuilder> convention)
     {
-        _ = convention ?? throw new ArgumentNullException(nameof(convention));
+        ArgumentNullException.ThrowIfNull(convention);
 
         _conventions.Add(convention);
     }
@@ -36,7 +37,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     /// <returns></returns>
     public ReverseProxyConventionBuilder ConfigureEndpoints(Action<IEndpointConventionBuilder> convention)
     {
-        _ = convention ?? throw new ArgumentNullException(nameof(convention));
+        ArgumentNullException.ThrowIfNull(convention);
 
         void Action(EndpointBuilder endpointBuilder)
         {
@@ -56,7 +57,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     /// <returns></returns>
     public ReverseProxyConventionBuilder ConfigureEndpoints(Action<IEndpointConventionBuilder, RouteConfig> convention)
     {
-        _ = convention ?? throw new ArgumentNullException(nameof(convention));
+        ArgumentNullException.ThrowIfNull(convention);
 
         void Action(EndpointBuilder endpointBuilder)
         {
@@ -77,7 +78,7 @@ public class ReverseProxyConventionBuilder : IEndpointConventionBuilder
     /// <returns></returns>
     public ReverseProxyConventionBuilder ConfigureEndpoints(Action<IEndpointConventionBuilder, RouteConfig, ClusterConfig?> convention)
     {
-        _ = convention ?? throw new ArgumentNullException(nameof(convention));
+        ArgumentNullException.ThrowIfNull(convention);
 
         void Action(EndpointBuilder endpointBuilder)
         {

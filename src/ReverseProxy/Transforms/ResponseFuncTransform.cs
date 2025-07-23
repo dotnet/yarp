@@ -15,7 +15,8 @@ public class ResponseFuncTransform : ResponseTransform
 
     public ResponseFuncTransform(Func<ResponseTransformContext, ValueTask> func)
     {
-        _func = func ?? throw new ArgumentNullException(nameof(func));
+        ArgumentNullException.ThrowIfNull(func);
+        _func = func;
     }
 
     /// <inheritdoc/>

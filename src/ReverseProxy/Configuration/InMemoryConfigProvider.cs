@@ -75,7 +75,8 @@ public sealed class InMemoryConfigProvider : IProxyConfigProvider
 
         public InMemoryConfig(IReadOnlyList<RouteConfig> routes, IReadOnlyList<ClusterConfig> clusters, string revisionId)
         {
-            RevisionId = revisionId ?? throw new ArgumentNullException(nameof(revisionId));
+            ArgumentNullException.ThrowIfNull(revisionId);
+            RevisionId = revisionId;
             Routes = routes;
             Clusters = clusters;
             ChangeToken = new CancellationChangeToken(_cts.Token);

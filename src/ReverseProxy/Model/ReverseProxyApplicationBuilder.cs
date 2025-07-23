@@ -15,7 +15,8 @@ public class ReverseProxyApplicationBuilder : IReverseProxyApplicationBuilder
 
     public ReverseProxyApplicationBuilder(IApplicationBuilder applicationBuilder)
     {
-        _applicationBuilder = applicationBuilder ?? throw new ArgumentNullException(nameof(applicationBuilder));
+        ArgumentNullException.ThrowIfNull(applicationBuilder);
+        _applicationBuilder = applicationBuilder;
     }
 
     public IServiceProvider ApplicationServices

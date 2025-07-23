@@ -30,10 +30,7 @@ public class ResponseHeaderRemoveTransform : ResponseTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(ResponseTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         if (Condition == ResponseCondition.Always
             || Success(context) == (Condition == ResponseCondition.Success))

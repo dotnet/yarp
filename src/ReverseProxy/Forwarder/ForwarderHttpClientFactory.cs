@@ -29,7 +29,8 @@ public class ForwarderHttpClientFactory : IForwarderHttpClientFactory
     /// </summary>
     public ForwarderHttpClientFactory(ILogger<ForwarderHttpClientFactory> logger)
     {
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(logger);
+        _logger = logger;
     }
 
     /// <inheritdoc/>

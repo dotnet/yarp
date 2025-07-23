@@ -18,7 +18,8 @@ internal sealed class ClusterDestinationsUpdater : IClusterDestinationsUpdater
 
     public ClusterDestinationsUpdater(IEnumerable<IAvailableDestinationsPolicy> destinationPolicies)
     {
-        _destinationPolicies = destinationPolicies?.ToDictionaryByUniqueId(p => p.Name) ?? throw new ArgumentNullException(nameof(destinationPolicies));
+        ArgumentNullException.ThrowIfNull(destinationPolicies);
+        _destinationPolicies = destinationPolicies.ToDictionaryByUniqueId(p => p.Name);
     }
 
     public void UpdateAvailableDestinations(ClusterState cluster)

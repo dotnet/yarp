@@ -14,7 +14,8 @@ internal sealed class HeaderMetadata : IHeaderMetadata
 {
     public HeaderMetadata(IReadOnlyList<HeaderMatcher> matchers)
     {
-        Matchers = matchers?.ToArray() ?? throw new ArgumentNullException(nameof(matchers));
+        ArgumentNullException.ThrowIfNull(matchers);
+        Matchers = matchers.ToArray();
     }
 
     /// <inheritdoc/>

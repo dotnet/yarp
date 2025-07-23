@@ -14,7 +14,8 @@ internal sealed class QueryParameterMetadata : IQueryParameterMetadata
 {
     public QueryParameterMetadata(IReadOnlyList<QueryParameterMatcher> matchers)
     {
-        Matchers = matchers?.ToArray() ?? throw new ArgumentNullException(nameof(matchers));
+        ArgumentNullException.ThrowIfNull(matchers);
+        Matchers = matchers.ToArray();
     }
 
     /// <inheritdoc/>

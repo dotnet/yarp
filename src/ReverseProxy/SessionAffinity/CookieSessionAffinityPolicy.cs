@@ -20,7 +20,8 @@ internal sealed class CookieSessionAffinityPolicy : BaseEncryptedSessionAffinity
         ILogger<CookieSessionAffinityPolicy> logger)
         : base(dataProtectionProvider, logger)
     {
-        _timeProvider = timeProvider ?? throw new ArgumentNullException(nameof(timeProvider));
+        ArgumentNullException.ThrowIfNull(timeProvider);
+        _timeProvider = timeProvider;
     }
 
     public override string Name => SessionAffinityConstants.Policies.Cookie;

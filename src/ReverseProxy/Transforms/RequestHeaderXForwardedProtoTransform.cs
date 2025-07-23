@@ -36,10 +36,7 @@ public class RequestHeaderXForwardedProtoTransform : RequestTransform
     /// <inheritdoc/>
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        if (context is null)
-        {
-            throw new ArgumentNullException(nameof(context));
-        }
+        ArgumentNullException.ThrowIfNull(context);
 
         var scheme = context.HttpContext.Request.Scheme;
 
