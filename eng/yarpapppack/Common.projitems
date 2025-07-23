@@ -21,6 +21,12 @@
 
   <Target Name="Build" />
 
+  <PropertyGroup>
+      <YarpArchiveBaseName>$(YarpAppArtifactsOutputDir)/$(YarpAppRuntime)/reverse-proxy-$(YarpAppRuntime)</YarpArchiveBaseName>
+      <YarpArchiveZipName>$(YarpArchiveBaseName).zip</YarpArchiveZipName>
+      <YarpArchiveSha512Name>$(YarpArchiveBaseName).sha512</YarpArchiveSha512Name>
+  </PropertyGroup>
+
   <Target Name="BeforeBuild" BeforeTargets="Build">
     <MSBuild Projects="../../src/Application/Yarp.Application.csproj" Targets="publish" Properties="Configuration=$(Configuration);Platform=$(Platform);TargetFramework=$(TargetFramework);RuntimeIdentifier=$(YarpAppRuntime)" />
 
@@ -28,12 +34,15 @@
     <ItemGroup>
       <_PublishItems Include="$(ArtifactsBinDir)/Yarp.Application/$(Configuration)/$(TargetFramework)/$(YarpAppRuntime)/publish/**/*" />
       <None Include="@(_PublishItems)" Pack="true" PackagePath="tools/" />
+      <GenerateChecksumItems Include="$(YarpArchiveZipName)">
+        <DestinationPath>$(YarpArchiveSha512Name)</DestinationPath>
+      </GenerateChecksumItems>
     </ItemGroup>
 
     <MakeDir Directories="$(YarpAppArtifactsOutputDir)/$(YarpAppRuntime)" />
     <ZipDirectory 
         SourceDirectory="$(ArtifactsBinDir)/Yarp.Application/$(Configuration)/$(TargetFramework)/$(YarpAppRuntime)/publish" 
-        DestinationFile="$(YarpAppArtifactsOutputDir)/$(YarpAppRuntime)/reverse-proxy-$(YarpAppRuntime).zip"
+        DestinationFile="$(YarpArchiveZipName)"
         Overwrite="true" />
 
     <!-- Throw an error if _PublishItems is empty. -->
