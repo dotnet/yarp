@@ -22,9 +22,11 @@
   <Target Name="Build" />
 
   <PropertyGroup>
-      <YarpArchiveBaseName>$([MSBuild]::NormalizeDirectory('$(YarpAppArtifactsOutputDir)', '$(YarpAppRuntime)'))reverse-proxy-$(YarpAppRuntime)</YarpArchiveBaseName>
-      <YarpArchiveZipName>$(YarpArchiveBaseName).zip</YarpArchiveZipName>
-      <YarpArchiveSha512Name>$(YarpArchiveZipName).sha512</YarpArchiveSha512Name>
+      <YarpArchiveDirectory>$([MSBuild]::NormalizeDirectory('$(YarpAppArtifactsOutputDir)', '$(YarpAppRuntime)'))</YarpArchiveDirectory>
+      <YarpArchiveBaseName>$(YarpArchiveDirectory)reverse-proxy-$(YarpAppRuntime)</YarpArchiveBaseName>
+      <YarpArchiveFileName>$(YarpArchiveBaseName).tar.gz</YarpArchiveFileName>
+      <YarpArchiveSha512Name>$(YarpArchiveFileName).sha512</YarpArchiveSha512Name>
+      <DirectoryToArchive>$([MSBuild]::NormalizeDirectory('$(ArtifactsBinDir)', 'Yarp.Application', '$(Configuration)', '$(TargetFramework)', '$(YarpAppRuntime)/', 'publish'))</DirectoryToArchive>
   </PropertyGroup>
 
   <Target Name="BeforeBuild" BeforeTargets="Build">
@@ -34,16 +36,15 @@
     <ItemGroup>
       <_PublishItems Include="$(ArtifactsBinDir)/Yarp.Application/$(Configuration)/$(TargetFramework)/$(YarpAppRuntime)/publish/**/*" />
       <None Include="@(_PublishItems)" Pack="true" PackagePath="tools/" />
-      <GenerateChecksumItems Include="$(YarpArchiveZipName)">
+      <GenerateChecksumItems Include="$(YarpArchiveFileName)">
         <DestinationPath>$(YarpArchiveSha512Name)</DestinationPath>
       </GenerateChecksumItems>
     </ItemGroup>
 
-    <MakeDir Directories="$(YarpAppArtifactsOutputDir)/$(YarpAppRuntime)" />
-    <ZipDirectory 
-        SourceDirectory="$(ArtifactsBinDir)/Yarp.Application/$(Configuration)/$(TargetFramework)/$(YarpAppRuntime)/publish" 
-        DestinationFile="$(YarpArchiveZipName)"
-        Overwrite="true" />
+    <MakeDir Directories="$(YarpArchiveDirectory)" />
+    <Exec Command="tar -cvzf $(YarpArchiveFileName) ."
+          IgnoreExitCode="false"
+          WorkingDirectory="$(DirectoryToArchive)" />
 
     <!-- Throw an error if _PublishItems is empty. -->
     <Error Condition="'@(_PublishItems)' == ''" Text="No files were found to pack. Ensure that the project being packed has a publish target defined." />
