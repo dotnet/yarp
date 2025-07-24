@@ -22,7 +22,7 @@
   <Target Name="Build" />
 
   <PropertyGroup>
-      <YarpArchiveBaseName>$(YarpAppArtifactsOutputDir)/$(YarpAppRuntime)/reverse-proxy-$(YarpAppRuntime)</YarpArchiveBaseName>
+      <YarpArchiveBaseName>$([MSBuild]::NormalizeDirectory('$(YarpAppArtifactsOutputDir)', '$(YarpAppRuntime)'))reverse-proxy-$(YarpAppRuntime)</YarpArchiveBaseName>
       <YarpArchiveZipName>$(YarpArchiveBaseName).zip</YarpArchiveZipName>
       <YarpArchiveSha512Name>$(YarpArchiveZipName).sha512</YarpArchiveSha512Name>
   </PropertyGroup>
