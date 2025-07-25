@@ -19,7 +19,8 @@
    </PropertyGroup>
 
    <ItemGroup>
-      <_YarpAppFilesToPublish Include="$(YarpAppArtifactsOutputDir)\**\*.zip" />
+      <_YarpAppFilesToPublish Include="$(YarpAppArtifactsOutputDir)\**\*.tar.gz" />
+      <_YarpAppFilesToPublish Include="$(YarpAppArtifactsOutputDir)\**\*.tar.gz.sha512" />
    </ItemGroup>
 
    <Target Name="_PublishBlobItems">

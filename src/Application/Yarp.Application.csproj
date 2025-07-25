@@ -3,10 +3,12 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RuntimeIdentifiers>win-x64;win-arm64;linux-x64;linux-arm64;</RuntimeIdentifiers>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFrameworks>net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>yarp</AssemblyName>
+    <IsShipping>false</IsShipping>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <!-- Used by publishing infrastructure to get the version to use for blob publishing -->
