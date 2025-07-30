@@ -20,13 +20,19 @@ public static class IHttpForwarderExtensions
     /// <param name="forwarder">The forwarder instance.</param>
     /// <param name="context">The HttpContext to forward.</param>
     /// <param name="destinationPrefix">The url prefix for where to forward the request to.</param>
+    /// <param name="requestConfig">Config for the outgoing request.</param>
+    /// <param name="requestTransform">Transform function to apply to the forwarded request</param>
     /// <returns>The status of a forwarding operation.</returns>
-    public static ValueTask<ForwarderError> SendAsync(this IHttpForwarder forwarder, HttpContext context, string destinationPrefix)
+    public static ValueTask<ForwarderError> SendAsync(this IHttpForwarder forwarder, HttpContext context, string destinationPrefix,
+        ForwarderRequestConfig? requestConfig = null, Func<HttpContext, HttpRequestMessage, ValueTask>? requestTransform = null)
     {
         ArgumentNullException.ThrowIfNull(forwarder);
 
         var httpClientProvider = context.RequestServices.GetRequiredService<DirectForwardingHttpClientProvider>();
-        return forwarder.SendAsync(context, destinationPrefix, httpClientProvider.HttpClient, ForwarderRequestConfig.Empty, HttpTransformer.Default);
+        return forwarder.SendAsync(context, destinationPrefix, httpClientProvider.HttpClient,
+            requestConfig ?? ForwarderRequestConfig.Empty,
+            requestTransform is null ? HttpTransformer.Default : new RequestTransformer(requestTransform)
+            );
     }
 
     /// <summary>
