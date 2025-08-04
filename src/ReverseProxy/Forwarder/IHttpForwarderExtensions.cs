@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Yarp.ReverseProxy.Forwarder;
 
@@ -13,6 +14,28 @@ namespace Yarp.ReverseProxy.Forwarder;
 /// </summary>
 public static class IHttpForwarderExtensions
 {
+    /// <summary>
+    /// Forwards the incoming request to the destination server, and the response back to the client.
+    /// </summary>
+    /// <param name="forwarder">The forwarder instance.</param>
+    /// <param name="context">The HttpContext to forward.</param>
+    /// <param name="destinationPrefix">The url prefix for where to forward the request to.</param>
+    /// <param name="requestConfig">Config for the outgoing request.</param>
+    /// <param name="requestTransform">Transform function to apply to the forwarded request.</param>
+    /// <returns>The status of a forwarding operation.</returns>
+    public static ValueTask<ForwarderError> SendAsync(this IHttpForwarder forwarder, HttpContext context, string destinationPrefix,
+        ForwarderRequestConfig? requestConfig = null, Func<HttpContext, HttpRequestMessage, ValueTask>? requestTransform = null)
+    {
+        ArgumentNullException.ThrowIfNull(forwarder);
+        ArgumentNullException.ThrowIfNull(context);
+
+        requestConfig ??= ForwarderRequestConfig.Empty;
+        var transformer = requestTransform is null ? HttpTransformer.Default : new RequestTransformer(requestTransform);
+        var httpClientProvider = context.RequestServices.GetRequiredService<DirectForwardingHttpClientProvider>();
+
+        return forwarder.SendAsync(context, destinationPrefix, httpClientProvider.HttpClient, requestConfig, transformer);
+    }
+
     /// <summary>
     /// Forwards the incoming request to the destination server, and the response back to the client.
     /// </summary>
