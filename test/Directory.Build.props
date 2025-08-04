@@ -5,5 +5,6 @@
 
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
+    <NoWarn>$(NoWarn);NU1701</NoWarn>
   </PropertyGroup>
 </Project>
