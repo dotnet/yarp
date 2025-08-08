@@ -19,10 +19,16 @@ variables:
 trigger:
   batch: true
   branches:
-    include:
+    exclude:
     - main
     - release/*
     - internal/release/*
+
+pr:
+  autoCancel: false
+  branches:
+    include:
+    - '*'
 
 resources:
   repositories:
@@ -32,7 +38,7 @@ resources:
     ref: refs/tags/release
 
 extends:
-  template: azure-pipelines/MicroBuild.1ES.Official.yml@MicroBuildTemplate
+  template: azure-pipelines/MicroBuild.1ES.Unofficial.yml@MicroBuildTemplate
   parameters:
     featureFlags:
       autoBaseline: true
