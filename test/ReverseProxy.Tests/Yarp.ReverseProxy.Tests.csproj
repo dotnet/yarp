@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(TestTFMs)</TargetFrameworks>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Yarp.ReverseProxy</RootNamespace>
     <NoWarn>$(NoWarn);SYSLIB0039;SYSLIB0057</NoWarn>
   </PropertyGroup>

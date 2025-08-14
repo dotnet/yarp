@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(TestTFMs)</TargetFrameworks>
     <NoWarn>$(NoWarn);SYSLIB0057</NoWarn>
-    <OutputType>Library</OutputType>
+    <OutputType>Exe</OutputType>
     <RootNamespace>Yarp.ReverseProxy</RootNamespace>
 
     <!--
@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.XUnitExtensions" Version="$(MicrosoftDotNetXUnitExtensionsPackageVersion)" />
+    <PackageReference Include="Microsoft.DotNet.XUnitV3Extensions" Version="$(MicrosoftDotNetXUnitV3ExtensionsPackageVersion)" />
   </ItemGroup>
 
 </Project>

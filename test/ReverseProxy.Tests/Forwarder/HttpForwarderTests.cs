@@ -22,7 +22,6 @@ using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 using Yarp.ReverseProxy.Common;
 using Yarp.ReverseProxy.Transforms;
 using Yarp.ReverseProxy.Transforms.Builder.Tests;

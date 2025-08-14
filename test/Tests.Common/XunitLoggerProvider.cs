@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Microsoft.Extensions.Logging.Testing;
 

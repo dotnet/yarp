@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Xunit.Abstractions;
+using Xunit;
 
 namespace Yarp.ReverseProxy.Common;
 

@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 using Yarp.Kubernetes.Controller;
 using Yarp.Kubernetes.Controller.Client;
 using Yarp.Kubernetes.Controller.Caching;

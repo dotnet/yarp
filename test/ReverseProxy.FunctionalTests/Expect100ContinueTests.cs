@@ -24,7 +24,7 @@ public class Expect100ContinueTests
     // See https://github.com/dotnet/runtime/issues/27727
     public static bool Http2OverTlsSupported => !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-    [ConditionalTheory(nameof(Http2OverTlsSupported))]
+    [Theory(Skip = "Condition not met", SkipUnless = nameof(Http2OverTlsSupported))]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http1, true, 200)]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http1, false, 200)]
     [InlineData(HttpProtocols.Http2, HttpProtocols.Http2, true, 200)]
@@ -109,7 +109,7 @@ public class Expect100ContinueTests
         });
     }
 
-    [ConditionalTheory(nameof(Http2OverTlsSupported))]
+    [Theory(Skip = "Condition not met", SkipUnless = nameof(Http2OverTlsSupported))]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http1, true, true, 200)]
     [InlineData(HttpProtocols.Http2, HttpProtocols.Http2, true, true, 200)]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http2, true, true, 200)]
@@ -186,7 +186,7 @@ public class Expect100ContinueTests
         });
     }
 
-    [ConditionalTheory(nameof(Http2OverTlsSupported))]
+    [Theory(Skip = "Condition not met", SkipUnless = nameof(Http2OverTlsSupported))]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http1, false)]
     [InlineData(HttpProtocols.Http2, HttpProtocols.Http2, false)]
     [InlineData(HttpProtocols.Http1, HttpProtocols.Http2, false)]
