@@ -22,7 +22,7 @@ public class HttpForwarderCancellationTests
     // See https://github.com/dotnet/runtime/issues/27727
     public static bool Http2OverTlsSupported => !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
-    [ConditionalFact(nameof(Http2OverTlsSupported))]
+    [Fact(Skip = "Condition not met", SkipUnless = nameof(Http2OverTlsSupported))]
     public async Task ServerSendsHttp2Reset_ReadToClientIsCanceled()
     {
         var readAsyncCalled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);

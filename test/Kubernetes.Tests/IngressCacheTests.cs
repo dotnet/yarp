@@ -10,7 +10,6 @@ using k8s.Models;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using Xunit.Abstractions;
 using Yarp.Kubernetes.Controller;
 using Yarp.Kubernetes.Controller.Caching;
 using Yarp.Kubernetes.Controller.Certificates;

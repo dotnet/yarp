@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using Xunit.Abstractions;
 using Yarp.ReverseProxy.Common;
 using Yarp.Telemetry.Consumption;
 using Yarp.Tests.Common;

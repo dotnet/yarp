@@ -19,7 +19,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 using Xunit;
-using Xunit.Abstractions;
 using Yarp.ReverseProxy.Common;
 using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Transforms;

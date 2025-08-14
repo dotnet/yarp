@@ -4,6 +4,9 @@
     <TargetFrameworks>$(TestTFMs)</TargetFrameworks>
     <OutputType>Library</OutputType>
     <RootNamespace>Yarp.Common.Tests</RootNamespace>
+    <!-- This is a test utility project. -->
+    <IsTestProject>false</IsTestProject>
+    <IsTestUtilityProject>true</IsTestUtilityProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -11,6 +14,8 @@
     <PackageReference Include="Autofac.Extras.Moq" Version="$(AutofacExtrasMoqVersion)" />
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
+    <PackageReference Include="xunit.v3.extensibility.core" Version="$(XUnitV3Version)" />
+    <PackageReference Include="xunit.v3.assert" Version="$(XUnitV3Version)" />
   </ItemGroup>
 
   <ItemGroup>

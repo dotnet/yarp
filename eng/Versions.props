@@ -15,7 +15,7 @@
     <SystemIOHashingVersion>8.0.0</SystemIOHashingVersion>
     <MicrosoftAspNetCoreTestHostVersion>6.0.36</MicrosoftAspNetCoreTestHostVersion>
     <MicrosoftCrankEventSourcesVersion>0.2.0-alpha.24576.2</MicrosoftCrankEventSourcesVersion>
-    <MicrosoftDotNetXUnitExtensionsPackageVersion>10.0.0-beta.25408.3</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <MicrosoftDotNetXUnitV3ExtensionsPackageVersion>10.0.0-beta.25408.3</MicrosoftDotNetXUnitV3ExtensionsPackageVersion>
     <CoverletCollectorVersion>6.0.0</CoverletCollectorVersion>
     <MoqVersion>4.18.4</MoqVersion>
     <AutofacVersion>4.9.4</AutofacVersion>
@@ -29,6 +29,7 @@
     <YamlDotNetVersion>16.2.1</YamlDotNetVersion>
     <KubernetesClientVersion>15.0.1</KubernetesClientVersion>
     <JsonSchemaNetVersion>7.0.2</JsonSchemaNetVersion>
+    <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <!-- Container app dependencies -->
     <YarpNugetVersion>2.3.0</YarpNugetVersion>
     <MicrosoftExtensionsServiceDiscovery>9.1.0</MicrosoftExtensionsServiceDiscovery>

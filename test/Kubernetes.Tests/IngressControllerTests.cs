@@ -10,7 +10,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 using Yarp.Kubernetes.Controller;
 using Yarp.Kubernetes.Controller.Caching;
 using Yarp.Kubernetes.Controller.Client.Tests;

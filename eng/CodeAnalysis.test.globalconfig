@@ -2001,6 +2001,9 @@ dotnet_diagnostic.xUnit1030.severity = none
 # xUnit1031: Test methods must not use blocking task operations, as they can cause deadlocks. Use an async test method and await instead.
 dotnet_diagnostic.xUnit1031.severity = none
 
+# xUnit1051: Calls to methods which accept CancellationToken should use TestContext.Current.CancellationToken to allow test cancellation to be more responsive.
+dotnet_diagnostic.xUnit1051.severity = none
+
 # xUnit2000: Constants and literals should be the expected argument
 dotnet_diagnostic.xUnit2000.severity = warning
 
