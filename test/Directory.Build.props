@@ -6,7 +6,5 @@
   <PropertyGroup>
     <IsTestProject>true</IsTestProject>
     <TestRunnerName>XUnitV3</TestRunnerName>
-
-    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
   </PropertyGroup>
 </Project>
