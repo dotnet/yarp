@@ -772,7 +772,8 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
 
         foreach (var incomingRoute in incomingRoutes)
         {
-            desiredRoutes.Add(incomingRoute.RouteId);
+            var added = desiredRoutes.Add(incomingRoute.RouteId);
+            Debug.Assert(added);
 
             // Note that this can be null, and that is fine. The resulting route may match
             // but would then fail to route, which is exactly what we were instructed to do in this case
@@ -799,7 +800,7 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
                     Model = newModel,
                     ClusterRevision = cluster?.Revision,
                 };
-                var added = _routes.TryAdd(newState.RouteId, newState);
+                added = _routes.TryAdd(newState.RouteId, newState);
                 Debug.Assert(added);
                 changed = true;
                 Log.RouteAdded(_logger, newState.RouteId);
