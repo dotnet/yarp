@@ -491,7 +491,7 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
         }
 
         // Update clusters first because routes need to reference them.
-        UpdateRuntimeClusters(configuredClusters.Values);
+        UpdateRuntimeClusters(configuredClusters);
         var routesChanged = UpdateRuntimeRoutes(configuredRoutes);
         return routesChanged;
     }
@@ -609,11 +609,11 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
         return (configuredClusters, errors);
     }
 
-    private void UpdateRuntimeClusters(IEnumerable<ClusterConfig> incomingClusters)
+    private void UpdateRuntimeClusters(IReadOnlyDictionary<string, ClusterConfig> incomingClusters)
     {
-        var desiredClusters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var desiredClusters = new HashSet<string>(incomingClusters.Count, StringComparer.OrdinalIgnoreCase);
 
-        foreach (var incomingCluster in incomingClusters)
+        foreach (var incomingCluster in incomingClusters.Values)
         {
             var added = desiredClusters.Add(incomingCluster.ClusterId);
             Debug.Assert(added);
@@ -711,7 +711,7 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
 
     private bool UpdateRuntimeDestinations(IReadOnlyDictionary<string, DestinationConfig>? incomingDestinations, ConcurrentDictionary<string, DestinationState> currentDestinations)
     {
-        var desiredDestinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var desiredDestinations = new HashSet<string>(incomingDestinations?.Count ?? 0, StringComparer.OrdinalIgnoreCase);
         var changed = false;
 
         if (incomingDestinations is not null)
@@ -767,7 +767,7 @@ internal sealed class ProxyConfigManager : EndpointDataSource, IProxyStateLookup
 
     private bool UpdateRuntimeRoutes(IList<RouteConfig> incomingRoutes)
     {
-        var desiredRoutes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var desiredRoutes = new HashSet<string>(incomingRoutes.Count, StringComparer.OrdinalIgnoreCase);
         var changed = false;
 
         foreach (var incomingRoute in incomingRoutes)
