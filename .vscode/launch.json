@@ -1,0 +1,114 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET BasicYarpSample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      "program": "${workspaceFolder}/artifacts/bin/BasicYarpSample/Debug/net8.0/BasicYarpSample.dll",
+      "cwd": "${workspaceFolder}/samples/BasicYarpSample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.Auth.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.Auth.Sample/Debug/net8.0/ReverseProxy.Auth.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.Auth.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.Code.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.Code.Sample/Debug/net8.0/ReverseProxy.Code.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.Code.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.Config.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.Config.Sample/Debug/net8.0/ReverseProxy.Config.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.Config.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.ConfigFilter.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.ConfigFilter.Sample/Debug/net8.0/ReverseProxy.ConfigFilter.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.ConfigFilter.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.Direct.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.Direct.Sample/Debug/net8.0/ReverseProxy.Direct.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.Direct.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.HttpSysDelegation.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.HttpSysDelegation.Sample/Debug/net8.0/ReverseProxy.HttpSysDelegation.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.HttpSysDelegation.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.LetsEncrypt.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.LetsEncrypt.Sample/Debug/net8.0/ReverseProxy.LetsEncrypt.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.LetsEncrypt.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.Metrics.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.Metrics.Sample/Debug/net8.0/ReverseProxy.Metrics.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.Metrics.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.Metrics.Prometheus.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.Metrics-Prometheus.Sample/Debug/net8.0/ReverseProxy.Metrics-Prometheus.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/Prometheus/ReverseProxy.Metrics-Prometheus.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET ReverseProxy.Transforms.Sample (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/ReverseProxy.Transforms.Sample/Debug/net8.0/ReverseProxy.Transforms.Sample.dll",
+      "cwd": "${workspaceFolder}/samples/ReverseProxy.Transforms.Sample",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    },
+    {
+      "name": ".NET SampleServer (net8.0)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceFolder}/artifacts/bin/SampleServer/Debug/net8.0/SampleServer.dll",
+      "cwd": "${workspaceFolder}/samples/SampleServer",
+      "stopAtEntry": false,
+      "console": "internalConsole"
+    }
+  ]
+}
