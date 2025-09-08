@@ -17,7 +17,7 @@
     <MicrosoftBclTimeProviderVersion>8.0.0</MicrosoftBclTimeProviderVersion>
     <MicrosoftAspNetCoreTestHostVersion>6.0.36</MicrosoftAspNetCoreTestHostVersion>
     <MicrosoftCrankEventSourcesVersion>0.2.0-alpha.24576.2</MicrosoftCrankEventSourcesVersion>
-    <MicrosoftDotNetXUnitExtensionsPackageVersion>10.0.0-beta.25430.1</MicrosoftDotNetXUnitExtensionsPackageVersion>
+    <MicrosoftDotNetXUnitExtensionsPackageVersion>11.0.0-beta.25457.1</MicrosoftDotNetXUnitExtensionsPackageVersion>
     <CoverletCollectorVersion>6.0.0</CoverletCollectorVersion>
     <MoqVersion>4.18.4</MoqVersion>
     <AutofacVersion>4.9.4</AutofacVersion>
