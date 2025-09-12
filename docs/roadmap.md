@@ -20,7 +20,7 @@
 
 ## Support
 
-YARP support is provided by the product team - the engineers working on YARP - which is a combination of members from ASP.NET and the .NET library teams. We do not provide 24/7 support or 'carry pagers', but we generally have good timezone coverage. Bugs should be reported in GitHub using the issue templates. If you find a security issue we ask you to [report it via the Microsoft Security Response Center (MSRC)](https://github.com/dotnet/yarp/blob/main/SECURITY.md).
+YARP support is provided by the product team - the engineers working on YARP - which is a combination of members from ASP.NET and the .NET library teams. We do not provide 24/7 support or 'carry pagers', but we generally have good timezone coverage. Bugs should be reported in GitHub using the issue templates, and will typically be responded to within 24hrs. If you find a security issue we ask you to [report it via the Microsoft Security Response Center (MSRC)](https://github.com/dotnet/yarp/blob/main/SECURITY.md).
 
 The support period for YARP releases is as follows:
 
