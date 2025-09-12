@@ -18,18 +18,9 @@
 | [YARP 1.1](https://github.com/dotnet/yarp/releases/tag/v1.1.0) | May 2, 2022       | [1.1.2](https://github.com/dotnet/yarp/releases/tag/v1.1.2) | August 14, 2023  |
 | [YARP 1.0](https://github.com/dotnet/yarp/releases/tag/v1.0.0) | November 9, 2021  | [1.0.1](https://github.com/dotnet/yarp/releases/tag/v1.0.1) | November 2, 2022 |
 
-## Current status
-
-We are planning our next steps, we think the outline will probably look something like:
-
-- 2.x - High pri customer asks
-- Ongoing - Major features eg Kubernetes
-
-The cadence for these will depend on the issues reported by customers.
-
 ## Support
 
-YARP support is provided by the product team - the engineers working on YARP - which is a combination of members from ASP.NET and the .NET library teams. We do not provide 24/7 support or 'carry pagers', but as we have team members located in Prague and Redmond we generally have good timezone coverage. Bugs should be reported in github using the issue templates, and will typically be responded to within 24hrs. If you find a security issue we ask you to [report it via the Microsoft Security Response Center (MSRC)](https://github.com/dotnet/yarp/blob/main/SECURITY.md).
+YARP support is provided by the product team - the engineers working on YARP - which is a combination of members from ASP.NET and the .NET library teams. We do not provide 24/7 support or 'carry pagers', but we generally have good coverage. Bugs should be reported in GitHub using the issue templates, and will typically be responded to within 24hrs. If you find a security issue we ask you to [report it via the Microsoft Security Response Center (MSRC)](https://github.com/dotnet/yarp/blob/main/SECURITY.md).
 
 The support period for YARP releases is as follows:
 
