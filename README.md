@@ -12,6 +12,7 @@ We expect YARP to ship as a library and project template that together provide a
 - See our [Getting Started](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/getting-started) docs.
 - Try our [previews](https://github.com/dotnet/yarp/releases).
 - Try our latest [daily build](/docs/DailyBuilds.md).
+- See our [support policy](/docs/roadmap.md).
 
 # Updates
 
