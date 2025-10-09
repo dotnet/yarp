@@ -26,8 +26,8 @@
     <SerilogExtensionsLoggingVersion>3.0.1</SerilogExtensionsLoggingVersion>
     <SerilogFormattingCompactVersion>1.1.0</SerilogFormattingCompactVersion>
     <SerilogSinksConsoleVersion>3.1.1</SerilogSinksConsoleVersion>
-    <YamlDotNetVersion>16.2.1</YamlDotNetVersion>
-    <KubernetesClientVersion>15.0.1</KubernetesClientVersion>
+    <YamlDotNetVersion>16.3.0</YamlDotNetVersion>
+    <KubernetesClientVersion>17.0.14</KubernetesClientVersion>
     <JsonSchemaNetVersion>7.0.2</JsonSchemaNetVersion>
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <!-- Container app dependencies -->
