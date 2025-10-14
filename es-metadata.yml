@@ -1,0 +1,8 @@
+schemaVersion: 0.0.1
+isProduction: true
+accountableOwners:
+  service: b317f6f4-0741-4d30-9f8c-9f0e61554b81
+routing:
+  defaultAreaPath:
+    org: devdiv
+    path: DevDiv\NET Libraries\Networking

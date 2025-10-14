@@ -12,6 +12,7 @@
     <StrongNameKeyId>Microsoft</StrongNameKeyId>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
 
   <PropertyGroup>

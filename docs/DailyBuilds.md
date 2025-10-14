@@ -5,7 +5,7 @@ Daily builds include the latest source code changes. They are not supported for 
 
 If you want to download the latest daily build and use it in a project, then you need to:
 
-- Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/core-sdk#installers-and-binaries).
+- Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/sdk#installing-the-sdk).
 - Add a NuGet.Config to your project directory with the following content:
 
   ```xml
