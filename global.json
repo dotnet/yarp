@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "10.0.100-rc.1.25420.111"
+    "version": "10.0.100-rc.2.25502.107"
   },
   "tools": {
-    "dotnet": "10.0.100-rc.1.25420.111",
+    "dotnet": "10.0.100-rc.2.25502.107",
     "runtimes": {
       "dotnet": [
         "8.0.13",
@@ -14,6 +14,9 @@
         "9.0.2"
       ]
     }
+  },
+  "test": {
+    "runner": "Microsoft.Testing.Platform"
   },
   "msbuild-sdks": {
     "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.25509.1",
