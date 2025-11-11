@@ -101,11 +101,13 @@ public abstract class ImmutableCertificateCache<TCert> where TCert : class
         {
 
             var length = Math.Min(x.Length, y.Length);
+            x = x[^length..];
+            y = y[^length..];
 
-            for (var i = 1; i <= length; i++)
+            for (var index = length - 1; index >= 0; index--)
             {
-                var charA = x[^i] & 0x5F;
-                var charB = y[^i] & 0x5F;
+                var charA = x[index] & 0x5F;
+                var charB = y[index] & 0x5F;
 
                 if (charA == charB)
                 {
