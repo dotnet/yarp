@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using Microsoft.Extensions.Options;
 
 namespace Yarp.Kubernetes.Controller.Certificates;
 
 internal partial class ServerCertificateSelector
 {
-    private class ImmutableX509CertificateCache(IEnumerable<X509Certificate2> certificates)
+    private class ImmutableX509CertificateCache(X509Certificate2? defaultCertificate, IEnumerable<X509Certificate2> certificates)
         : ImmutableCertificateCache<X509Certificate2>(certificates, GetDomains)
     {
         protected override X509Certificate2? GetDefaultCertificate()
@@ -24,7 +25,7 @@ internal partial class ServerCertificateSelector
 
         public X509Certificate2? DefaultCertificate()
         {
-            return Certificates.Values.FirstOrDefault();
+            return defaultCertificate ?? Certificates.Values.FirstOrDefault();
         }
     }
 

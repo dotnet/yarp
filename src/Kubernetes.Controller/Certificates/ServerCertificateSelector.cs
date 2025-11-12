@@ -3,13 +3,14 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
+
 #nullable enable
 namespace Yarp.Kubernetes.Controller.Certificates;
 
@@ -19,8 +20,31 @@ internal partial class ServerCertificateSelector
 {
     private readonly ConcurrentDictionary<NamespacedName, X509Certificate2> _certificates = new();
     private bool _hasBeenUpdated;
+    private string? _defaultCertificate;
+    private readonly IDisposable? _defaultCertificateSubscription;
 
-    private ImmutableX509CertificateCache _certificateStore = new(Array.Empty<X509Certificate2>());
+    private ImmutableX509CertificateCache _certificateStore = new(null, []);
+
+    public ServerCertificateSelector(IOptionsMonitor<YarpOptions> options)
+    {
+        _defaultCertificateSubscription = options.OnChange(x =>
+        {
+            if (_defaultCertificate != x.DefaultSslCertificate)
+            {
+                _defaultCertificate = x.DefaultSslCertificate;
+                _hasBeenUpdated = true;
+            }
+        });
+    }
+
+    public override void Dispose()
+    {
+        if (_defaultCertificateSubscription is {} subscription)
+        {
+            subscription.Dispose();
+        }
+        base.Dispose();
+    }
 
     public void AddCertificate(NamespacedName certificateName, X509Certificate2 certificate)
     {
@@ -43,6 +67,9 @@ internal partial class ServerCertificateSelector
         _hasBeenUpdated = true;
     }
 
+    [GeneratedRegex("(?<namespace>[a-z0-9\\-\\.]*)/(?<certificateName>[a-z0-9\\-\\.]*)", RegexOptions.IgnoreCase, "en-US")]
+    private static partial Regex DefaultCertificateNameParser();
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Poll every 10 seconds for updates to
@@ -52,7 +79,19 @@ internal partial class ServerCertificateSelector
             if (_hasBeenUpdated)
             {
                 _hasBeenUpdated = false;
-                _certificateStore = new ImmutableX509CertificateCache(_certificates.Values);
+
+                X509Certificate2? defaultCert = null;
+                if (_defaultCertificate is { } certificateName
+                    && DefaultCertificateNameParser().Match(certificateName) is { Success: true } match)
+                {
+                    var namespaceName = match.Groups["namespace"].Value;
+                    var name = match.Groups["certificateName"].Value;
+                    var certificateNamespacedName = new NamespacedName(namespaceName, name);
+
+                    _ = _certificates.TryGetValue(certificateNamespacedName, out defaultCert);
+                }
+
+                _certificateStore = new ImmutableX509CertificateCache(defaultCert, _certificates.Values);
             }
         }
     }
