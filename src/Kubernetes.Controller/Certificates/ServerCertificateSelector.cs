@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Hosting;
-
+#nullable enable
 namespace Yarp.Kubernetes.Controller.Certificates;
 
 internal partial class ServerCertificateSelector
@@ -28,8 +28,12 @@ internal partial class ServerCertificateSelector
         _hasBeenUpdated = true;
     }
 
-    public X509Certificate2 GetCertificate(ConnectionContext connectionContext, string domainName)
+    public X509Certificate2? GetCertificate(ConnectionContext connectionContext, string? domainName)
     {
+        if (string.IsNullOrEmpty(domainName))
+        {
+            return _certificateStore.DefaultCertificate();
+        }
         return _certificateStore.GetCertificate(domainName);
     }
 

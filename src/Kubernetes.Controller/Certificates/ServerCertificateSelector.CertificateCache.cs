@@ -21,6 +21,11 @@ internal partial class ServerCertificateSelector
             }
             return Certificates.Values.FirstOrDefault();
         }
+
+        public X509Certificate2? DefaultCertificate()
+        {
+            return Certificates.Values.FirstOrDefault();
+        }
     }
 
     private static IEnumerable<string> GetDomains(X509Certificate2 certificate)
