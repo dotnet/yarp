@@ -34,7 +34,15 @@ var app = builder.Build();
 var isEnabledStaticFiles = Environment.GetEnvironmentVariable("YARP_ENABLE_STATIC_FILES");
 if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
 {
-    app.UseFileServer();
+    var isServeUnknownFileTypes = Environment.GetEnvironmentVariable("YARP_STATIC_FILES_SERVE_UNKNOWN_FILE_TYPES");
+
+    app.UseFileServer(new FileServerOptions()
+    {
+        StaticFileOptions =
+        {
+            ServeUnknownFileTypes = string.Equals(isServeUnknownFileTypes, "true", StringComparison.OrdinalIgnoreCase),
+        }
+    });
 }
 app.UseRouting();
 app.MapReverseProxy();
