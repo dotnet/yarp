@@ -175,7 +175,7 @@ internal partial class ActiveHealthCheckMonitor : IActiveHealthCheckMonitor, ICl
         HttpRequestMessage request;
         try
         {
-            request = _probingRequestFactory.CreateRequest(cluster.Model, destination.Model);
+            request = await _probingRequestFactory.CreateRequestAsync(cluster, destination);
         }
         catch (Exception ex)
         {

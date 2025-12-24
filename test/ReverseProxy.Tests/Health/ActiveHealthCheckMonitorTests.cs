@@ -58,20 +58,37 @@ public class ActiveHealthCheckMonitorTests
         VerifySentProbeAndResult(cluster2, httpClient2, policy1, new[] { ("https://localhost:20000/cluster2/api/health/", 1), ("https://localhost:20001/cluster2/api/health/", 1) });
     }
 
-    [Fact]
-    public async Task CheckHealthAsync_CustomUserAgentSpecified_UserAgentUnchanged()
+    [Theory]
+    [InlineData(false)] // Test old API (CreateRequest with Models) via default implementation
+    [InlineData(true)]  // Test new API (CreateRequestAsync with State)
+    public async Task CheckHealthAsync_CustomUserAgentSpecified_UserAgentUnchanged(bool overrideAsyncMethod)
     {
         var policy = new Mock<IActiveHealthCheckPolicy>();
         policy.SetupGet(p => p.Name).Returns("policy");
 
         var requestFactory = new Mock<IProbingRequestFactory>();
-        requestFactory.Setup(p => p.CreateRequest(It.IsAny<ClusterModel>(), It.IsAny<DestinationModel>()))
-            .Returns((ClusterModel cluster, DestinationModel destination) =>
-            {
-                var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:20000/cluster/api/health/");
-                request.Headers.UserAgent.ParseAdd("FooBar/9001");
-                return request;
-            });
+
+        HttpRequestMessage CreateCustomRequest()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:20000/cluster/api/health/");
+            request.Headers.UserAgent.ParseAdd("FooBar/9001");
+            return request;
+        }
+
+        if (overrideAsyncMethod)
+        {
+            requestFactory.Setup(p => p.CreateRequestAsync(It.IsAny<ClusterState>(), It.IsAny<DestinationState>()))
+                .Returns(() => ValueTask.FromResult(CreateCustomRequest()));
+        }
+        else
+        {
+            // Test the old API - the default implementation of CreateRequestAsync should call this
+            requestFactory.Setup(p => p.CreateRequest(It.IsAny<ClusterModel>(), It.IsAny<DestinationModel>()))
+                .Returns(CreateCustomRequest);
+
+            // Use default interface implementation for CreateRequestAsync
+            requestFactory.CallBase = true;
+        }
 
         var options = Options.Create(new ActiveHealthCheckMonitorOptions());
         var monitor = new ActiveHealthCheckMonitor(options, new[] { policy.Object }, requestFactory.Object, new Mock<TimeProvider>().Object, GetLogger());
