@@ -1,13 +1,12 @@
 # YARP Direct Proxy Example
 
-Some customers who have an existing custom proxy for HTTP/1.1 are looking at YARP for a solution to handle more complex requests, such as HTTP/2, gRPC, WebSockets in future QUIC and HTTP/3. These applications have their own means of routing, load balancing, affinity, etc. and only need to forward a specific request to a specific destination. To make it easier to integrate YARP into these scenarios, the component that proxies requests is exposed via IHttpForwarder which can be called directly, and has few dependencies on the rest of YARP's infrastructure. 
+Some customers who have an existing custom proxy for HTTP/1.1 are looking at YARP for a solution to handle more complex requests, such as HTTP/2, gRPC, WebSockets in future QUIC and HTTP/3. These applications have their own means of routing, load balancing, affinity, etc. and only need to forward a specific request to a specific destination. To make it easier to integrate YARP into these scenarios, the component that proxies requests is exposed via IHttpForwarder which can be called directly, and has few dependencies on the rest of YARP's infrastructure.
 
 This example shows how to use IHttpForwarder to proxy a request to/from a specified destination.
 
-
 The operation of the proxy can be thought of as:
 
-```
+```text
 +-------------------+           +-------------------+           +-------------------+
 |      Client       |  ──(a)──► |      Proxy        |  ──(b)──► |    Destination    |
 |                   | ◄──(d)──  |                   | ◄──(c)──  |                   |

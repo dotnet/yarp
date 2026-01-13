@@ -51,7 +51,7 @@ https://github.com/dotnet/arcade (.NET Eng - Latest) ==> 'https://github.com/dot
 
 To add a new subscription, run `darc add-subscription` with no arguments. An editor window will open with a TODO script like this:
 
-```
+```yaml
 Channel: <required>
 Source Repository URL: <required>
 Target Repository URL: <required>
@@ -63,7 +63,7 @@ Merge Policies: []
 
 A number of comments will also be present, describing available values and what they do. Fill these fields in, for example:
 
-```
+```yaml
 Channel: .NET Eng - Latest
 Source Repository URL: https://github.com/dotnet/arcade
 Target Repository URL: https://github.com/dotnet/yarp
@@ -97,7 +97,7 @@ Set up dependency flow for the new branch:
     * `Target Branch` = `release/X` (where `X` is the YARP release version)
     * `Update Frequency` = `EveryWeek`
     * `Merge Policies` is a multiline value, it should look like this:
-      ```
+      ```yaml
       Merge Policies:
       - Name: Standard
         Properties: {}

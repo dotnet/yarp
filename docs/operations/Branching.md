@@ -18,6 +18,6 @@ Update branding in `main`:
 
 Update the runtimes and SDKs in `global.json` in `main`:
 
-Check that the global.json includes the latest 8.0 runtime versions from [here](https://dotnet.microsoft.com/download/dotnet/8.0), and 9.0 from [here](https://dotnet.microsoft.com/download/dotnet/9.0).
+Check that the global.json includes the latest 8.0 runtime versions from [the .NET 8.0 download page](https://dotnet.microsoft.com/download/dotnet/8.0), and 9.0 from [the .NET 9.0 download page](https://dotnet.microsoft.com/download/dotnet/9.0).
 
 [`eng/Versions.props`]: ../../eng/Versions.props

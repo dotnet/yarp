@@ -44,8 +44,7 @@ The subsystems are:
 - **run10destinations**
   - Scripts for Windows & Linux that will start the sample server listening to endpoints http://localhost:10000 to http://localhost:10009
 - **prometheus.yml**
-  - A sample config file for Prometheus that includes polling from http://localhost:5000/metrics for the results from the server. 
-
+  - A sample config file for Prometheus that includes polling from http://localhost:5000/metrics for the results from the server.
 
 ## Running the sample
 

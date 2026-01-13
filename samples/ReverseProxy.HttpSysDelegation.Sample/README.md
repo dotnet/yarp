@@ -1,7 +1,7 @@
 # Http.sys Delegation Sample
 This sample shows how to use YARP to delegate requests to other Http.sys request queues instead of or in addition to proxying requests. Using Http.sys delegation requires hosting YARP on [ASP.NET Core's Http.sys server](https://docs.microsoft.com/aspnet/core/fundamentals/servers/httpsys) and requests can only be delegated to other processes which use Http.sys for request processing (e.g. ASP.NET Core using Http.sys server or IIS).
 
-**Note: delegation only works for ASP.NET Core 6+ running on new versions of Windows**
+**Note:** delegation only works for ASP.NET Core 6+ running on new versions of Windows
 
 ## Sample Projects
 There are two projects as part of this sample. A sample Http.sys server where traffic will be delegated to and a YARP example which both proxies and delegates request depending on the route. Both projects use the minimal API style but this isn't a requirement.

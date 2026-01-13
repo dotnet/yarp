@@ -26,7 +26,6 @@ The other files in the sample are the same as the getting started instructions.
 
 To make a request that would be successful against the second route, you will need a client request similar to:
 
-```
+```bash
 curl -v -k -X GET -H "MyCustomHeader: value1" https://localhost:5001/download?MyQueryParameter=value1
 ```
-

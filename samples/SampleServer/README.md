@@ -4,19 +4,17 @@ This is a simple web server implementation that can be used to test YARP proxy, 
 
 Functionality in this sample server includes:
 
-### Echoing of Request Headers
+## Echoing of Request Headers
 
 Provided that the request URI path doesn't match other endpoints described below, then the request headers will be reported back as text in the response body. This enables you to quickly see what headers were sent, for example to analyze header transforms made by the reverse proxy.
 
-
-### Healthcheck status endpoint
+## Healthcheck status endpoint
 
 [HealthController](Controllers/HealthController.cs) implements an API endpoint for /api/health that will randomly return bad health status.
 
-### WebSockets endpoint
+## WebSockets endpoint
 
 [WebSocketsController](Controllers/WebSocketsController.cs) implements an endpoint for testing web sockets at /api/websockets.
-
 
 ## Usage
 

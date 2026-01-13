@@ -8,8 +8,7 @@ The bulk of the code is the CustomConfigFilter class which implements the IProxy
 
 ## CustomConfigFilter Class
 
-### ConfigureClusterAsync 
+### ConfigureClusterAsync
 This looks at the value of each destination and sees whether it matches the pattern {{env_var_name}}, and if so it treats it as an indirection to an environment variable, and replaces the destination address with the value of the named variable (if it exists).
 
 **Note:** AppSettings.json includes a destination of {{contoso}} which will be matched. The Properties/launchSettings.json file includes a definition of the environment variable, which will be used by Visual Studio and other tools when debugging with "F5".
-
