@@ -35,23 +35,22 @@ The proxy will listen to HTTP requests on port 5000, and HTTPS on port 5001. The
 
 ### Command line
 
-* Download and install the .NET SDK (free) from https://dotnet.microsoft.com/download if not already installed. Versions are available for Windows, Linux and MacOS.
-* Clone or extract a zip of the sample files.
-* Use ```dotnet run``` either within the sample folder or passing in the path to the .csproj file to start the server.
-* File change notification is used for the appsettings.json file so changes can be made on the fly.
-
+- Download and install the .NET SDK (free) from https://dotnet.microsoft.com/download if not already installed. Versions are available for Windows, Linux and MacOS.
+- Clone or extract a zip of the sample files.
+- Use ```dotnet run``` either within the sample folder or passing in the path to the .csproj file to start the server.
+- File change notification is used for the appsettings.json file so changes can be made on the fly.
 
 ### Visual Studio Code
-* Download and install Visual Studio Code (free) from https://code.visualstudio.com/ - versions are available for Windows, Linux and MacOS.
-* Download and install the .NET SDK from https://dotnet.microsoft.com/download if not already installed. Versions are available for Windows, Linux and MacOS.
-* Open the folder for the sample in VS Code (File->Open Folder).
-* Press F5 to debug, or Ctrl + F5 to run the sample without debugging.
+- Download and install Visual Studio Code (free) from https://code.visualstudio.com/ - versions are available for Windows, Linux and MacOS.
+- Download and install the .NET SDK from https://dotnet.microsoft.com/download if not already installed. Versions are available for Windows, Linux and MacOS.
+- Open the folder for the sample in VS Code (File->Open Folder).
+- Press F5 to debug, or Ctrl + F5 to run the sample without debugging.
 
 ### Visual Studio
 
-* Download and install Visual Studio from https://visualstudio.microsoft.com/ - versions are available for Windows and MacOS, including a free community edition.
-* Open the project file.
-* Press F5 to debug, or Ctrl + F5 to run the sample without debugging.
+- Download and install Visual Studio from https://visualstudio.microsoft.com/ - versions are available for Windows and MacOS, including a free community edition.
+- Open the project file.
+- Press F5 to debug, or Ctrl + F5 to run the sample without debugging.
 
 ## Things to try
 - Change the ports the proxy listens on using the URLs property in configuration or on the command line.

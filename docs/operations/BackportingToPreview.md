@@ -19,7 +19,7 @@ Backporting changes is very similar to a regular release. Changes are made on th
   - `git push upstream --tags`
 - Create a new [release](https://github.com/dotnet/yarp/releases).
 
-# Internal fixes
+## Internal fixes
 
 Issues with significant security or disclosure concerns need to be fixed privately first. All of this work will happen on the internal Azdo repo and be merged to the public github repo at the time of disclosure.
 

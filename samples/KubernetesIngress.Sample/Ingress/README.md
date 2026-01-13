@@ -12,7 +12,7 @@ NOTE: Yarp Kubernetes can also be configured as a combined (single) deployable. 
 
 From the base directory for this repo (where the .slnx file is), run the commands:
 
-```
+```bash
 docker build -t yarp-monitor:latest -f ./samples/KubernetesIngress.Sample/Monitor/Dockerfile .
 docker build -t yarp-ingress:latest -f ./samples/KubernetesIngress.Sample/Ingress/Dockerfile .
 ```
@@ -27,7 +27,7 @@ docker build -t yarp-ingress:latest -f ./samples/KubernetesIngress.Sample/Ingres
 1. Run the command `kubectl apply -f ./samples/KubernetesIngress.Sample/Ingress/ingress.yaml`
 
 To undeploy the ingress, run the commands
-```
+```bash
 kubectl delete -f ./samples/KubernetesIngress.Sample/Ingress/ingress.yaml
 kubectl delete -f ./samples/KubernetesIngress.Sample/Monitor/ingress-monitor.yaml
 ```

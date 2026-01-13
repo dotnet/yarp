@@ -71,7 +71,7 @@ Enter a comment such as "release for preview X" approve finalize the release.
 
 The packages will be pushed and when the "NuGet.org" stage turns green, the packages are published!
 
-*Note: NuGet publishing is quick, but there is a background indexing process that can mean it will take up to several hours for packages to become available*
+**Note:** NuGet publishing is quick, but there is a background indexing process that can mean it will take up to several hours for packages to become available
 
 ## Tag the commit
 
@@ -121,6 +121,7 @@ There should only be one [preview branch on the repo](https://github.com/dotnet/
 11. [Offline] Wait for the archival completion report to arrive. Check that the size and number of archived files match the YARP repo.
 
 ### Recommended fields' values for archival request form
+
 | Field | Value |
 | --- | --- |
 | Team Alias | dotnetrp |

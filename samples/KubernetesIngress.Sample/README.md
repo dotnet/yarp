@@ -34,7 +34,7 @@ The `Yarp.Kubernetes.Controller` project does not support:
 The `Yarp.Kubernetes.Controller` project supports a number of **optional** annotations on Ingress resources for functionality provided by YARP.
 
 These annotations would be specified like this:
-```
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -97,13 +97,13 @@ The table below lists the available annotations.
 |yarp.ingress.kubernetes.io/http-client|[HttpClientConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.httpclientconfig)|
 |yarp.ingress.kubernetes.io/http-request|[ForwarderRequestConfig](https://learn.microsoft.com/en-us/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig)|
 |yarp.ingress.kubernetes.io/load-balancing|string|
-|yarp.ingress.kubernetes.io/route-metadata|Dictionary<string, string>|
+|yarp.ingress.kubernetes.io/route-metadata|Dictionary&lt;string, string&gt;|
 |yarp.ingress.kubernetes.io/session-affinity|[SessionAffinityConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.sessionaffinityconfig)|
-|yarp.ingress.kubernetes.io/transforms|List<Dictionary<string, string>>|
-|yarp.ingress.kubernetes.io/route-headers|List<[RouteHeader](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routeheader)>|
-|yarp.ingress.kubernetes.io/route-queryparameters|List<[RouteQueryParameter](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routequeryparameter)>|
+|yarp.ingress.kubernetes.io/transforms|List&lt;Dictionary&lt;string, string&gt;&gt;|
+|yarp.ingress.kubernetes.io/route-headers|List&lt;[RouteHeader](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routeheader)&gt;|
+|yarp.ingress.kubernetes.io/route-queryparameters|List&lt;[RouteQueryParameter](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routequeryparameter)&gt;|
 |yarp.ingress.kubernetes.io/route-order|int|
-|yarp.ingress.kubernetes.io/route-methods|List<string>|
+|yarp.ingress.kubernetes.io/route-methods|List&lt;string&gt;|
 
 #### Authorization Policy
 
@@ -139,7 +139,7 @@ Proactively monitors destination health by sending periodic probing requests to 
 
 See https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/dests-health-checks.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/health-check |
   Active:
   Enabled: true
@@ -155,7 +155,7 @@ Configures the HTTP client that will be used for the destination service.
 
 See https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/http-client-config.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/http-client: |
   SslProtocols: Ssl3
   MaxConnectionsPerServer: 2
@@ -168,7 +168,7 @@ Configures the HTTP request that will be sent to the destination service.
 
 See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/http-request: |
   ActivityTimeout: '00:01:00'
   Version: '2.0'
@@ -186,7 +186,7 @@ See https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/load-balan
 
 See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routeconfig.metadata#yarp-reverseproxy-configuration-routeconfig-metadata.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/route-metadata: |
   Custom: "orange"
   Tenant: "12345"
@@ -196,7 +196,7 @@ yarp.ingress.kubernetes.io/route-metadata: |
 
 See https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/session-affinity.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/session-affinity: |
   Enabled: true
   Policy: Cookie
@@ -217,7 +217,7 @@ yarp.ingress.kubernetes.io/session-affinity: |
 
 Transforms use the YAML key-value pairs as per the YARP [Request Transforms](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/transforms#request-transforms)
 
-```
+```yaml
 yarp.ingress.kubernetes.io/transforms: |
   - PathPrefix: "/apis"
   - RequestHeader: header1
@@ -230,7 +230,7 @@ yarp.ingress.kubernetes.io/transforms: |
 
 See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routeheader.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/route-headers: |
   - Name: the-header-key
     Values:
@@ -250,7 +250,7 @@ yarp.ingress.kubernetes.io/route-headers: |
 
 See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routequeryparameter.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/route-queryparameters: |
   - Name: the-queryparameter-name
     Values:
@@ -268,7 +268,7 @@ yarp.ingress.kubernetes.io/route-queryparameters: |
 
 See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routeconfig.order#yarp-reverseproxy-configuration-routeconfig-order.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/route-order: '10'
 ```
 
@@ -276,7 +276,7 @@ yarp.ingress.kubernetes.io/route-order: '10'
 
 See https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routematch.methods#yarp-reverseproxy-configuration-routematch-methods.
 
-```
+```yaml
 yarp.ingress.kubernetes.io/route-methods: |
   - GET
   - POST

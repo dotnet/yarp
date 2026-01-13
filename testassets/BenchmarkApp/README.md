@@ -4,7 +4,7 @@
 2. In one shell, run `crank-agent`
 3. In another shell, run `crank` as follows:
 
-```
+```bash
 crank `
      --config https://raw.githubusercontent.com/aspnet/Benchmarks/master/scenarios/proxy.benchmarks.yml `
      --scenario proxy-yarp `
