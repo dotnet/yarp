@@ -6,7 +6,7 @@ This directory contains a sample ASP.NET Core application that acts as a "backen
 
 From the base directory for this repo (where the .slnx file is), run the commands:
 
-```
+```bash
 docker build -t backend:latest -f ./samples/KubernetesIngress.Sample/backend/Dockerfile .
 ```
 
@@ -18,7 +18,7 @@ docker build -t backend:latest -f ./samples/KubernetesIngress.Sample/backend/Doc
 1. Run the command `kubectl apply -f ./samples/KubernetesIngress.Sample/backend/ingress-sample.yaml`
 
 To undeploy the backend, run the commands
-```
+```bash
 kubectl delete -f ./samples/KubernetesIngress.Sample/backend/ingress-sample.yaml
 kubectl delete -f ./samples/KubernetesIngress.Sample/backend/backend.yaml
 ```

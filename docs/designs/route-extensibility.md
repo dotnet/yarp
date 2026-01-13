@@ -102,16 +102,16 @@ static IReverseProxyBuilder AddRouteExtension(this IReverseProxyBuilder builder,
   * The IConfigurationSection for the extension
   * The route object that is being extended
   * The existing extension instance in the case of configuration updates
-
-  > When the configuration is parsed, the factory is called based on the configuration key name, and the resultant object is added to the route/cluster objects.
-
-  > Regular YARP config will do a diff merge to handle config changes, and create new objects if applicable. The same mechanism needs to be used for extensions. If the configuration is updated, and an existing instance of the extension exists, then it will be passed to the factory. The factory can compare the current instance and re-use it, or copy its data across to a new instance based on the changes. Instances must stable, so existing instances shouldn't be modified if it would affect existing in-flight requests. YARP can't really enforce rules on how the objects are changed as we want the types to be user defined. 
+>
+> When the configuration is parsed, the factory is called based on the configuration key name, and the resultant object is added to the route/cluster objects.
+>
+> Regular YARP config will do a diff merge to handle config changes, and create new objects if applicable. The same mechanism needs to be used for extensions. If the configuration is updated, and an existing instance of the extension exists, then it will be passed to the factory. The factory can compare the current instance and re-use it, or copy its data across to a new instance based on the changes. Instances must stable, so existing instances shouldn't be modified if it would affect existing in-flight requests. YARP can't really enforce rules on how the objects are changed as we want the types to be user defined. 
 
 * When using a custom config provider, the Extensions collection can be populated by the custom provider directly, or the provider can expose an `IConfigurationSection` implementation and use the factory as described below.
 
 * When YARP is integrated with 3rd party config systems, such as K8s or ServiceFabric, those systems typically have a way of expressing custom properties, some of which will be used by YARP for the definition of routes/ clusters etc. To facilitate the ability for route and cluster extensions to be expressed within those systems, the integration provider should expose an `IConfigurationSection` implementation that maps between the integrated persistence format and YARP. 
   `IConfigurationSection` is essentially a name/value lookup API, it should map pretty reasonably to the YAML or JSON formats used by the configuration systems, and not be an undue burden to implement on these integrations.
 
-* Integration with 3rd party config systems can involve a remote process that YARP can pull its configuration from. I am [proposing another feature](#1710), that we formalize this pattern and have the ability to create a central YARP config provider, to which multiple YARP proxies can bind. This enables scalability in terms of being able to push config to multiple instances of YARP at once.
+* Integration with 3rd party config systems can involve a remote process that YARP can pull its configuration from. I am [proposing another feature](https://github.com/dotnet/yarp/issues/1710), that we formalize this pattern and have the ability to create a central YARP config provider, to which multiple YARP proxies can bind. This enables scalability in terms of being able to push config to multiple instances of YARP at once.
 
 * To support this scenario, we should serialize the IConfiguration data and pass that across to the proxy instances.

@@ -28,9 +28,10 @@ Then follow the [Getting Started](https://learn.microsoft.com/aspnet/core/fundam
 Some features, such as new target frameworks, may require prerelease tooling builds for Visual Studio.
 These are available in the [Visual Studio Preview](https://www.visualstudio.com/vs/preview/).
 
-#### To debug daily builds using Visual Studio
+To debug daily builds using Visual Studio
+------------------------------------------
 
-* *Enable Source Link support* in Visual Studio should be enabled.
-* *Enable source server support* in Visual should be enabled.
-* *Enable Just My Code* should be disabled
-* Under Symbols enable the *Microsoft Symbol Servers* setting.
+- *Enable Source Link support* in Visual Studio should be enabled.
+- *Enable source server support* in Visual should be enabled.
+- *Enable Just My Code* should be disabled
+- Under Symbols enable the *Microsoft Symbol Servers* setting.

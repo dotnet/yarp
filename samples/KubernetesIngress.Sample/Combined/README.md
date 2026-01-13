@@ -8,7 +8,7 @@ The sample ingress controller is a single deployable.
 
 From the base directory for this repo (where the .slnx file is), run the command:
 
-```
+```bash
 docker build -t yarp-combined:latest -f ./samples/KubernetesIngress.Sample/Combined/Dockerfile .
 ```
 

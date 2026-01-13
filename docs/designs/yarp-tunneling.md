@@ -26,7 +26,7 @@ If the tunnel connection is broken, the back-end will attempt to reconnect to th
 - If the connection is refused with a 400 series error then further connections for that tunnel will not be made.
 
 > Issue: Do we need an API for the tunnel? As its created from code on the back-end, the app could have additional logic for control over the duration. Does it have API for status, clean shutdown, etc.
-
+>
 > Issue: Will additional connections be created for scalability - H2 perf becomes limited after 100 simultaneous requests. How does the front-end know to pair a second back-end connection?
 
 The Front End should keep the WSS connection alive by sending pings every 30s if there is no other traffic. This should be done at the WSS layer.
@@ -198,9 +198,9 @@ Samples should be created that show best practices using a secure mechanism such
 
 The purpose of the tunnel is to simplify service exposure by creating a tunnel through the firewall that enables external requests to be made to destination servers on the back-end network. There are a number of mitigations that reduces the risk of this feature:
 
-* No endpoints are exposed via the firewall - it does not expose any new endpoints that could act as attack vectors. The tunnel is an outbound connection made between the back-end and the front-end.
-* Traffic directed via the tunnel will need to have corresponding routes in the Back End configuration. Traffic will only be routed if there is a respective route and cluster configuration. Tunnel traffic can't specify arbitrary URLs that would be directed to a hostname not included in the back-end route table configuration.
-* Tunnel connections should only be over HTTPs
+- No endpoints are exposed via the firewall - it does not expose any new endpoints that could act as attack vectors. The tunnel is an outbound connection made between the back-end and the front-end.
+- Traffic directed via the tunnel will need to have corresponding routes in the Back End configuration. Traffic will only be routed if there is a respective route and cluster configuration. Tunnel traffic can't specify arbitrary URLs that would be directed to a hostname not included in the back-end route table configuration.
+- Tunnel connections should only be over HTTPs
 
 ## Metrics
 
@@ -210,10 +210,8 @@ The purpose of the tunnel is to simplify service exposure by creating a tunnel t
 
 | Condition | Description |
 | --- | --- |
-| No tunnel has connected | If the front end receives a request for a route that is backed by a tunnel and no tunnels have been created, then it should respond to those requests with a 502 "Bad Gateway" error|
+| No tunnel has connected | If the front end receives a request for a route that is backed by a tunnel and no tunnels have been created, then it should respond to those requests with a 502 "Bad Gateway" error |
 
 ## Web Transport
 
 Web Transport is an interesting future protocol choice for the tunnel.
-
-

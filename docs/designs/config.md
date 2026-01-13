@@ -28,7 +28,7 @@ Proposals:
 ## Route config:
 
 The proxy has a [config mechanism](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/samples/IslandGateway.Sample/appsettings.json#L26-L32) to define routes and map those to back end groups.
-```
+```json
       "Routes": [
         {
           "RouteId": "backend1/route1",
@@ -44,7 +44,7 @@ This basic structure is useful though the "Rule" [system](https://github.com/dot
 The ProxyRoute.Metadata dictionary may be able to be replaced or supplemented by giving direct access to the config node for that route. Compare to Kestrel's [EndpointConfig.ConfigSection](https://github.com/dotnet/aspnetcore/blob/f4d81e3af2b969744a57d76d4d622036ac514a6a/src/Servers/Kestrel/Core/src/Internal/ConfigurationReader.cs#L168-L175) property. That would allow for augmenting an endpoint with additional complex custom entries that the app code can reference for additional config actions.
 
 Update: The custom rule system was modified by [#24](https://github.com/dotnet/yarp/pull/24) so that the config now looks like this:
-```
+```json
        "Routes": [
          {
            "RouteId": "backend1/route1",
@@ -69,7 +69,7 @@ A Backend is a collection of one or more BackendEndpoints and a set of policies 
 Question: Why are the backends and the endpoints listed separately in config rather than nested? Object model links endpoints 1:1 with backends, so there doesn't seem to be a reason to list them separately.
 
 Existing:
-```
+```json
       "Backends": [
         {
           "BackendId": "backend1"
@@ -94,7 +94,7 @@ Existing:
       },
 ```
 Nested:
-```
+```json
       "Backends": [
         {
           "BackendId": "backend1",
@@ -117,7 +117,7 @@ Nested:
       ],
 ```
 Additional feedback: Why is it using arrays instead of objects? These items are not order sensitive, and they already have id properties anyways.
-```
+```json
       "Backends": {
         "backend1" : {
           "Endpoints": [
@@ -137,7 +137,7 @@ Additional feedback: Why is it using arrays instead of objects? These items are 
 ```
 
 Update: The backend and endpoint layout has been modified to the following:
-```
+```json
 
     "Backends": {
       "backend1": {
@@ -161,7 +161,7 @@ Update: The backend and endpoint layout has been modified to the following:
 
 Config reloading is not yet a blocking requirement but we do expect to need it in the future. This design needs to factor in how reloading might work when it does get added.
 
-** NOTE ** The proxy code has a concept of Signals that is used to convey config change. We need to see how this integrates with change notifications from our config sources and flows through the system.
+**NOTE** The proxy code has a concept of Signals that is used to convey config change. We need to see how this integrates with change notifications from our config sources and flows through the system.
 
 The Extensions config and options systems have support for change detection and reloading but very few components take advantage of it. Logging is the primary consumer today.
 
@@ -188,7 +188,7 @@ The config reload code has been moved from the sample into the product assemblie
 ## Augmenting config via code
 
 Some things are easier to do in code and we want to be able to support that while still pulling more transient data from config. [Kestrel](https://github.com/dotnet/aspnetcore/blob/aff01ebd7f82d641a4cfbd4a34954300311d9c2b/src/Servers/Kestrel/samples/SampleApp/Startup.cs#L138-L147) has a model where endpoints are named in config and then can be reference by name in code for additional configuration.
-```
+```json
 {
   "Kestrel": {
     "Endpoints": {
@@ -200,7 +200,7 @@ Some things are easier to do in code and we want to be able to support that whil
   }
 }
 ```
-```
+```csharp
     options.Endpoint("NamedEndpoint", opt =>
     {
 
