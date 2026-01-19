@@ -12,7 +12,7 @@ Basic guidance is:
 
 See [azure-pipelines.yml](../../azure-pipelines.yml) (templates-official example) or [azure-pipelines-pr.yml](../../azure-pipelines-pr.yml) (templates example) for examples.
 
-### The `templateIs1ESManaged` parameter
+#### The `templateIs1ESManaged` parameter
 
 The `templateIs1ESManaged` is available on most templates and affects which of the variants is used for nested templates. See [Development Notes](#development-notes) below for more information on the `templateIs1ESManaged1 parameter.
 
@@ -59,7 +59,7 @@ Note: Multiple outputs are ONLY applicable to 1ES PT publishing (only usable whe
 
 ## Development notes
 
-### Folder / file structure
+**Folder / file structure**
 
 ``` text
 eng\common\
