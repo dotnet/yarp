@@ -1,0 +1,2 @@
+# Ignore files under eng/common (managed by dotnet/arcade)
+eng/common/
