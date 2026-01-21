@@ -23,4 +23,4 @@ jobs:
       run: |
         echo "::add-matcher::.github/workflows/markdownlint-problem-matcher.json"
         npm i -g markdownlint-cli
-        markdownlint "**/*.md"
+        markdownlint --ignore-path .github/workflows/markdownlintignore "**/*.md"
