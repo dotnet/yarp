@@ -30,6 +30,11 @@ internal partial class ActiveHealthCheckMonitor
             EventIds.ActiveHealthProbeConstructionFailedOnCluster,
             "Construction of an active health probe for destination `{destinationId}` on cluster `{clusterId}` failed.");
 
+        private static readonly Action<ILogger, string, string, Exception?> _activeHealthProbeCancelledOnDestination = LoggerMessage.Define<string, string>(
+            LogLevel.Debug,
+            EventIds.ActiveHealthProbeCancelledOnDestination,
+            "Active health probing for destination `{destinationId}` on cluster `{clusterId}` was cancelled.");
+
         private static readonly Action<ILogger, string, Exception?> _startingActiveHealthProbingOnCluster = LoggerMessage.Define<string>(
             LogLevel.Debug,
             EventIds.StartingActiveHealthProbingOnCluster,
@@ -73,6 +78,11 @@ internal partial class ActiveHealthCheckMonitor
         public static void ActiveHealthProbeConstructionFailedOnCluster(ILogger logger, string destinationId, string clusterId, Exception ex)
         {
             _activeHealthProbeConstructionFailedOnCluster(logger, destinationId, clusterId, ex);
+        }
+
+        public static void ActiveHealthProbeCancelledOnDestination(ILogger logger, string destinationId, string clusterId)
+        {
+            _activeHealthProbeCancelledOnDestination(logger, destinationId, clusterId, null);
         }
 
         public static void StartingActiveHealthProbingOnCluster(ILogger logger, string clusterId)

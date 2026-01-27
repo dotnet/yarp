@@ -172,10 +172,17 @@ internal partial class ActiveHealthCheckMonitor : IActiveHealthCheckMonitor, ICl
         probeActivity?.AddTag("proxy.cluster_id", cluster.ClusterId);
         probeActivity?.AddTag("proxy.destination_id", destination.DestinationId);
 
+        using var cts = new CancellationTokenSource(timeout);
+
         HttpRequestMessage request;
         try
         {
-            request = _probingRequestFactory.CreateRequest(cluster.Model, destination.Model);
+            request = await _probingRequestFactory.CreateRequestAsync(cluster, destination, cts.Token);
+        }
+        catch (OperationCanceledException oce) when (!cts.IsCancellationRequested)
+        {
+            Log.ActiveHealthProbeCancelledOnDestination(_logger, destination.DestinationId, cluster.ClusterId);
+            return new DestinationProbingResult(destination, null, oce);
         }
         catch (Exception ex)
         {
@@ -186,8 +193,6 @@ internal partial class ActiveHealthCheckMonitor : IActiveHealthCheckMonitor, ICl
             return new DestinationProbingResult(destination, null, ex);
         }
 
-        using var cts = new CancellationTokenSource(timeout);
-
         try
         {
             Log.SendingHealthProbeToEndpointOfDestination(_logger, request.RequestUri, destination.DestinationId, cluster.ClusterId);
@@ -197,6 +202,11 @@ internal partial class ActiveHealthCheckMonitor : IActiveHealthCheckMonitor, ICl
             probeActivity?.SetStatus(ActivityStatusCode.Ok);
 
             return new DestinationProbingResult(destination, response, null);
+        }
+        catch (OperationCanceledException oce) when (!cts.IsCancellationRequested)
+        {
+            Log.ActiveHealthProbeCancelledOnDestination(_logger, destination.DestinationId, cluster.ClusterId);
+            return new DestinationProbingResult(destination, null, oce);
         }
         catch (Exception ex)
         {

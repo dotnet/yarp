@@ -4,6 +4,8 @@
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
@@ -39,4 +41,7 @@ internal sealed class DefaultProbingRequestFactory : IProbingRequestFactory
 
         return request;
     }
+
+    public ValueTask<HttpRequestMessage> CreateRequestAsync(ClusterState cluster, DestinationState destination, CancellationToken cancellationToken = default) =>
+        ValueTask.FromResult(CreateRequest(cluster.Model, destination.Model));
 }

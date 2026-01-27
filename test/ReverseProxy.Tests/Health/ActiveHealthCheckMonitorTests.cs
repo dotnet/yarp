@@ -58,20 +58,37 @@ public class ActiveHealthCheckMonitorTests
         VerifySentProbeAndResult(cluster2, httpClient2, policy1, new[] { ("https://localhost:20000/cluster2/api/health/", 1), ("https://localhost:20001/cluster2/api/health/", 1) });
     }
 
-    [Fact]
-    public async Task CheckHealthAsync_CustomUserAgentSpecified_UserAgentUnchanged()
+    [Theory]
+    [InlineData(false)] // Test old API (CreateRequest with Models) via default implementation
+    [InlineData(true)]  // Test new API (CreateRequestAsync with State)
+    public async Task CheckHealthAsync_CustomUserAgentSpecified_UserAgentUnchanged(bool overrideAsyncMethod)
     {
         var policy = new Mock<IActiveHealthCheckPolicy>();
         policy.SetupGet(p => p.Name).Returns("policy");
 
         var requestFactory = new Mock<IProbingRequestFactory>();
-        requestFactory.Setup(p => p.CreateRequest(It.IsAny<ClusterModel>(), It.IsAny<DestinationModel>()))
-            .Returns((ClusterModel cluster, DestinationModel destination) =>
-            {
-                var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:20000/cluster/api/health/");
-                request.Headers.UserAgent.ParseAdd("FooBar/9001");
-                return request;
-            });
+
+        HttpRequestMessage CreateCustomRequest()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost:20000/cluster/api/health/");
+            request.Headers.UserAgent.ParseAdd("FooBar/9001");
+            return request;
+        }
+
+        if (overrideAsyncMethod)
+        {
+            requestFactory.Setup(p => p.CreateRequestAsync(It.IsAny<ClusterState>(), It.IsAny<DestinationState>(), It.IsAny<CancellationToken>()))
+                .Returns(() => ValueTask.FromResult(CreateCustomRequest()));
+        }
+        else
+        {
+            // Test the old API - the default implementation of CreateRequestAsync should call this
+            requestFactory.Setup(p => p.CreateRequest(It.IsAny<ClusterModel>(), It.IsAny<DestinationModel>()))
+                .Returns(CreateCustomRequest);
+
+            // Use default interface implementation for CreateRequestAsync
+            requestFactory.CallBase = true;
+        }
 
         var options = Options.Create(new ActiveHealthCheckMonitorOptions());
         var monitor = new ActiveHealthCheckMonitor(options, new[] { policy.Object }, requestFactory.Object, new Mock<TimeProvider>().Object, GetLogger());
@@ -82,6 +99,132 @@ public class ActiveHealthCheckMonitorTests
         await monitor.CheckHealthAsync(new[] { cluster });
 
         VerifySentProbeAndResult(cluster, httpClient, policy, new[] { ("https://localhost:20000/cluster/api/health/", 1) }, userAgent: @"^FooBar\/9001$");
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_FactoryCancelledExternally_ProbePassedToPolicyWithException()
+    {
+        var policy = new Mock<IActiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy");
+
+        var externalCts = new CancellationTokenSource();
+        var requestFactory = new Mock<IProbingRequestFactory>();
+
+        // First destination: factory throws OperationCanceledException (external cancellation)
+        // Second destination: succeeds normally
+        var callCount = 0;
+        requestFactory.Setup(p => p.CreateRequestAsync(It.IsAny<ClusterState>(), It.IsAny<DestinationState>(), It.IsAny<CancellationToken>()))
+            .Returns<ClusterState, DestinationState, CancellationToken>((cluster, destination, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    // Simulate external cancellation (not timeout) - throw without the timeout CTS being cancelled
+                    throw new OperationCanceledException(externalCts.Token);
+                }
+
+                return ValueTask.FromResult(new HttpRequestMessage(HttpMethod.Get, $"https://localhost:20000/{destination.DestinationId}/health/"));
+            });
+
+        var options = Options.Create(new ActiveHealthCheckMonitorOptions { DefaultTimeout = TimeSpan.FromSeconds(30) });
+        var monitor = new ActiveHealthCheckMonitor(options, new[] { policy.Object }, requestFactory.Object, new Mock<TimeProvider>().Object, GetLogger());
+
+        var httpClient = GetHttpClient();
+        var cluster = GetClusterInfo("cluster", "policy", true, httpClient.Object, destinationCount: 2);
+
+        await monitor.CheckHealthAsync(new[] { cluster });
+
+        // Policy should receive 2 results: one with exception (cancelled), one successful
+        policy.Verify(
+            p => p.ProbingCompleted(
+                cluster,
+                It.Is<IReadOnlyList<DestinationProbingResult>>(r =>
+                    r.Count == 2 &&
+                    r.Any(x => x.Exception is OperationCanceledException) &&
+                    r.Any(x => x.Response != null && x.Response.StatusCode == HttpStatusCode.OK)))
+            , Times.Once);
+        policy.Verify(p => p.Name);
+        policy.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_SendAsyncCancelledExternally_ProbePassedToPolicyWithException()
+    {
+        var policy = new Mock<IActiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy");
+
+        var externalCts = new CancellationTokenSource();
+        var options = Options.Create(new ActiveHealthCheckMonitorOptions { DefaultTimeout = TimeSpan.FromSeconds(30) });
+        var monitor = new ActiveHealthCheckMonitor(options, new[] { policy.Object }, new DefaultProbingRequestFactory(), new Mock<TimeProvider>().Object, GetLogger());
+
+        // First destination: SendAsync throws OperationCanceledException (external cancellation)
+        // Second destination: succeeds normally
+        var callCount = 0;
+        var httpClient = new Mock<HttpMessageInvoker>(() => new HttpMessageInvoker(new Mock<HttpMessageHandler>().Object));
+        httpClient.Setup(c => c.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+            .Returns<HttpRequestMessage, CancellationToken>((request, ct) =>
+            {
+                callCount++;
+                if (callCount == 1)
+                {
+                    // Simulate external cancellation (not timeout) - throw without the timeout CTS being cancelled
+                    throw new OperationCanceledException(externalCts.Token);
+                }
+
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Version = request.Version });
+            });
+
+        var cluster = GetClusterInfo("cluster", "policy", true, httpClient.Object, destinationCount: 2);
+
+        await monitor.CheckHealthAsync(new[] { cluster });
+
+        // Policy should receive 2 results: one with exception (cancelled), one successful
+        policy.Verify(
+            p => p.ProbingCompleted(
+                cluster,
+                It.Is<IReadOnlyList<DestinationProbingResult>>(r =>
+                    r.Count == 2 &&
+                    r.Any(x => x.Exception is OperationCanceledException) &&
+                    r.Any(x => x.Response != null && x.Response.StatusCode == HttpStatusCode.OK)))
+            , Times.Once);
+        policy.Verify(p => p.Name);
+        policy.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task CheckHealthAsync_TimeoutCancellation_TreatedAsError()
+    {
+        var policy = new Mock<IActiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy");
+
+        var options = Options.Create(new ActiveHealthCheckMonitorOptions { DefaultTimeout = TimeSpan.FromMilliseconds(1) });
+        var monitor = new ActiveHealthCheckMonitor(options, new[] { policy.Object }, new DefaultProbingRequestFactory(), new Mock<TimeProvider>().Object, GetLogger());
+
+        var tcs = new TaskCompletionSource<HttpResponseMessage>();
+        var httpClient = new Mock<HttpMessageInvoker>(() => new HttpMessageInvoker(new Mock<HttpMessageHandler>().Object));
+        httpClient.Setup(c => c.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+            .Returns<HttpRequestMessage, CancellationToken>((request, ct) =>
+            {
+                // Register callback to cancel the TCS when timeout occurs
+                ct.Register(() => tcs.TrySetCanceled(ct));
+                return tcs.Task;
+            });
+
+        var cluster = GetClusterInfo("cluster", "policy", true, httpClient.Object, destinationCount: 1);
+
+        await monitor.CheckHealthAsync(new[] { cluster });
+
+        // Policy should receive 1 result with an exception (timeout is an error, not skipped)
+        policy.Verify(
+            p => p.ProbingCompleted(
+                cluster,
+                It.Is<IReadOnlyList<DestinationProbingResult>>(r =>
+                    r.Count == 1 &&
+                    r[0].Response == null &&
+                    r[0].Exception is OperationCanceledException)),
+            Times.Once);
+        policy.Verify(p => p.Name);
+        policy.VerifyNoOtherCalls();
     }
 
     [Fact]
@@ -282,6 +425,9 @@ public class ActiveHealthCheckMonitorTests
 
         timeProvider.FireAllTimers();
 
+        Assert.Equal(2, timeProvider.TimerCount);
+        timeProvider.VerifyTimer(0, Interval0);
+        timeProvider.VerifyTimer(1, Interval1);
         VerifySentProbeAndResult(cluster0, httpClient0, policy0, new[] { ("https://localhost:20000/cluster0/api/health/", 1), ("https://localhost:20001/cluster0/api/health/", 1) }, policyCallTimes: 1);
         VerifySentProbeAndResult(cluster2, httpClient2, policy1, new[] { ("https://localhost:20000/cluster2/api/health/", 1), ("https://localhost:20001/cluster2/api/health/", 1) }, policyCallTimes: 1);
 
