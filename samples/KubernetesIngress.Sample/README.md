@@ -93,17 +93,19 @@ The table below lists the available annotations.
 |yarp.ingress.kubernetes.io/output-cache-policy|string|
 |yarp.ingress.kubernetes.io/backend-protocol|string|
 |yarp.ingress.kubernetes.io/cors-policy|string|
-|yarp.ingress.kubernetes.io/health-check|[ActivateHealthCheckConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.activehealthcheckconfig)|
-|yarp.ingress.kubernetes.io/http-client|[HttpClientConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.httpclientconfig)|
-|yarp.ingress.kubernetes.io/http-request|[ForwarderRequestConfig](https://learn.microsoft.com/en-us/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig)|
-|yarp.ingress.kubernetes.io/load-balancing|string|
+|yarp.ingress.kubernetes.io/health-check|[ActivateHealthCheckConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.activehealthcheckconfig) [^1]|
+|yarp.ingress.kubernetes.io/http-client|[HttpClientConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.httpclientconfig) [^1]|
+|yarp.ingress.kubernetes.io/http-request|[ForwarderRequestConfig](https://learn.microsoft.com/en-us/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig) [^1]|
+|yarp.ingress.kubernetes.io/load-balancing|string [^1]|
 |yarp.ingress.kubernetes.io/route-metadata|Dictionary&lt;string, string&gt;|
-|yarp.ingress.kubernetes.io/session-affinity|[SessionAffinityConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.sessionaffinityconfig)|
+|yarp.ingress.kubernetes.io/session-affinity|[SessionAffinityConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.sessionaffinityconfig) [^1]|
 |yarp.ingress.kubernetes.io/transforms|List&lt;Dictionary&lt;string, string&gt;&gt;|
 |yarp.ingress.kubernetes.io/route-headers|List&lt;[RouteHeader](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routeheader)&gt;|
 |yarp.ingress.kubernetes.io/route-queryparameters|List&lt;[RouteQueryParameter](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routequeryparameter)&gt;|
 |yarp.ingress.kubernetes.io/route-order|int|
 |yarp.ingress.kubernetes.io/route-methods|List&lt;string&gt;|
+
+[^1]: **Cluster-level annotation.** These annotations configure the YARP cluster, not the route. A cluster is identified by backend service name, namespace, and port. Multiple ingress rules targeting the same backend share the cluster, so conflicting values result in non-deterministic behavior. Ensure consistent values across all ingress rules for the same backend.
 
 #### Authorization Policy
 
