@@ -93,12 +93,12 @@ The table below lists the available annotations.
 |yarp.ingress.kubernetes.io/output-cache-policy|string|
 |yarp.ingress.kubernetes.io/backend-protocol|string|
 |yarp.ingress.kubernetes.io/cors-policy|string|
-|yarp.ingress.kubernetes.io/health-check|[ActivateHealthCheckConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.activehealthcheckconfig) [\*](#cluster-level-annotations)|
-|yarp.ingress.kubernetes.io/http-client|[HttpClientConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.httpclientconfig) [\*](#cluster-level-annotations)|
-|yarp.ingress.kubernetes.io/http-request|[ForwarderRequestConfig](https://learn.microsoft.com/en-us/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig) [\*](#cluster-level-annotations)|
-|yarp.ingress.kubernetes.io/load-balancing|string [\*](#cluster-level-annotations)|
+|yarp.ingress.kubernetes.io/health-check [\*](#cluster-level-annotations)|[ActivateHealthCheckConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.activehealthcheckconfig)|
+|yarp.ingress.kubernetes.io/http-client [\*](#cluster-level-annotations)|[HttpClientConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.httpclientconfig)|
+|yarp.ingress.kubernetes.io/http-request [\*](#cluster-level-annotations)|[ForwarderRequestConfig](https://learn.microsoft.com/en-us/dotnet/api/yarp.reverseproxy.forwarder.forwarderrequestconfig)|
+|yarp.ingress.kubernetes.io/load-balancing [\*](#cluster-level-annotations)|string|
 |yarp.ingress.kubernetes.io/route-metadata|Dictionary&lt;string, string&gt;|
-|yarp.ingress.kubernetes.io/session-affinity|[SessionAffinityConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.sessionaffinityconfig) [\*](#cluster-level-annotations)|
+|yarp.ingress.kubernetes.io/session-affinity [\*](#cluster-level-annotations)|[SessionAffinityConfig](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.sessionaffinityconfig)|
 |yarp.ingress.kubernetes.io/transforms|List&lt;Dictionary&lt;string, string&gt;&gt;|
 |yarp.ingress.kubernetes.io/route-headers|List&lt;[RouteHeader](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routeheader)&gt;|
 |yarp.ingress.kubernetes.io/route-queryparameters|List&lt;[RouteQueryParameter](https://learn.microsoft.com/dotnet/api/yarp.reverseproxy.configuration.routequeryparameter)&gt;|
