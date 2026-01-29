@@ -105,10 +105,10 @@ The table below lists the available annotations.
 |yarp.ingress.kubernetes.io/route-order|int|
 |yarp.ingress.kubernetes.io/route-methods|List&lt;string&gt;|
 
-<a id="cluster-level-annotations"></a>
+#### Cluster-level annotations
 
 > [!NOTE]
-> **\* Cluster-level annotations:** These annotations configure the YARP cluster, not the route. A cluster is identified by backend service name, namespace, and port. Multiple ingress rules targeting the same backend share the cluster, so conflicting values result in non-deterministic behavior. Ensure consistent values across all ingress rules for the same backend.
+> Annotations marked with **\*** configure the YARP cluster, not the route. A cluster is identified by backend service name, namespace, and port. Multiple ingress rules targeting the same backend share the cluster, so conflicting values result in non-deterministic behavior. Ensure consistent values across all ingress rules for the same backend.
 
 #### Authorization Policy
 
