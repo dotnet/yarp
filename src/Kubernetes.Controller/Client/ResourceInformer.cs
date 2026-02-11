@@ -254,14 +254,16 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             {
                 // for anything which was previously known but not part of list
                 // send a deleted notification to clear any observer caches
-                var item = new TResource()
+                var item = new TResource
                 {
                     ApiVersion = _names.GroupApiVersion,
                     Kind = _names.Kind,
-                    Metadata = new V1ObjectMeta(
-                        name: key.Name,
-                        namespaceProperty: key.Namespace,
-                        ownerReferences: value),
+                    Metadata = new V1ObjectMeta
+                    {
+                        Name = key.Name,
+                        NamespaceProperty = key.Namespace,
+                        OwnerReferences = value
+                    }
                 };
 
                 InvokeRegistrationCallbacks(WatchEventType.Deleted, item);
