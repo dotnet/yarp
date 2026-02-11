@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -22,8 +23,14 @@ internal class V1IngressResourceInformer : ResourceInformer<V1Ingress, V1Ingress
     {
     }
 
-    protected override Task<HttpOperationResponse<V1IngressList>> RetrieveResourceListAsync(bool? watch = null, string resourceVersion = null, ResourceSelector<V1Ingress> resourceSelector = null, CancellationToken cancellationToken = default)
+    protected override Task<HttpOperationResponse<V1IngressList>> RetrieveResourceListAsync(string resourceVersion = null, ResourceSelector<V1Ingress> resourceSelector = null, CancellationToken cancellationToken = default)
     {
-        return Client.NetworkingV1.ListIngressForAllNamespacesWithHttpMessagesAsync(watch: watch, resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
+        return Client.NetworkingV1.ListIngressForAllNamespacesWithHttpMessagesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
+    }
+
+    protected override Watcher<V1Ingress> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Ingress> resourceSelector = null, Action<WatchEventType, V1Ingress> onEvent = null, Action<Exception> onError = null, Action onClosed = null)
+    {
+        return Client.NetworkingV1.WatchListIngressForAllNamespaces(resourceVersion: resourceVersion,
+            fieldSelector: resourceSelector?.FieldSelector, onEvent: onEvent, onError: onError, onClosed: onClosed);
     }
 }
