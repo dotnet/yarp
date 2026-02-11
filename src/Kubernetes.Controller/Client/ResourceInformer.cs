@@ -196,7 +196,8 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
         }
     }
 
-    protected abstract Task<HttpOperationResponse<TListResource>> RetrieveResourceListAsync(bool? watch = null, string resourceVersion = null, ResourceSelector<TResource> resourceSelector = null, CancellationToken cancellationToken = default);
+    protected abstract Task<HttpOperationResponse<TListResource>> RetrieveResourceListAsync(string resourceVersion = null, ResourceSelector<TResource> resourceSelector = null, CancellationToken cancellationToken = default);
+    protected abstract Watcher<TResource> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<TResource> resourceSelector = null, Action<WatchEventType, TResource> onEvent = null, Action<Exception> onError = null, Action onClosed = null);
 
     private static EventId EventId(EventType eventType) => new EventId((int)eventType, eventType.ToString());
 
@@ -254,14 +255,16 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             {
                 // for anything which was previously known but not part of list
                 // send a deleted notification to clear any observer caches
-                var item = new TResource()
+                var item = new TResource
                 {
                     ApiVersion = _names.GroupApiVersion,
                     Kind = _names.Kind,
-                    Metadata = new V1ObjectMeta(
-                        name: key.Name,
-                        namespaceProperty: key.Namespace,
-                        ownerReferences: value),
+                    Metadata = new V1ObjectMeta
+                    {
+                        Name = key.Name,
+                        NamespaceProperty = key.Namespace,
+                        OwnerReferences = value
+                    }
                 };
 
                 InvokeRegistrationCallbacks(WatchEventType.Deleted, item);
@@ -291,15 +294,11 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
         var watcherCompletionSource = new TaskCompletionSource<int>();
 
         // begin watching where list left off
-        var watchWithHttpMessage = RetrieveResourceListAsync(watch: true, resourceVersion: _lastResourceVersion, resourceSelector: _selector, cancellationToken: cancellationToken);
-
-        var lastEventUtc = DateTime.UtcNow;
-        using var watcher = watchWithHttpMessage.Watch<TResource, TListResource>(
+        var watcher = WatchResourceListAsync(resourceVersion: _lastResourceVersion, resourceSelector: _selector,
             (watchEventType, item) =>
             {
                 if (!watcherCompletionSource.Task.IsCompleted)
                 {
-                    lastEventUtc = DateTime.UtcNow;
                     OnEvent(watchEventType, item);
                 }
             },
@@ -325,7 +324,10 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             () =>
             {
                 watcherCompletionSource.TrySetResult(0);
-            });
+            }
+        );
+
+        var lastEventUtc = DateTime.UtcNow;
 
         // reconnect if no events have arrived after a certain time
         using var checkLastEventUtcTimer = new Timer(
@@ -342,6 +344,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
 
                     watcherCompletionSource.TrySetCanceled();
                     watcher.Dispose();
+
                 }
             },
             state: null,

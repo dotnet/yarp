@@ -62,12 +62,12 @@ public class NamespacedNameTests
     [Fact]
     public void NamespaceAndNameFromResource()
     {
-        var resource = new V1ConfigMap(
-            apiVersion: V1ConfigMap.KubeApiVersion,
-            kind: V1ConfigMap.KubeKind,
-            metadata: new V1ObjectMeta(
-                name: "the-name",
-                namespaceProperty: "the-namespace"));
+        var resource = new V1ConfigMap
+        {
+            ApiVersion = V1ConfigMap.KubeApiVersion,
+            Kind = V1ConfigMap.KubeKind,
+            Metadata = new V1ObjectMeta {Name = "the-name", NamespaceProperty = "the-namespace"}
+        };
 
         var nn = NamespacedName.From(resource);
 
@@ -78,11 +78,12 @@ public class NamespacedNameTests
     [Fact]
     public void JustNameFromClusterResource()
     {
-        var resource = new V1ClusterRole(
-            apiVersion: V1ClusterRole.KubeApiVersion,
-            kind: V1ClusterRole.KubeKind,
-            metadata: new V1ObjectMeta(
-                name: "the-name"));
+        var resource = new V1ClusterRole
+        {
+            ApiVersion = V1ClusterRole.KubeApiVersion,
+            Kind = V1ClusterRole.KubeKind,
+            Metadata = new V1ObjectMeta { Name = "the-name" }
+        };
 
         var nn = NamespacedName.From(resource);
 

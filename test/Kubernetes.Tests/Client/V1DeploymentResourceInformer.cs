@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -22,8 +23,13 @@ internal class V1DeploymentResourceInformer : ResourceInformer<V1Deployment, V1D
     {
     }
 
-    protected override Task<HttpOperationResponse<V1DeploymentList>> RetrieveResourceListAsync(bool? watch = null, string resourceVersion = null, ResourceSelector<V1Deployment> resourceSelector = null, CancellationToken cancellationToken = default)
+    protected override Task<HttpOperationResponse<V1DeploymentList>> RetrieveResourceListAsync(string resourceVersion = null, ResourceSelector<V1Deployment> resourceSelector = null, CancellationToken cancellationToken = default)
     {
-        return Client.AppsV1.ListDeploymentForAllNamespacesWithHttpMessagesAsync(watch: watch, resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
+        return Client.AppsV1.ListDeploymentForAllNamespacesWithHttpMessagesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
+    }
+
+    protected override Watcher<V1Deployment> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Deployment> resourceSelector = null, Action<WatchEventType, V1Deployment> onEvent = null, Action<Exception> onError = null, Action onClosed = null)
+    {
+        return Client.AppsV1.WatchListDeploymentForAllNamespaces(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, onEvent: onEvent, onError: onError, onClosed: onClosed);
     }
 }

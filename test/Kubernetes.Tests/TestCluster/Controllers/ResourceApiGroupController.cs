@@ -35,10 +35,10 @@ public class ResourceApiGroupController : ControllerBase
         var result = new KubernetesList<ResourceObject>(
             apiVersion: $"{Group}/{Version}",
             kind: "DeploymentList",
-            metadata: new V1ListMeta(
-                continueProperty: list.Continue,
-                remainingItemCount: null,
-                resourceVersion: list.ResourceVersion),
+            metadata: new V1ListMeta
+            {
+                ContinueProperty = list.Continue, RemainingItemCount = null, ResourceVersion = list.ResourceVersion
+            },
             items: list.Items);
 
         return new ObjectResult(result);
