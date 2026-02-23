@@ -32,10 +32,10 @@ public class ResourceApiController : ControllerBase
         var result = new KubernetesList<ResourceObject>(
             apiVersion: Version,
             kind: "PodList",
-            metadata: new V1ListMeta(
-                continueProperty: list.Continue,
-                remainingItemCount: null,
-                resourceVersion: list.ResourceVersion),
+            metadata: new V1ListMeta
+            {
+                ContinueProperty = list.Continue, RemainingItemCount = null, ResourceVersion = list.ResourceVersion
+            },
             items: list.Items);
 
         return new ObjectResult(result);

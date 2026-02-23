@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -22,8 +23,13 @@ internal class V1PodResourceInformer : ResourceInformer<V1Pod, V1PodList>
     {
     }
 
-    protected override Task<HttpOperationResponse<V1PodList>> RetrieveResourceListAsync(bool? watch = null, string resourceVersion = null, ResourceSelector<V1Pod> resourceSelector = null, CancellationToken cancellationToken = default)
+    protected override Task<HttpOperationResponse<V1PodList>> RetrieveResourceListAsync(string resourceVersion = null, ResourceSelector<V1Pod> resourceSelector = null, CancellationToken cancellationToken = default)
     {
-        return Client.CoreV1.ListPodForAllNamespacesWithHttpMessagesAsync(watch: watch, resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
+        return Client.CoreV1.ListPodForAllNamespacesWithHttpMessagesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
+    }
+
+    protected override Watcher<V1Pod> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Pod> resourceSelector = null, Action<WatchEventType, V1Pod> onEvent = null, Action<Exception> onError = null, Action onClosed = null)
+    {
+        return Client.CoreV1.WatchListPodForAllNamespaces(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, onEvent: onEvent, onError: onError, onClosed: onClosed);
     }
 }
