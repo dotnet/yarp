@@ -1,9 +1,9 @@
 {
   "sdk": {
-    "version": "11.0.100-preview.1.26104.118"
+    "version": "11.0.100-preview.3.26161.119"
   },
   "tools": {
-    "dotnet": "11.0.100-preview.1.26104.118",
+    "dotnet": "11.0.100-preview.3.26161.119",
     "runtimes": {
       "dotnet": [
         "8.0.13",
@@ -19,7 +19,7 @@
     "runner": "Microsoft.Testing.Platform"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26163.2",
-    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26163.2"
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26171.1",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26171.1"
   }
 }
