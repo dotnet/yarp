@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -108,7 +111,9 @@ public class ClusterDestinationResolverTests
 
     private static IClusterDestinationResolver CreateResolver(IEnumerable<ClusterState> clusters, params ILoadBalancingPolicy[] policies)
     {
-        return new ClusterDestinationResolver(new TestProxyStateLookup(clusters), policies);
+        return new ClusterDestinationResolver(
+            new TestProxyStateLookup(clusters),
+            new LoadBalancingDestinationSelector(policies));
     }
 
     private static ClusterState CreateCluster(string clusterId, string? loadBalancingPolicy, IReadOnlyList<DestinationState> destinations)
@@ -157,13 +162,13 @@ public class ClusterDestinationResolverTests
 
         public IEnumerable<ClusterState> GetClusters() => _clusters.Values;
 
-        public bool TryGetRoute(string id, out RouteModel? route)
+        public bool TryGetRoute(string id, [NotNullWhen(true)] out RouteModel? route)
         {
             route = null;
             return false;
         }
 
-        public bool TryGetCluster(string id, out ClusterState? cluster)
+        public bool TryGetCluster(string id, [NotNullWhen(true)] out ClusterState? cluster)
         {
             return _clusters.TryGetValue(id, out cluster);
         }

@@ -87,6 +87,7 @@ internal static class IReverseProxyBuilderExtensions
     public static IReverseProxyBuilder AddLoadBalancingPolicies(this IReverseProxyBuilder builder)
     {
         builder.Services.TryAddSingleton<IRandomFactory, RandomFactory>();
+        builder.Services.TryAddSingleton<ILoadBalancingDestinationSelector, LoadBalancingDestinationSelector>();
 
         builder.Services.TryAddEnumerable(new[] {
             ServiceDescriptor.Singleton<ILoadBalancingPolicy, FirstLoadBalancingPolicy>(),

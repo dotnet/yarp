@@ -24,10 +24,12 @@ public class LoadBalancerMiddlewareTests
             .Setup(l => l.IsEnabled(It.IsAny<LogLevel>()))
             .Returns(true);
 
+        var destinationSelector = new LoadBalancingDestinationSelector(loadBalancingPolicies);
+
         return new LoadBalancingMiddleware(
             next,
             logger.Object,
-            loadBalancingPolicies);
+            destinationSelector);
     }
 
     [Fact]
