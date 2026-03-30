@@ -72,6 +72,7 @@ internal static class IReverseProxyBuilderExtensions
     {
         builder.Services.TryAddSingleton<ProxyConfigManager>();
         builder.Services.TryAddSingleton<IProxyStateLookup>(sp => sp.GetRequiredService<ProxyConfigManager>());
+        builder.Services.TryAddSingleton<IClusterDestinationResolver, ClusterDestinationResolver>();
         return builder;
     }
 
