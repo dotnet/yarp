@@ -39,6 +39,15 @@ if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCa
 app.UseRouting();
 app.MapReverseProxy();
 
+if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
+{
+    var disableSpaFallback = Environment.GetEnvironmentVariable("YARP_DISABLE_SPA_FALLBACK");
+    if (!string.Equals(disableSpaFallback, "true", StringComparison.OrdinalIgnoreCase))
+    {
+        app.MapFallbackToFile("index.html");
+    }
+}
+
 await app.RunAsync();
 
 return 0;
