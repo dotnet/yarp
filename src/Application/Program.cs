@@ -31,18 +31,18 @@ builder.Services.AddReverseProxy()
                 .AddServiceDiscoveryDestinationResolver();
 
 var app = builder.Build();
-var isEnabledStaticFiles = Environment.GetEnvironmentVariable("YARP_ENABLE_STATIC_FILES");
-if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
+var enableStaticFiles = string.Equals(app.Configuration["YARP_ENABLE_STATIC_FILES"], "true", StringComparison.OrdinalIgnoreCase);
+if (enableStaticFiles)
 {
     app.UseFileServer();
 }
 app.UseRouting();
 app.MapReverseProxy();
 
-if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
+if (enableStaticFiles)
 {
-    var disableSpaFallback = Environment.GetEnvironmentVariable("YARP_DISABLE_SPA_FALLBACK");
-    if (!string.Equals(disableSpaFallback, "true", StringComparison.OrdinalIgnoreCase))
+    var disableSpaFallback = string.Equals(app.Configuration["YARP_DISABLE_SPA_FALLBACK"], "true", StringComparison.OrdinalIgnoreCase);
+    if (!disableSpaFallback)
     {
         app.MapFallbackToFile("index.html");
     }

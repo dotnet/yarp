@@ -4,36 +4,25 @@
 using System.Net;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Yarp.Application.Tests;
 
-public class SpaFallbackTests : IDisposable
+public class SpaFallbackTests
 {
-    private readonly List<string> _envVarsToClean = new();
-
-    private void SetEnv(string key, string? value)
-    {
-        _envVarsToClean.Add(key);
-        Environment.SetEnvironmentVariable(key, value);
-    }
-
-    public void Dispose()
-    {
-        foreach (var key in _envVarsToClean)
-        {
-            Environment.SetEnvironmentVariable(key, null);
-        }
-    }
-
-    private WebApplication CreateApp(string webRoot)
+    private static WebApplication CreateApp(string webRoot, Dictionary<string, string?>? config = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             WebRootPath = webRoot
         });
+
+        if (config is not null)
+        {
+            builder.Configuration.AddInMemoryCollection(config);
+        }
 
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddReverseProxy()
@@ -41,8 +30,8 @@ public class SpaFallbackTests : IDisposable
 
         var app = builder.Build();
 
-        var isEnabledStaticFiles = Environment.GetEnvironmentVariable("YARP_ENABLE_STATIC_FILES");
-        if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
+        var enableStaticFiles = string.Equals(app.Configuration["YARP_ENABLE_STATIC_FILES"], "true", StringComparison.OrdinalIgnoreCase);
+        if (enableStaticFiles)
         {
             app.UseFileServer();
         }
@@ -50,10 +39,10 @@ public class SpaFallbackTests : IDisposable
         app.UseRouting();
         app.MapReverseProxy();
 
-        if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
+        if (enableStaticFiles)
         {
-            var disableSpaFallback = Environment.GetEnvironmentVariable("YARP_DISABLE_SPA_FALLBACK");
-            if (!string.Equals(disableSpaFallback, "true", StringComparison.OrdinalIgnoreCase))
+            var disableSpaFallback = string.Equals(app.Configuration["YARP_DISABLE_SPA_FALLBACK"], "true", StringComparison.OrdinalIgnoreCase);
+            if (!disableSpaFallback)
             {
                 app.MapFallbackToFile("index.html");
             }
@@ -70,9 +59,10 @@ public class SpaFallbackTests : IDisposable
     [Fact]
     public async Task SpaFallback_ReturnsIndexHtml_ForUnknownRoutes()
     {
-        SetEnv("YARP_ENABLE_STATIC_FILES", "true");
-
-        await using var app = CreateApp(GetWebRoot());
+        await using var app = CreateApp(GetWebRoot(), new()
+        {
+            ["YARP_ENABLE_STATIC_FILES"] = "true"
+        });
         await app.StartAsync();
 
         using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
@@ -87,9 +77,10 @@ public class SpaFallbackTests : IDisposable
     [Fact]
     public async Task SpaFallback_ServesStaticFiles_Directly()
     {
-        SetEnv("YARP_ENABLE_STATIC_FILES", "true");
-
-        await using var app = CreateApp(GetWebRoot());
+        await using var app = CreateApp(GetWebRoot(), new()
+        {
+            ["YARP_ENABLE_STATIC_FILES"] = "true"
+        });
         await app.StartAsync();
 
         using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
@@ -104,10 +95,11 @@ public class SpaFallbackTests : IDisposable
     [Fact]
     public async Task SpaFallback_Disabled_Returns404_ForUnknownRoutes()
     {
-        SetEnv("YARP_ENABLE_STATIC_FILES", "true");
-        SetEnv("YARP_DISABLE_SPA_FALLBACK", "true");
-
-        await using var app = CreateApp(GetWebRoot());
+        await using var app = CreateApp(GetWebRoot(), new()
+        {
+            ["YARP_ENABLE_STATIC_FILES"] = "true",
+            ["YARP_DISABLE_SPA_FALLBACK"] = "true"
+        });
         await app.StartAsync();
 
         using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
@@ -120,8 +112,6 @@ public class SpaFallbackTests : IDisposable
     [Fact]
     public async Task StaticFiles_Disabled_Returns404_ForAll()
     {
-        // Don't set YARP_ENABLE_STATIC_FILES
-
         await using var app = CreateApp(GetWebRoot());
         await app.StartAsync();
 
