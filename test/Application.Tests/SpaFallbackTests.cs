@@ -51,6 +51,11 @@ public class SpaFallbackTests
         return app;
     }
 
+    private static Dictionary<string, string?> StaticFilesEnabled() => new()
+    {
+        ["YARP_ENABLE_STATIC_FILES"] = "true"
+    };
+
     private static string GetWebRoot()
     {
         return Path.Combine(AppContext.BaseDirectory, "wwwroot");
@@ -59,10 +64,7 @@ public class SpaFallbackTests
     [Fact]
     public async Task SpaFallback_ReturnsIndexHtml_ForUnknownRoutes()
     {
-        await using var app = CreateApp(GetWebRoot(), new()
-        {
-            ["YARP_ENABLE_STATIC_FILES"] = "true"
-        });
+        await using var app = CreateApp(GetWebRoot(), StaticFilesEnabled());
         await app.StartAsync();
 
         using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
@@ -75,12 +77,40 @@ public class SpaFallbackTests
     }
 
     [Fact]
+    public async Task SpaFallback_ReturnsIndexHtml_ForDeepNestedRoutes()
+    {
+        await using var app = CreateApp(GetWebRoot(), StaticFilesEnabled());
+        await app.StartAsync();
+
+        using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+
+        var response = await client.GetAsync("/app/settings/profile/edit");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("SPA Index", content);
+    }
+
+    [Fact]
+    public async Task SpaFallback_Returns404_ForMissingFileExtensions()
+    {
+        // MapFallbackToFile uses {*path:nonfile} so requests with file extensions
+        // are not caught by the fallback — this prevents broken asset requests
+        // from returning index.html
+        await using var app = CreateApp(GetWebRoot(), StaticFilesEnabled());
+        await app.StartAsync();
+
+        using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+
+        var response = await client.GetAsync("/missing.js");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task SpaFallback_ServesStaticFiles_Directly()
     {
-        await using var app = CreateApp(GetWebRoot(), new()
-        {
-            ["YARP_ENABLE_STATIC_FILES"] = "true"
-        });
+        await using var app = CreateApp(GetWebRoot(), StaticFilesEnabled());
         await app.StartAsync();
 
         using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
@@ -90,6 +120,46 @@ public class SpaFallbackTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task SpaFallback_DefaultDocument_ServesIndexHtml_AtRoot()
+    {
+        // UseFileServer enables default documents, so / resolves to /index.html
+        await using var app = CreateApp(GetWebRoot(), StaticFilesEnabled());
+        await app.StartAsync();
+
+        using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+
+        var response = await client.GetAsync("/");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("SPA Index", content);
+    }
+
+    [Fact]
+    public async Task SpaFallback_MissingIndexHtml_Returns404()
+    {
+        // Use an empty webroot with no index.html
+        var emptyWebRoot = Path.Combine(AppContext.BaseDirectory, "wwwroot-empty");
+        Directory.CreateDirectory(emptyWebRoot);
+
+        try
+        {
+            await using var app = CreateApp(emptyWebRoot, StaticFilesEnabled());
+            await app.StartAsync();
+
+            using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+
+            var response = await client.GetAsync("/some/spa/route");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+        finally
+        {
+            Directory.Delete(emptyWebRoot, recursive: true);
+        }
     }
 
     [Fact]
@@ -110,6 +180,25 @@ public class SpaFallbackTests
     }
 
     [Fact]
+    public async Task SpaFallback_Disabled_StillServesStaticFiles()
+    {
+        await using var app = CreateApp(GetWebRoot(), new()
+        {
+            ["YARP_ENABLE_STATIC_FILES"] = "true",
+            ["YARP_DISABLE_SPA_FALLBACK"] = "true"
+        });
+        await app.StartAsync();
+
+        using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+
+        var response = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
     public async Task StaticFiles_Disabled_Returns404_ForAll()
     {
         await using var app = CreateApp(GetWebRoot());
@@ -119,8 +208,10 @@ public class SpaFallbackTests
 
         var indexResponse = await client.GetAsync("/index.html");
         var spaResponse = await client.GetAsync("/some/route");
+        var cssResponse = await client.GetAsync("/style.css");
 
         Assert.Equal(HttpStatusCode.NotFound, indexResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, spaResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, cssResponse.StatusCode);
     }
 }
