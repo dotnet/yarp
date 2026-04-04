@@ -51,3 +51,6 @@ if (enableStaticFiles)
 await app.RunAsync();
 
 return 0;
+
+// Make the auto-generated Program class accessible for WebApplicationFactory
+public partial class Program { }
