@@ -7,12 +7,14 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Yarp.ReverseProxy.Configuration;
 
 namespace Yarp.Application.Tests;
 
 public class SpaFallbackTests
 {
-    private static WebApplication CreateApp(string webRoot, Dictionary<string, string?>? config = null)
+    private static WebApplication CreateApp(string webRoot, Dictionary<string, string?>? config = null,
+        IReadOnlyList<RouteConfig>? routes = null, IReadOnlyList<ClusterConfig>? clusters = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -26,7 +28,7 @@ public class SpaFallbackTests
 
         builder.WebHost.UseUrls("http://127.0.0.1:0");
         builder.Services.AddReverseProxy()
-                        .LoadFromMemory([], []);
+                        .LoadFromMemory(routes ?? [], clusters ?? []);
 
         var app = builder.Build();
 
@@ -213,5 +215,84 @@ public class SpaFallbackTests
         Assert.Equal(HttpStatusCode.NotFound, indexResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, spaResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, cssResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task SpaFallback_CoexistsWithSpecificYarpRoutes()
+    {
+        // When YARP has specific routes (e.g. /api/), non-YARP paths
+        // should still fall back to index.html for SPA routing
+        var routes = new[]
+        {
+            new RouteConfig
+            {
+                RouteId = "api",
+                ClusterId = "backend",
+                Match = new RouteMatch { Path = "/api/{**catch-all}" }
+            }
+        };
+        var clusters = new[]
+        {
+            new ClusterConfig
+            {
+                ClusterId = "backend",
+                Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["d1"] = new DestinationConfig { Address = "https://localhost:9999" }
+                }
+            }
+        };
+
+        await using var app = CreateApp(GetWebRoot(), StaticFilesEnabled(), routes, clusters);
+        await app.StartAsync();
+
+        using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+
+        // SPA route should still get index.html
+        var spaResponse = await client.GetAsync("/dashboard");
+        Assert.Equal(HttpStatusCode.OK, spaResponse.StatusCode);
+        var content = await spaResponse.Content.ReadAsStringAsync();
+        Assert.Contains("SPA Index", content);
+
+        // Static files should still be served
+        var cssResponse = await client.GetAsync("/style.css");
+        Assert.Equal(HttpStatusCode.OK, cssResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task SpaFallback_CatchAllYarpRoute_WinsOverFallback()
+    {
+        // When YARP has a catch-all route, it takes priority over the
+        // SPA fallback — this is expected because YARP owns all routing
+        var routes = new[]
+        {
+            new RouteConfig
+            {
+                RouteId = "catchall",
+                ClusterId = "backend",
+                Match = new RouteMatch { Path = "{**catch-all}" }
+            }
+        };
+        var clusters = new[]
+        {
+            new ClusterConfig
+            {
+                ClusterId = "backend",
+                Destinations = new Dictionary<string, DestinationConfig>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["d1"] = new DestinationConfig { Address = "https://localhost:9999" }
+                }
+            }
+        };
+
+        await using var app = CreateApp(GetWebRoot(), StaticFilesEnabled(), routes, clusters);
+        await app.StartAsync();
+
+        using var client = new HttpClient { BaseAddress = new Uri(app.Urls.First()) };
+
+        // YARP catch-all route wins — request goes to proxy (which will fail
+        // since there's no real backend, but it won't return index.html)
+        var response = await client.GetAsync("/some/spa/route");
+        Assert.NotEqual(HttpStatusCode.OK, response.StatusCode);
     }
 }
