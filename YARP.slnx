@@ -46,6 +46,7 @@
     <Project Path="src/TelemetryConsumption/Yarp.Telemetry.Consumption.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="test/Application.Tests/Yarp.Application.Tests.csproj" />
     <Project Path="test/Kubernetes.Tests/Yarp.Kubernetes.Tests.csproj" />
     <Project Path="test/ReverseProxy.FunctionalTests/Yarp.ReverseProxy.FunctionalTests.csproj" />
     <Project Path="test/ReverseProxy.Tests/Yarp.ReverseProxy.Tests.csproj" />

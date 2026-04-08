@@ -62,7 +62,7 @@ public static class Extensions
                         .AddOtlpExporter();
                 });
 
-            if (string.Equals(Environment.GetEnvironmentVariable("YARP_UNSAFE_OLTP_CERT_ACCEPT_ANY_SERVER_CERTIFICATE"), "true", StringComparison.InvariantCultureIgnoreCase))
+            if (string.Equals(builder.Configuration["YARP_UNSAFE_OLTP_CERT_ACCEPT_ANY_SERVER_CERTIFICATE"], "true", StringComparison.OrdinalIgnoreCase))
             {
                 // We cannot use UseOtlpExporter() since it doesn't support configuration via OtlpExporterOptions
                 // https://github.com/open-telemetry/opentelemetry-dotnet/issues/5802

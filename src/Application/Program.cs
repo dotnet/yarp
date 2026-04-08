@@ -31,14 +31,26 @@ builder.Services.AddReverseProxy()
                 .AddServiceDiscoveryDestinationResolver();
 
 var app = builder.Build();
-var isEnabledStaticFiles = Environment.GetEnvironmentVariable("YARP_ENABLE_STATIC_FILES");
-if (string.Equals(isEnabledStaticFiles, "true", StringComparison.OrdinalIgnoreCase))
+var enableStaticFiles = string.Equals(app.Configuration["YARP_ENABLE_STATIC_FILES"], "true", StringComparison.OrdinalIgnoreCase);
+if (enableStaticFiles)
 {
     app.UseFileServer();
 }
 app.UseRouting();
 app.MapReverseProxy();
 
+if (enableStaticFiles)
+{
+    var disableSpaFallback = string.Equals(app.Configuration["YARP_DISABLE_SPA_FALLBACK"], "true", StringComparison.OrdinalIgnoreCase);
+    if (!disableSpaFallback)
+    {
+        app.MapFallbackToFile("index.html");
+    }
+}
+
 await app.RunAsync();
 
 return 0;
+
+// Make the auto-generated Program class accessible for WebApplicationFactory
+public partial class Program { }
