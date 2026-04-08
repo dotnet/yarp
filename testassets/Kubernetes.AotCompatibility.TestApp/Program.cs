@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// This app is used to test AOT compatibility of Yarp.Kubernetes.Controller.
+// This app is used to test AOT compatibility of all AOT-compatible YARP assemblies.
 // It exercises the main public API surface to ensure no AOT/trimming warnings
 // are emitted at build or publish time.
 
@@ -31,5 +31,20 @@ using Yarp.Kubernetes.Protocol;
     builder.Services.Configure<ReceiverOptions>(builder.Configuration.Bind);
     builder.Services.AddHostedService<Receiver>();
     builder.Services.AddReverseProxy().LoadFromMessages();
+    _ = builder.Build();
+}
+
+// ReverseProxy standalone scenario
+{
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddReverseProxy()
+        .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    _ = builder.Build();
+}
+
+// TelemetryConsumption scenario
+{
+    var builder = WebApplication.CreateBuilder(args);
+    builder.Services.AddTelemetryListeners();
     _ = builder.Build();
 }
