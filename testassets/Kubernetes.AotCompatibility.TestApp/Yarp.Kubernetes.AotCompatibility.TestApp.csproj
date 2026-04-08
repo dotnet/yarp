@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFrameworks>$(ReleaseTFMs)</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Kubernetes.Controller\Yarp.Kubernetes.Controller.csproj" />
+  </ItemGroup>
+
+</Project>

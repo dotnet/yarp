@@ -54,6 +54,7 @@
   </Folder>
   <Folder Name="/testassets/">
     <Project Path="testassets/BenchmarkApp/BenchmarkApp.csproj" />
+    <Project Path="testassets/Kubernetes.AotCompatibility.TestApp/Yarp.Kubernetes.AotCompatibility.TestApp.csproj" />
     <Project Path="testassets/ReverseProxy.Code/ReverseProxy.Code.csproj" />
     <Project Path="testassets/ReverseProxy.Config/ReverseProxy.Config.csproj" />
     <Project Path="testassets/ReverseProxy.Direct/ReverseProxy.Direct.csproj" />
