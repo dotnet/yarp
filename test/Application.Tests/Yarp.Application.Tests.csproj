@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(TestTFMs)</TargetFrameworks>
+    <TargetFrameworks>$(LatestDevTFM)</TargetFrameworks>
     <OutputType>Exe</OutputType>
     <RootNamespace>Yarp.Application.Tests</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
