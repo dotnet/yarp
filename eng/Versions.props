@@ -30,6 +30,7 @@
     <KubernetesClientVersion>18.0.13</KubernetesClientVersion>
     <JsonSchemaNetVersion>7.0.2</JsonSchemaNetVersion>
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
+    <MicrosoftAspNetCoreMvcTestingVersion>9.0.0</MicrosoftAspNetCoreMvcTestingVersion>
     <!-- Container app dependencies -->
     <YarpNugetVersion>2.3.0</YarpNugetVersion>
     <MicrosoftExtensionsServiceDiscovery>9.1.0</MicrosoftExtensionsServiceDiscovery>
