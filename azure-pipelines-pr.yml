@@ -43,7 +43,7 @@ stages:
       - job: Windows
         pool:
           name: $(DncEngPublicBuildPool)
-          demands: ImageOverride -equals windows.vs2019.amd64.open
+          demands: ImageOverride -equals windows.vs2022.amd64.open
         variables:
           - name: _OfficialBuildArgs
             value: ''
