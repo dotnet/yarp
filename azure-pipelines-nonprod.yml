@@ -113,16 +113,3 @@ extends:
         enableSourceLinkValidation: false
         enableSigningValidation: false
         enableNugetValidation: false
-        SDLValidationParameters:
-          enable: true
-          continueOnError: false
-          params: ' -SourceToolsList @("policheck","credscan")
-          -TsaInstanceURL $(_TsaInstanceURL)
-          -TsaProjectName $(_TsaProjectName)
-          -TsaNotificationEmail $(_TsaNotificationEmail)
-          -TsaCodebaseAdmin $(_TsaCodebaseAdmin)
-          -TsaBugAreaPath $(_TsaBugAreaPath)
-          -TsaIterationPath $(_TsaIterationPath)
-          -TsaRepositoryName "ReverseProxy"
-          -TsaCodebaseName "ReverseProxy"
-          -TsaPublish $True -PoliCheckAdditionalRunConfigParams @("UserExclusionPath < $(Build.SourcesDirectory)/eng/PoliCheckExclusions.xml")'
