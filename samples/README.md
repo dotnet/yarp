@@ -27,3 +27,4 @@ The following samples are provided:
 | [Lets Encrypt](ReverseProxy.LetsEncrypt.Sample) | Shows how to use a certificate authority such as Lets Encrypt to set up TLS termination in YARP. |
 | [Kubernetes Ingress](KubernetesIngress.Sample) | Shows how to use YARP as a Kubernetes ingress controller |
 | [Prometheus](Prometheus) | Shows how to consume the YARP telemetry library and export metrics to external telemetry such as Prometheus |
+| [Static Site](StaticSite) | Shows how to use the YARP container application as a static file host with SPA fallback |
