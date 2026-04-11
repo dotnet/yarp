@@ -67,10 +67,6 @@ See [`yarp-config.schema.json`](yarp-config.schema.json) for the full schema wit
 |---|---|
 | `StaticFiles` | Static file serving from wwwroot |
 | `NavigationFallback` | SPA fallback for client-side routing |
-| `Compression` | On-the-fly response compression |
-| `Https` | HTTPS redirect and HSTS |
-| `Headers` | Custom response headers per path pattern |
-| `Redirects` | Declarative redirect rules |
 | `Telemetry` | OpenTelemetry configuration |
 | `ReverseProxy` | YARP reverse proxy routes and clusters |
 
@@ -79,13 +75,7 @@ See [`yarp-config.schema.json`](yarp-config.schema.json) for the full schema wit
 ```json
 {
   "StaticFiles": {
-    "Enabled": true,
-    "CleanUrls": true,
-    "TrailingSlash": "never",
-    "PreCompressed": true,
-    "ErrorPages": {
-      "404": "/404.html"
-    }
+    "Enabled": true
   }
 }
 ```
@@ -95,32 +85,8 @@ See [`yarp-config.schema.json`](yarp-config.schema.json) for the full schema wit
 ```json
 {
   "NavigationFallback": {
-    "Path": "/index.html",
-    "Exclude": ["/api/*", "/.well-known/*"]
+    "Path": "/index.html"
   }
-}
-```
-
-### Headers
-
-```json
-{
-  "Headers": [
-    { "Match": "/_astro/*", "Set": { "Cache-Control": "public, max-age=31536000, immutable" } },
-    { "Match": "/*.html",   "Set": { "Cache-Control": "no-cache" } },
-    { "Match": "/*",        "Set": { "X-Content-Type-Options": "nosniff" } }
-  ]
-}
-```
-
-### Redirects
-
-```json
-{
-  "Redirects": [
-    { "Match": "/old-page", "Destination": "/new-page", "StatusCode": 301 },
-    { "Match": "/install.sh", "Destination": "https://aka.ms/install.sh", "StatusCode": 302 }
-  ]
 }
 ```
 

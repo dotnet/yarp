@@ -17,11 +17,7 @@ public static class YarpAppConfigBinder
 
         configuration.GetSection("StaticFiles").Bind(config.StaticFiles);
         configuration.GetSection("NavigationFallback").Bind(config.NavigationFallback);
-        configuration.GetSection("Compression").Bind(config.Compression);
-        configuration.GetSection("Https").Bind(config.Https);
         configuration.GetSection("Telemetry").Bind(config.Telemetry);
-        config.Headers = configuration.GetSection("Headers").Get<List<HeaderRule>>();
-        config.Redirects = configuration.GetSection("Redirects").Get<List<RedirectRule>>();
 
         // Legacy env var support
         MapLegacyKeys(configuration, config);

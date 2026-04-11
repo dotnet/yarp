@@ -11,9 +11,5 @@ public sealed class YarpAppConfig
 {
     public StaticFilesOptions StaticFiles { get; set; } = new();
     public NavigationFallbackOptions NavigationFallback { get; set; } = new();
-    public CompressionOptions Compression { get; set; } = new();
-    public HttpsOptions Https { get; set; } = new();
     public TelemetryOptions Telemetry { get; set; } = new();
-    public List<HeaderRule>? Headers { get; set; }
-    public List<RedirectRule>? Redirects { get; set; }
 }
