@@ -18,6 +18,7 @@ internal static class TestConfiguration
         if (_current.Value is { } configure)
         {
             configure(configurationBuilder);
+            _current.Value = null;
         }
 
         return configurationBuilder;

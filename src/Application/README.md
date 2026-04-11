@@ -1,8 +1,10 @@
 # YARP Container Application
 
-A pre-built reverse proxy and static file host powered by [YARP](https://microsoft.github.io/reverse-proxy/). Configure it with JSON — no code required.
+A pre-built reverse proxy and static file host powered by [YARP](https://microsoft.github.io/reverse-proxy/). Like nginx or Caddy — configure it with JSON, no code required.
 
 ## Quick Start
+
+Create a `yarp-config.json` next to your `wwwroot/` directory:
 
 ```json
 {
@@ -32,12 +34,20 @@ A pre-built reverse proxy and static file host powered by [YARP](https://microso
 }
 ```
 
-```bash
-# Run with a config file
-yarp ./config.json
+Run it:
 
-# Or use environment variables
-StaticFiles__Enabled=true NavigationFallback__Path=/index.html yarp
+```bash
+yarp ./yarp-config.json
+```
+
+```
+YARP
+
+  Config:         ./yarp-config.json
+  Static files:   ./wwwroot
+  SPA fallback:   /index.html
+
+  Listening on:   http://localhost:5000
 ```
 
 ## Container Usage
@@ -48,79 +58,86 @@ services:
     image: yarp
     environment:
       - StaticFiles__Enabled=true
-      - Compression__Enabled=true
       - NavigationFallback__Path=/index.html
     volumes:
-      - ./config.json:/app/config.json
+      - ./yarp-config.json:/app/config.json
       - ./wwwroot:/app/wwwroot
     command: ["/app/config.json"]
 ```
 
+Simple toggles work as environment variables. Complex config (proxy routes, etc.) goes in the JSON file.
+
 ## Configuration
 
-Configuration is JSON-first, with environment variable support for simple toggles.
-See [`yarp-config.schema.json`](yarp-config.schema.json) for the full schema with descriptions.
+All configuration goes through `IConfiguration` — JSON files, environment variables, or any other provider. See [`yarp-config.schema.json`](yarp-config.schema.json) for IDE autocomplete and validation.
 
-### Sections
+### `StaticFiles`
 
-| Section | Description |
-|---|---|
-| `StaticFiles` | Static file serving from wwwroot |
-| `NavigationFallback` | SPA fallback for client-side routing |
-| `Telemetry` | OpenTelemetry configuration |
-| `ReverseProxy` | YARP reverse proxy routes and clusters |
-
-### Static Files
+Serve static files from `wwwroot/`.
 
 ```json
-{
-  "StaticFiles": {
-    "Enabled": true
-  }
-}
+{ "StaticFiles": { "Enabled": true } }
 ```
 
-### Navigation Fallback (SPA)
+### `NavigationFallback`
+
+SPA fallback — serve a file (typically `index.html`) for unmatched routes so client-side routing works.
 
 ```json
-{
-  "NavigationFallback": {
-    "Path": "/index.html"
-  }
-}
+{ "NavigationFallback": { "Path": "/index.html" } }
 ```
 
-### Telemetry
+### `ReverseProxy`
 
-OTLP export is configured via standard `OTEL_*` environment variables (e.g., `OTEL_EXPORTER_OTLP_ENDPOINT`).
+YARP reverse proxy routes and clusters. See the [YARP configuration docs](https://microsoft.github.io/reverse-proxy/articles/config-files.html) for the full reference.
+
+### `Telemetry`
+
+OTLP export uses standard `OTEL_*` environment variables. This section covers YARP-specific telemetry options.
+
+```json
+{ "Telemetry": { "UnsafeAcceptAnyCertificate": true } }
+```
+
+## Logging
+
+By default, the console shows a clean startup banner and warnings/errors only — no per-request noise. Framework logs (DataProtection, Hosting.Lifetime, etc.) are suppressed on console but still flow to other providers (OTEL).
+
+To re-enable framework logs for debugging, use the standard `Logging` config:
 
 ```json
 {
-  "Telemetry": {
-    "UnsafeAcceptAnyCertificate": true
+  "Logging": {
+    "Console": {
+      "LogLevel": {
+        "Microsoft.AspNetCore": "Information"
+      }
+    }
   }
 }
 ```
 
 ## Architecture
 
-This is an opinionated, pre-built application — not an extensible framework.
-Users who need custom behavior should use the [YARP library](https://microsoft.github.io/reverse-proxy/) directly in their own ASP.NET Core app.
+This is an opinionated, pre-built application — not an extensible framework. Users who need custom behavior should use the [YARP library](https://microsoft.github.io/reverse-proxy/) directly in their own ASP.NET Core app.
 
 ### Project Structure
 
 ```
-Configuration/          Config model (IConfiguration → strongly-typed POCOs)
-  YarpAppConfig.cs      Root config object
-  YarpAppConfigBinder.cs  Single IConfiguration → object model conversion
-  *Options.cs           Per-feature options classes
-  Rules.cs              HeaderRule, RedirectRule (shared match syntax)
-Features/               Per-feature extension methods
+Configuration/                  Config model (IConfiguration → POCOs)
+  YarpAppConfig.cs              Root config object
+  YarpAppConfigBinder.cs        Single conversion point + legacy key mapping
+  StaticFilesOptions.cs         Per-feature options
+  NavigationFallbackOptions.cs
+  TelemetryOptions.cs
+Features/                       Per-feature extension methods
   StaticFilesFeature.cs
   NavigationFallbackFeature.cs
   ReverseProxyFeature.cs
-Program.cs              Pipeline ordering (explicit, one line per feature)
-Extensions.cs           Service defaults (telemetry, health checks)
+  LoggingFeature.cs
+Program.cs                      Pipeline ordering
+Extensions.cs                   Service defaults (telemetry, health checks)
+yarp-config.schema.json         JSON Schema for IDE support
 ```
 
 ### Adding a Feature
@@ -132,9 +149,9 @@ Extensions.cs           Service defaults (telemetry, health checks)
 5. Add call to `Program.cs` in the correct pipeline position
 6. Add section to `yarp-config.schema.json`
 
-## Legacy Configuration
+## Legacy Environment Variables
 
-The following environment variables continue to work for backward compatibility:
+These continue to work for backward compatibility:
 
 | Legacy Key | Maps To |
 |---|---|

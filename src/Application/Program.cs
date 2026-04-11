@@ -21,13 +21,20 @@ if (args.Length == 1)
     configFilePath = fileInfo.FullName;
 }
 
-var options = configFilePath is not null
-    ? new WebApplicationOptions
+WebApplicationOptions options;
+if (configFilePath is not null)
+{
+    var configDir = Path.GetDirectoryName(configFilePath) ?? Directory.GetCurrentDirectory();
+    options = new WebApplicationOptions
     {
-        ContentRootPath = Path.GetDirectoryName(configFilePath)!,
-        WebRootPath = Path.Combine(Path.GetDirectoryName(configFilePath)!, "wwwroot")
-    }
-    : new WebApplicationOptions();
+        ContentRootPath = configDir,
+        WebRootPath = Path.Combine(configDir, "wwwroot")
+    };
+}
+else
+{
+    options = new WebApplicationOptions();
+}
 
 var builder = WebApplication.CreateBuilder(options);
 
