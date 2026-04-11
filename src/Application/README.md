@@ -1,6 +1,6 @@
 # YARP Container Application
 
-A pre-built reverse proxy and static file host powered by [YARP](https://microsoft.github.io/reverse-proxy/). Like nginx or Caddy — configure it with JSON, no code required.
+A configurable reverse proxy and static file host. No code required — just a JSON config file and your content.
 
 ## Quick Start
 
