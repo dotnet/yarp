@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Yarp.Application.Configuration;
+using Yarp.Application.Features;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -23,29 +23,24 @@ if (args.Length == 1)
     builder.Configuration.AddEnvironmentVariables();
 }
 
-// Configure YARP
-builder.AddServiceDefaults();
-builder.Services.AddReverseProxy()
-                .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
-                .AddServiceDiscoveryDestinationResolver();
+// Test hook: allows WebApplicationFactory to inject config before binding
+// See: https://github.com/dotnet/aspnetcore/issues/37680
+builder.Configuration.AddTestConfiguration();
+
+// Bind config into the object model — single conversion point, before Build()
+var config = YarpAppConfigBinder.Bind(builder.Configuration);
+
+// Services
+builder.AddServiceDefaults(config);
+builder.AddReverseProxy(builder.Configuration);
 
 var app = builder.Build();
-var enableStaticFiles = string.Equals(app.Configuration["YARP_ENABLE_STATIC_FILES"], "true", StringComparison.OrdinalIgnoreCase);
-if (enableStaticFiles)
-{
-    app.UseFileServer();
-}
+
+// Middleware pipeline — order matters
+app.UseStaticFiles(config);
 app.UseRouting();
 app.MapReverseProxy();
-
-if (enableStaticFiles)
-{
-    var disableSpaFallback = string.Equals(app.Configuration["YARP_DISABLE_SPA_FALLBACK"], "true", StringComparison.OrdinalIgnoreCase);
-    if (!disableSpaFallback)
-    {
-        app.MapFallbackToFile("index.html");
-    }
-}
+app.MapNavigationFallback(config);
 
 await app.RunAsync();
 

@@ -15,6 +15,10 @@
   <Target Name="ReturnPackageVersion" Returns="$(PackageVersion)" />
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Yarp.Application.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Yarp.ReverseProxy" Version="$(YarpNugetVersion)" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery" Version="$(MicrosoftExtensionsServiceDiscovery)" />
     <PackageReference Include="Microsoft.Extensions.ServiceDiscovery.Yarp" Version="$(MicrosoftExtensionsServiceDiscoveryYarp)" />

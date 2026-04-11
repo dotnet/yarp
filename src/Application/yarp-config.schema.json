@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "YARP Container Configuration",
+  "description": "Configuration schema for the YARP container application",
+  "type": "object",
+  "properties": {
+    "StaticFiles": {
+      "type": "object",
+      "description": "Static file serving configuration",
+      "properties": {
+        "Enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable static file serving from wwwroot"
+        },
+        "CleanUrls": {
+          "type": "boolean",
+          "default": false,
+          "description": "Serve /about from about.html without the .html extension"
+        },
+        "TrailingSlash": {
+          "type": "string",
+          "enum": ["always", "never"],
+          "description": "Normalize trailing slashes by redirecting to the canonical form"
+        },
+        "PreCompressed": {
+          "type": "boolean",
+          "default": false,
+          "description": "Serve .br/.gz sidecar files when the client accepts compressed content"
+        },
+        "ErrorPages": {
+          "type": "object",
+          "description": "Map of HTTP status code to file path for custom error pages",
+          "patternProperties": {
+            "^[0-9]+$": {
+              "type": "string",
+              "description": "Path to the error page file (e.g., /404.html)"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "NavigationFallback": {
+      "type": "object",
+      "description": "SPA navigation fallback configuration",
+      "properties": {
+        "Path": {
+          "type": "string",
+          "description": "File to serve for unmatched non-file routes (e.g., /index.html)"
+        },
+        "Exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Glob patterns to exclude from the fallback (e.g., /api/*)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Compression": {
+      "type": "object",
+      "description": "Response compression configuration",
+      "properties": {
+        "Enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable on-the-fly response compression (gzip/brotli)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Https": {
+      "type": "object",
+      "description": "HTTPS and transport security configuration",
+      "properties": {
+        "Redirect": {
+          "type": "boolean",
+          "default": false,
+          "description": "Redirect HTTP to HTTPS (forwarded-header aware)"
+        },
+        "Hsts": {
+          "type": "boolean",
+          "default": false,
+          "description": "Add Strict-Transport-Security header in production"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Headers": {
+      "type": "array",
+      "description": "Custom response headers per path. All matching rules are applied.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Match": {
+            "type": "string",
+            "description": "Glob pattern for request path"
+          },
+          "Set": {
+            "type": "object",
+            "description": "Headers to set on the response",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["Match", "Set"]
+      }
+    },
+    "Redirects": {
+      "type": "array",
+      "description": "Declarative redirect rules. First match wins.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Match": {
+            "type": "string",
+            "description": "Glob pattern for request path"
+          },
+          "Destination": {
+            "type": "string",
+            "description": "Target URL (relative or absolute)"
+          },
+          "StatusCode": {
+            "type": "integer",
+            "default": 301,
+            "enum": [301, 302, 307, 308],
+            "description": "HTTP redirect status code"
+          }
+        },
+        "required": ["Match", "Destination"]
+      }
+    },
+    "Telemetry": {
+      "type": "object",
+      "description": "Telemetry configuration. OTLP export uses standard OTEL_* env vars.",
+      "properties": {
+        "UnsafeAcceptAnyCertificate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip TLS validation for the OTLP exporter (dev/test only)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReverseProxy": {
+      "type": "object",
+      "description": "YARP reverse proxy configuration. See https://microsoft.github.io/reverse-proxy/articles/config-files.html"
+    }
+  },
+  "additionalProperties": true
+}

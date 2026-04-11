@@ -11,18 +11,15 @@ using OpenTelemetry.Exporter;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
-using static System.Net.WebRequestMethods;
+using Yarp.Application.Configuration;
 
 namespace Microsoft.Extensions.Hosting;
 
-// Adds common .NET Aspire services: service discovery, resilience, health checks, and OpenTelemetry.
-// This project should be referenced by each service project in your solution.
-// To learn more about using this project, see https://aka.ms/dotnet/aspire/service-defaults
 public static class Extensions
 {
-    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static TBuilder AddServiceDefaults<TBuilder>(this TBuilder builder, YarpAppConfig config) where TBuilder : IHostApplicationBuilder
     {
-        builder.ConfigureOpenTelemetry();
+        builder.ConfigureOpenTelemetry(config);
 
         builder.AddDefaultHealthChecks();
 
@@ -31,7 +28,7 @@ public static class Extensions
         return builder;
     }
 
-    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder) where TBuilder : IHostApplicationBuilder
+    public static TBuilder ConfigureOpenTelemetry<TBuilder>(this TBuilder builder, YarpAppConfig config) where TBuilder : IHostApplicationBuilder
     {
         var useOtlpExporter = !string.IsNullOrWhiteSpace(builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]);
 
@@ -62,7 +59,7 @@ public static class Extensions
                         .AddOtlpExporter();
                 });
 
-            if (string.Equals(builder.Configuration["YARP_UNSAFE_OLTP_CERT_ACCEPT_ANY_SERVER_CERTIFICATE"], "true", StringComparison.OrdinalIgnoreCase))
+            if (config.Telemetry.UnsafeAcceptAnyCertificate)
             {
                 // We cannot use UseOtlpExporter() since it doesn't support configuration via OtlpExporterOptions
                 // https://github.com/open-telemetry/opentelemetry-dotnet/issues/5802

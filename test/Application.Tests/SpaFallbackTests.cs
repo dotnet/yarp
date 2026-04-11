@@ -9,25 +9,43 @@ using Xunit;
 
 namespace Yarp.Application.Tests;
 
+internal class YarpTestApp : WebApplicationFactory<Program>
+{
+    private Action<IConfigurationBuilder>? _configAction;
+
+    public void ConfigureConfiguration(Action<IConfigurationBuilder> configure)
+    {
+        _configAction += configure;
+    }
+
+    protected override IWebHostBuilder? CreateWebHostBuilder()
+    {
+        if (_configAction is { } a)
+        {
+            TestConfiguration.Create(a);
+        }
+
+        return base.CreateWebHostBuilder();
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        builder.UseWebRoot(Path.Combine(AppContext.BaseDirectory, "wwwroot"));
+    }
+}
+
 public class SpaFallbackTests
 {
-    private static WebApplicationFactory<Program> CreateFactory(Dictionary<string, string?>? config = null)
+    private static YarpTestApp CreateFactory(Dictionary<string, string?>? config = null)
     {
-        var factory = new WebApplicationFactory<Program>()
-            .WithWebHostBuilder(builder =>
-            {
-                builder.UseWebRoot(Path.Combine(AppContext.BaseDirectory, "wwwroot"));
+        var app = new YarpTestApp();
 
-                if (config is not null)
-                {
-                    builder.ConfigureAppConfiguration((context, configBuilder) =>
-                    {
-                        configBuilder.AddInMemoryCollection(config);
-                    });
-                }
-            });
+        if (config is not null)
+        {
+            app.ConfigureConfiguration(b => b.AddInMemoryCollection(config));
+        }
 
-        return factory;
+        return app;
     }
 
     private static Dictionary<string, string?> StaticFilesEnabled() => new()
@@ -192,5 +210,63 @@ public class SpaFallbackTests
         // since there's no real backend, but it won't return index.html)
         var response = await client.GetAsync("/some/spa/route");
         Assert.NotEqual(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    // Tests using the new config model (not legacy env vars)
+
+    [Fact]
+    public async Task NewConfig_StaticFilesAndFallback()
+    {
+        using var factory = CreateFactory(new()
+        {
+            ["StaticFiles:Enabled"] = "true",
+            ["NavigationFallback:Path"] = "/index.html"
+        });
+        using var client = factory.CreateClient();
+
+        // Static file
+        var cssResponse = await client.GetAsync("/style.css");
+        Assert.Equal(HttpStatusCode.OK, cssResponse.StatusCode);
+
+        // SPA fallback
+        var spaResponse = await client.GetAsync("/some/spa/route");
+        Assert.Equal(HttpStatusCode.OK, spaResponse.StatusCode);
+        var content = await spaResponse.Content.ReadAsStringAsync();
+        Assert.Contains("SPA Index", content);
+    }
+
+    [Fact]
+    public async Task NewConfig_StaticFilesWithoutFallback()
+    {
+        using var factory = CreateFactory(new()
+        {
+            ["StaticFiles:Enabled"] = "true"
+            // No NavigationFallback configured
+        });
+        using var client = factory.CreateClient();
+
+        // Static file works
+        var cssResponse = await client.GetAsync("/style.css");
+        Assert.Equal(HttpStatusCode.OK, cssResponse.StatusCode);
+
+        // No fallback — unknown route returns 404
+        var spaResponse = await client.GetAsync("/some/spa/route");
+        Assert.Equal(HttpStatusCode.NotFound, spaResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task NewConfig_CustomFallbackPath()
+    {
+        using var factory = CreateFactory(new()
+        {
+            ["StaticFiles:Enabled"] = "true",
+            ["NavigationFallback:Path"] = "/index.html"
+        });
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/deep/nested/route");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("SPA Index", content);
     }
 }
