@@ -40,7 +40,7 @@ Run it:
 yarp ./yarp-config.json
 ```
 
-```
+```text
 YARP
 
   Config:         ./yarp-config.json
@@ -123,7 +123,7 @@ This is an opinionated, pre-built application — not an extensible framework. U
 
 ### Project Structure
 
-```
+```text
 Configuration/                  Config model (IConfiguration → POCOs)
   YarpAppConfig.cs              Root config object
   YarpAppConfigBinder.cs        Single conversion point + legacy key mapping
@@ -154,7 +154,7 @@ yarp-config.schema.json         JSON Schema for IDE support
 These continue to work for backward compatibility:
 
 | Legacy Key | Maps To |
-|---|---|
+| --- | --- |
 | `YARP_ENABLE_STATIC_FILES` | `StaticFiles:Enabled` |
 | `YARP_DISABLE_SPA_FALLBACK` | Disables `NavigationFallback:Path` |
 | `YARP_UNSAFE_OLTP_CERT_ACCEPT_ANY_SERVER_CERTIFICATE` | `Telemetry:UnsafeAcceptAnyCertificate` |

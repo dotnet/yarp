@@ -13,7 +13,7 @@ Then open http://localhost:5000
 
 ## What's in the box
 
-```
+```text
 wwwroot/
   index.html                        # Home page
   404.html                          # Custom error page
