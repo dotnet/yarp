@@ -1,6 +1,6 @@
 # YARP Container Application
 
-An opinionated reverse proxy and static file host built on ASP.NET Core and [YARP](https://microsoft.github.io/reverse-proxy/). JSON config, no code required.
+An opinionated reverse proxy built on ASP.NET Core and [YARP](https://microsoft.github.io/reverse-proxy/). JSON config, no code required.
 
 ## Quick Start
 
