@@ -6,6 +6,7 @@ namespace Yarp.Application.Configuration;
 public sealed class StaticFilesOptions
 {
     public bool Enabled { get; set; }
+    public string? WebRoot { get; set; }
     public bool CleanUrls { get; set; }
     public string? TrailingSlash { get; set; }
     public bool PreCompressed { get; set; }

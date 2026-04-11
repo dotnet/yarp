@@ -1,0 +1,10 @@
+body {
+    font-family: system-ui, -apple-system, sans-serif;
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: #333;
+}
+nav { margin-bottom: 2rem; }
+nav a { margin-right: 1rem; }
+h1 { color: #512bd4; }

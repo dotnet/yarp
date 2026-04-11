@@ -7,19 +7,34 @@ using Microsoft.Extensions.Hosting;
 using Yarp.Application.Configuration;
 using Yarp.Application.Features;
 
-var builder = WebApplication.CreateBuilder();
-
-// Load configuration from file if passed
+// Parse config file path from args before creating the builder
+// so we can set ContentRoot/WebRoot via WebApplicationOptions
+string? configFilePath = null;
 if (args.Length == 1)
 {
-    var configFile = args[0];
-    var fileInfo = new FileInfo(configFile);
+    var fileInfo = new FileInfo(args[0]);
     if (!fileInfo.Exists)
     {
-        Console.Error.WriteLine($"Could not find '{configFile}'.");
+        Console.Error.WriteLine($"Could not find '{args[0]}'.");
         return 2;
     }
-    builder.Configuration.AddJsonFile(fileInfo.FullName, optional: false, reloadOnChange: true);
+    configFilePath = fileInfo.FullName;
+}
+
+var options = configFilePath is not null
+    ? new WebApplicationOptions
+    {
+        ContentRootPath = Path.GetDirectoryName(configFilePath)!,
+        WebRootPath = Path.Combine(Path.GetDirectoryName(configFilePath)!, "wwwroot")
+    }
+    : new WebApplicationOptions();
+
+var builder = WebApplication.CreateBuilder(options);
+
+// Load configuration from file if passed
+if (configFilePath is not null)
+{
+    builder.Configuration.AddJsonFile(configFilePath, optional: false, reloadOnChange: true);
     builder.Configuration.AddEnvironmentVariables();
 }
 
