@@ -9,8 +9,6 @@ using Microsoft.Extensions.Configuration;
 using Xunit;
 using Yarp.Application.Configuration;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Yarp.Application.Tests;
 
 internal class YarpTestApp : WebApplicationFactory<Program>
