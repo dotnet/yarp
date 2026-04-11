@@ -32,7 +32,7 @@ var options = configFilePath is not null
 var builder = WebApplication.CreateBuilder(options);
 
 // Suppress noisy framework logs on console by default
-builder.Logging.ConfigureDefaultLogging();
+builder.Logging.ConfigureDefaultLogging(builder.Configuration);
 
 // Load configuration from file if passed
 if (configFilePath is not null)

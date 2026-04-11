@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
@@ -18,12 +19,17 @@ public static class LoggingFeature
     /// Suppress noisy framework logs on the console provider in default mode.
     /// Other providers (OTEL, etc.) still receive everything.
     /// </summary>
-    public static ILoggingBuilder ConfigureDefaultLogging(this ILoggingBuilder logging)
+    public static ILoggingBuilder ConfigureDefaultLogging(this ILoggingBuilder logging, IConfiguration configuration)
     {
+        // Suppress noisy framework logs on console by default
         logging.AddFilter<ConsoleLoggerProvider>("Microsoft.AspNetCore", LogLevel.Warning);
         logging.AddFilter<ConsoleLoggerProvider>("Microsoft.AspNetCore.DataProtection", LogLevel.None);
         logging.AddFilter<ConsoleLoggerProvider>("Microsoft.Hosting.Lifetime", LogLevel.None);
         logging.AddFilter<ConsoleLoggerProvider>("Yarp.ReverseProxy", LogLevel.Warning);
+
+        // Re-add logging configuration so user overrides in the Logging section
+        // take precedence over our defaults above
+        logging.AddConfiguration(configuration.GetSection("Logging"));
 
         return logging;
     }
