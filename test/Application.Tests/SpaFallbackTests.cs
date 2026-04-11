@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Xunit;
+using Yarp.Application.Configuration;
+
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
 
 namespace Yarp.Application.Tests;
 
@@ -16,6 +20,21 @@ internal class YarpTestApp : WebApplicationFactory<Program>
     public void ConfigureConfiguration(Action<IConfigurationBuilder> configure)
     {
         _configAction += configure;
+    }
+
+    public void Configure(YarpAppConfig config)
+    {
+        ConfigureConfiguration(b =>
+        {
+            var json = JsonSerializer.Serialize(config);
+            using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+            b.AddJsonStream(stream);
+        });
+    }
+
+    public void Configure(Dictionary<string, string?> config)
+    {
+        ConfigureConfiguration(b => b.AddInMemoryCollection(config));
     }
 
     protected override IWebHostBuilder? CreateWebHostBuilder()
@@ -36,15 +55,20 @@ internal class YarpTestApp : WebApplicationFactory<Program>
 
 public class SpaFallbackTests
 {
-    private static YarpTestApp CreateFactory(Dictionary<string, string?>? config = null)
+    private static YarpTestApp CreateApp(YarpAppConfig config)
     {
         var app = new YarpTestApp();
+        app.Configure(config);
+        return app;
+    }
 
+    private static YarpTestApp CreateApp(Dictionary<string, string?>? config = null)
+    {
+        var app = new YarpTestApp();
         if (config is not null)
         {
-            app.ConfigureConfiguration(b => b.AddInMemoryCollection(config));
+            app.Configure(config);
         }
-
         return app;
     }
 
@@ -56,7 +80,7 @@ public class SpaFallbackTests
     [Fact]
     public async Task SpaFallback_ReturnsIndexHtml_ForUnknownRoutes()
     {
-        using var factory = CreateFactory(StaticFilesEnabled());
+        using var factory = CreateApp(StaticFilesEnabled());
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/some/spa/route");
@@ -69,7 +93,7 @@ public class SpaFallbackTests
     [Fact]
     public async Task SpaFallback_ReturnsIndexHtml_ForDeepNestedRoutes()
     {
-        using var factory = CreateFactory(StaticFilesEnabled());
+        using var factory = CreateApp(StaticFilesEnabled());
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/app/settings/profile/edit");
@@ -85,7 +109,7 @@ public class SpaFallbackTests
         // MapFallbackToFile uses {*path:nonfile} so requests with file extensions
         // are not caught by the fallback — this prevents broken asset requests
         // from returning index.html
-        using var factory = CreateFactory(StaticFilesEnabled());
+        using var factory = CreateApp(StaticFilesEnabled());
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/missing.js");
@@ -96,7 +120,7 @@ public class SpaFallbackTests
     [Fact]
     public async Task SpaFallback_ServesStaticFiles_Directly()
     {
-        using var factory = CreateFactory(StaticFilesEnabled());
+        using var factory = CreateApp(StaticFilesEnabled());
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/style.css");
@@ -110,7 +134,7 @@ public class SpaFallbackTests
     public async Task SpaFallback_DefaultDocument_ServesIndexHtml_AtRoot()
     {
         // UseFileServer enables default documents, so / resolves to /index.html
-        using var factory = CreateFactory(StaticFilesEnabled());
+        using var factory = CreateApp(StaticFilesEnabled());
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/");
@@ -123,7 +147,7 @@ public class SpaFallbackTests
     [Fact]
     public async Task SpaFallback_Disabled_Returns404_ForUnknownRoutes()
     {
-        using var factory = CreateFactory(new()
+        using var factory = CreateApp(new Dictionary<string, string?>()
         {
             ["YARP_ENABLE_STATIC_FILES"] = "true",
             ["YARP_DISABLE_SPA_FALLBACK"] = "true"
@@ -138,7 +162,7 @@ public class SpaFallbackTests
     [Fact]
     public async Task SpaFallback_Disabled_StillServesStaticFiles()
     {
-        using var factory = CreateFactory(new()
+        using var factory = CreateApp(new Dictionary<string, string?>()
         {
             ["YARP_ENABLE_STATIC_FILES"] = "true",
             ["YARP_DISABLE_SPA_FALLBACK"] = "true"
@@ -155,7 +179,7 @@ public class SpaFallbackTests
     [Fact]
     public async Task StaticFiles_Disabled_Returns404_ForAll()
     {
-        using var factory = CreateFactory();
+        using var factory = CreateApp();
         using var client = factory.CreateClient();
 
         var indexResponse = await client.GetAsync("/index.html");
@@ -172,7 +196,7 @@ public class SpaFallbackTests
     {
         // When YARP has specific routes (e.g. /api/), non-YARP paths
         // should still fall back to index.html for SPA routing
-        using var factory = CreateFactory(new()
+        using var factory = CreateApp(new Dictionary<string, string?>()
         {
             ["YARP_ENABLE_STATIC_FILES"] = "true",
             ["ReverseProxy:Routes:api:ClusterId"] = "backend",
@@ -197,7 +221,7 @@ public class SpaFallbackTests
     {
         // When YARP has a catch-all route, it takes priority over the
         // SPA fallback — this is expected because YARP owns all routing
-        using var factory = CreateFactory(new()
+        using var factory = CreateApp(new Dictionary<string, string?>()
         {
             ["YARP_ENABLE_STATIC_FILES"] = "true",
             ["ReverseProxy:Routes:catchall:ClusterId"] = "backend",
@@ -212,23 +236,21 @@ public class SpaFallbackTests
         Assert.NotEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
-    // Tests using the new config model (not legacy env vars)
+    // Tests using the strongly-typed config object model
 
     [Fact]
-    public async Task NewConfig_StaticFilesAndFallback()
+    public async Task ObjectModel_StaticFilesAndFallback()
     {
-        using var factory = CreateFactory(new()
+        using var app = CreateApp(new YarpAppConfig
         {
-            ["StaticFiles:Enabled"] = "true",
-            ["NavigationFallback:Path"] = "/index.html"
+            StaticFiles = { Enabled = true },
+            NavigationFallback = { Path = "/index.html" }
         });
-        using var client = factory.CreateClient();
+        using var client = app.CreateClient();
 
-        // Static file
         var cssResponse = await client.GetAsync("/style.css");
         Assert.Equal(HttpStatusCode.OK, cssResponse.StatusCode);
 
-        // SPA fallback
         var spaResponse = await client.GetAsync("/some/spa/route");
         Assert.Equal(HttpStatusCode.OK, spaResponse.StatusCode);
         var content = await spaResponse.Content.ReadAsStringAsync();
@@ -236,37 +258,47 @@ public class SpaFallbackTests
     }
 
     [Fact]
-    public async Task NewConfig_StaticFilesWithoutFallback()
+    public async Task ObjectModel_StaticFilesWithoutFallback()
     {
-        using var factory = CreateFactory(new()
+        using var app = CreateApp(new YarpAppConfig
         {
-            ["StaticFiles:Enabled"] = "true"
-            // No NavigationFallback configured
+            StaticFiles = { Enabled = true }
         });
-        using var client = factory.CreateClient();
+        using var client = app.CreateClient();
 
-        // Static file works
         var cssResponse = await client.GetAsync("/style.css");
         Assert.Equal(HttpStatusCode.OK, cssResponse.StatusCode);
 
-        // No fallback — unknown route returns 404
         var spaResponse = await client.GetAsync("/some/spa/route");
         Assert.Equal(HttpStatusCode.NotFound, spaResponse.StatusCode);
     }
 
     [Fact]
-    public async Task NewConfig_CustomFallbackPath()
+    public async Task ObjectModel_CustomFallbackPath()
     {
-        using var factory = CreateFactory(new()
+        using var app = CreateApp(new YarpAppConfig
         {
-            ["StaticFiles:Enabled"] = "true",
-            ["NavigationFallback:Path"] = "/index.html"
+            StaticFiles = { Enabled = true },
+            NavigationFallback = { Path = "/index.html" }
         });
-        using var client = factory.CreateClient();
+        using var client = app.CreateClient();
 
         var response = await client.GetAsync("/deep/nested/route");
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         Assert.Contains("SPA Index", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_EverythingDisabled()
+    {
+        using var app = CreateApp(new YarpAppConfig());
+        using var client = app.CreateClient();
+
+        var indexResponse = await client.GetAsync("/index.html");
+        var cssResponse = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.NotFound, indexResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, cssResponse.StatusCode);
     }
 }
