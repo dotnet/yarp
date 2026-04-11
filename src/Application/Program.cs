@@ -31,6 +31,9 @@ var options = configFilePath is not null
 
 var builder = WebApplication.CreateBuilder(options);
 
+// Suppress noisy framework logs on console by default
+builder.Logging.ConfigureDefaultLogging();
+
 // Load configuration from file if passed
 if (configFilePath is not null)
 {
@@ -50,6 +53,9 @@ builder.AddServiceDefaults(config);
 builder.AddReverseProxy(builder.Configuration);
 
 var app = builder.Build();
+
+// Print startup banner before any middleware runs
+LoggingFeature.PrintBanner(config, configFilePath, app);
 
 // Middleware pipeline — order matters
 app.UseStaticFiles(config);
