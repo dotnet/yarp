@@ -10,11 +10,11 @@ namespace Yarp.Application.Features;
 
 public static class ReverseProxyFeature
 {
-    public static IHostApplicationBuilder AddReverseProxy(this IHostApplicationBuilder builder, IConfiguration configuration)
+    public static IHostApplicationBuilder AddReverseProxy(this IHostApplicationBuilder builder)
     {
         builder.Services.AddServiceDiscovery();
         builder.Services.AddReverseProxy()
-                        .LoadFromConfig(configuration.GetSection("ReverseProxy"))
+                        .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
                         .AddServiceDiscoveryDestinationResolver();
 
         return builder;

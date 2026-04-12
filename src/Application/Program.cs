@@ -57,7 +57,7 @@ var config = YarpAppConfigBinder.Bind(builder.Configuration);
 
 // Services
 builder.AddServiceDefaults(config);
-builder.AddReverseProxy(builder.Configuration);
+builder.AddReverseProxy();
 
 var app = builder.Build();
 
