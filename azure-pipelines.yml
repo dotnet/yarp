@@ -7,8 +7,6 @@ variables:
   value: AspNetCore
 - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
   value: true
-- name: _PublishUsingPipelines
-  value: true
 - name: _BuildConfig
   value: Release
 # Rely on task Arcade injects, not auto-injected build step.
@@ -61,12 +59,13 @@ extends:
           enableMicrobuild: true
           enablePublishBuildArtifacts: true
           enablePublishTestResults: true
+          publishingVersion: 4
           enablePublishBuildAssets: true
-          enablePublishUsingPipelines: ${{ variables._PublishUsingPipelines }}
           enableTelemetry: true
           mergeTestResults: true
           jobs:
           - job: Windows
+            enablePublishing: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
@@ -76,7 +75,6 @@ extends:
             - name: _OfficialBuildArgs
               value: /p:DotNetSignType=$(_SignType)
                      /p:TeamName=$(_TeamName)
-                     /p:DotNetPublishUsingPipelines=$(_PublishUsingPipelines)
                      /p:OfficialBuildId=$(BUILD.BUILDNUMBER)
             - name: _SignType
               value: real
@@ -102,7 +100,7 @@ extends:
                 PublishLocation: Container
     - template: /eng/common/templates-official/post-build/post-build.yml@self
       parameters:
-        publishingInfraVersion: 3
+        publishingInfraVersion: 4
         enableSymbolValidation: false
         enableSourceLinkValidation: false
         enableSigningValidation: false

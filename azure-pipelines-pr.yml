@@ -8,8 +8,6 @@ variables:
     value: AspNetCore
   - name: DOTNET_SKIP_FIRST_TIME_EXPERIENCE
     value: true
-  - name: _PublishUsingPipelines
-    value: true
   - name: _BuildConfig
     value: Release
   - template: /eng/common/templates/variables/pool-providers.yml
@@ -36,7 +34,6 @@ stages:
       enablePublishBuildArtifacts: true
       enablePublishTestResults: true
       enablePublishBuildAssets: true
-      enablePublishUsingPipelines: true
       enableTelemetry: true
       mergeTestResults: true
       jobs:
