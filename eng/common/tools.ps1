@@ -185,7 +185,11 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   if ((-not $globalJsonHasRuntimes) -and (-not [string]::IsNullOrEmpty($env:DOTNET_INSTALL_DIR)) -and (Test-Path(Join-Path $env:DOTNET_INSTALL_DIR "sdk\$dotnetSdkVersion"))) {
     $dotnetRoot = $env:DOTNET_INSTALL_DIR
   } else {
-    $dotnetRoot = Join-Path $RepoRoot '.dotnet'
+    if (-not [string]::IsNullOrEmpty($env:DOTNET_GLOBAL_INSTALL_DIR)) {
+      $dotnetRoot = $env:DOTNET_GLOBAL_INSTALL_DIR
+    } else {
+      $dotnetRoot = Join-Path $RepoRoot '.dotnet'
+    }
 
     if (-not (Test-Path(Join-Path $dotnetRoot "sdk\$dotnetSdkVersion"))) {
       if ($install) {
@@ -773,7 +777,7 @@ function MSBuild-Core() {
     $cmdArgs += ' /p:TreatWarningsAsErrors=false'
   }
 
-  if ($warnNotAsError) {
+  if ($warnAsError -and $warnNotAsError) {
     $cmdArgs += " /warnnotaserror:$warnNotAsError /p:AdditionalWarningsNotAsErrors=$warnNotAsError"
   }
 
