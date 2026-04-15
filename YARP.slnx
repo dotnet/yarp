@@ -32,6 +32,10 @@
     <Project Path="samples/Prometheus/HttpLoadApp/HttpLoadApp.csproj" />
     <Project Path="samples/Prometheus/ReverseProxy.Metrics-Prometheus.Sample/ReverseProxy.Metrics.Prometheus.Sample.csproj" />
   </Folder>
+  <Folder Name="/samples/StaticSite/">
+    <File Path="samples/StaticSite/README.md" />
+    <File Path="samples/StaticSite/yarp-config.json" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path="eng/Versions.props" />

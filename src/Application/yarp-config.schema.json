@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "YARP Container Configuration",
+  "description": "Configuration schema for the YARP container application",
+  "type": "object",
+  "properties": {
+    "StaticFiles": {
+      "type": "object",
+      "description": "Static file serving configuration",
+      "properties": {
+        "Enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable static file serving from wwwroot"
+        }
+      },
+      "additionalProperties": false
+    },
+    "NavigationFallback": {
+      "type": "object",
+      "description": "SPA navigation fallback configuration",
+      "properties": {
+        "Path": {
+          "type": "string",
+          "description": "File to serve for unmatched non-file routes (e.g., /index.html)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Telemetry": {
+      "type": "object",
+      "description": "Telemetry configuration. OTLP export uses standard OTEL_* env vars.",
+      "properties": {
+        "UnsafeAcceptAnyCertificate": {
+          "type": "boolean",
+          "default": false,
+          "description": "Skip TLS validation for the OTLP exporter (dev/test only)"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReverseProxy": {
+      "type": "object",
+      "description": "YARP reverse proxy configuration. See https://microsoft.github.io/reverse-proxy/articles/config-files.html"
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "../../src/Application/yarp-config.schema.json",
+
+  "StaticFiles": {
+    "Enabled": true
+  },
+
+  "NavigationFallback": {
+    "Path": "/index.html"
+  }
+}
