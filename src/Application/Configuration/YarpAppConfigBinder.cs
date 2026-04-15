@@ -15,9 +15,9 @@ public static class YarpAppConfigBinder
     {
         var config = new YarpAppConfig();
 
-        configuration.GetSection("StaticFiles").Bind(config.StaticFiles);
-        configuration.GetSection("NavigationFallback").Bind(config.NavigationFallback);
-        configuration.GetSection("Telemetry").Bind(config.Telemetry);
+        configuration.GetSection(nameof(config.StaticFiles)).Bind(config.StaticFiles);
+        configuration.GetSection(nameof(config.NavigationFallback)).Bind(config.NavigationFallback);
+        configuration.GetSection(nameof(config.Telemetry)).Bind(config.Telemetry);
 
         // Legacy env var support
         MapLegacyKeys(configuration, config);
@@ -43,7 +43,7 @@ public static class YarpAppConfigBinder
         {
             // Legacy behavior: SPA fallback was on by default when static files were enabled
             // Only apply if using legacy keys (no explicit NavigationFallback section)
-            if (!configuration.GetSection("NavigationFallback").Exists()
+            if (!configuration.GetSection(nameof(config.NavigationFallback)).Exists()
                 && string.Equals(configuration["YARP_ENABLE_STATIC_FILES"], "true", StringComparison.OrdinalIgnoreCase))
             {
                 config.NavigationFallback.Path = "/index.html";
