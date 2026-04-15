@@ -1,6 +1,6 @@
 # YARP Container Application
 
-An opinionated web server and reverse proxy built on ASP.NET Core and [YARP](https://microsoft.github.io/reverse-proxy/). JSON config, no code required.
+An opinionated web server and reverse proxy built on ASP.NET Core and [YARP](https://dotnet.github.io/yarp/). JSON config, no code required.
 
 ## Quick Start
 
@@ -89,7 +89,7 @@ SPA fallback — serve a file (typically `index.html`) for unmatched routes so c
 
 ### `ReverseProxy`
 
-YARP reverse proxy routes and clusters. See the [YARP configuration docs](https://microsoft.github.io/reverse-proxy/articles/config-files.html) for the full reference.
+YARP reverse proxy routes and clusters. See the [YARP configuration docs](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/config-files) for the full reference.
 
 ### `Telemetry`
 
@@ -119,7 +119,7 @@ To re-enable framework logs for debugging, use the standard `Logging` config:
 
 ## Architecture
 
-This is an opinionated, pre-built application — not an extensible framework. Users who need custom behavior should use the [YARP library](https://microsoft.github.io/reverse-proxy/) directly in their own ASP.NET Core app.
+This is an opinionated, pre-built application — not an extensible framework. Users who need custom behavior should use the [YARP library](https://dotnet.github.io/yarp/) directly in their own ASP.NET Core app.
 
 ### Project Structure
 
