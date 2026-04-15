@@ -60,10 +60,14 @@ services:
       - StaticFiles__Enabled=true
       - NavigationFallback__Path=/index.html
     volumes:
-      - ./yarp-config.json:/app/config.json
-      - ./wwwroot:/app/wwwroot
-    command: ["/app/config.json"]
+      - ./yarp-config.json:/etc/yarp-config.json
+      - ./wwwroot:/etc/wwwroot
+    command: ["/etc/yarp-config.json"]
+    ports:
+      - "5000:5000"
 ```
+
+Mount the config file and `wwwroot/` into the same directory. The app uses the config file directory as the content root and serves static files from its `wwwroot/` subdirectory.
 
 Simple toggles work as environment variables. Complex config (proxy routes, etc.) goes in the JSON file.
 
