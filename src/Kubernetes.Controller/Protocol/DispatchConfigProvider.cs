@@ -34,7 +34,7 @@ public class DispatchConfigProvider : IUpdateConfig
             Routes = routes.ToList(),
         };
 
-        var bytes = JsonSerializer.SerializeToUtf8Bytes(message);
+        var bytes = JsonSerializer.SerializeToUtf8Bytes(message, KubernetesJsonSerializerContext.Default.Message);
 
         await _dispatcher.SendAsync(bytes, cancellationToken).ConfigureAwait(false);
     }
