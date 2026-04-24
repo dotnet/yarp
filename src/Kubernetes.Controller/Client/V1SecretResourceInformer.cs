@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -28,8 +29,9 @@ internal class V1SecretResourceInformer : ResourceInformer<V1Secret, V1SecretLis
         return Client.CoreV1.ListSecretForAllNamespacesWithHttpMessagesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
     }
 
-    protected override Watcher<V1Secret> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Secret> resourceSelector = null, Action<WatchEventType, V1Secret> onEvent = null, Action<Exception> onError = null, Action onClosed = null)
+    protected override IAsyncEnumerable<(WatchEventType, V1Secret)> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Secret> resourceSelector = null,
+        Action<Exception> onError = null)
     {
-        return Client.CoreV1.WatchListSecretForAllNamespaces(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, onEvent: onEvent, onError: onError, onClosed: onClosed);
+        return Client.CoreV1.WatchListSecretForAllNamespacesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, onError: onError);
     }
 }

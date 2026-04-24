@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -28,9 +29,9 @@ internal class V1IngressResourceInformer : ResourceInformer<V1Ingress, V1Ingress
         return Client.NetworkingV1.ListIngressForAllNamespacesWithHttpMessagesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
     }
 
-    protected override Watcher<V1Ingress> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Ingress> resourceSelector = null, Action<WatchEventType, V1Ingress> onEvent = null, Action<Exception> onError = null, Action onClosed = null)
+    protected override IAsyncEnumerable<(WatchEventType, V1Ingress)> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Ingress> resourceSelector = null, Action<Exception> onError = null)
     {
-        return Client.NetworkingV1.WatchListIngressForAllNamespaces(resourceVersion: resourceVersion,
-            fieldSelector: resourceSelector?.FieldSelector, onEvent: onEvent, onError: onError, onClosed: onClosed);
+        return Client.NetworkingV1.WatchListIngressForAllNamespacesAsync();
     }
+
 }
