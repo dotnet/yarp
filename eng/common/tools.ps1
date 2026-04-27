@@ -168,6 +168,12 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
     $env:DOTNET_CLI_TELEMETRY_OPTOUT=1
   }
 
+  # Keep repo builds isolated from machine-installed SDK state and workload advertising.
+  # This avoids preview SDK builds picking up mismatched workloads on CI images.
+  $env:DOTNET_MULTILEVEL_LOOKUP = '0'
+  $env:DOTNET_SKIP_FIRST_TIME_EXPERIENCE = '1'
+  $env:DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE = '1'
+
   # Find the first path on %PATH% that contains the dotnet.exe
   if ($useInstalledDotNetCli -and (-not $globalJsonHasRuntimes) -and ($env:DOTNET_INSTALL_DIR -eq $null)) {
     $dotnetExecutable = GetExecutableFileName 'dotnet'
@@ -230,6 +236,9 @@ function InitializeDotNetCli([bool]$install, [bool]$createSdkLocationFile) {
   Write-PipelinePrependPath -Path $dotnetRoot
 
   Write-PipelineSetVariable -Name 'DOTNET_NOLOGO' -Value '1'
+  Write-PipelineSetVariable -Name 'DOTNET_MULTILEVEL_LOOKUP' -Value '0'
+  Write-PipelineSetVariable -Name 'DOTNET_SKIP_FIRST_TIME_EXPERIENCE' -Value '1'
+  Write-PipelineSetVariable -Name 'DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE' -Value '1'
 
   return $global:_DotNetInstallDir = $dotnetRoot
 }
@@ -480,7 +489,6 @@ function LocateVisualStudio([object]$vsRequirements = $null){
   if (Get-Member -InputObject $GlobalJson.tools -Name 'vswhere') {
     $vswhereVersion = $GlobalJson.tools.vswhere
   } else {
-    # keep this in sync with the VSWhereVersion in DefaultVersions.props
     $vswhereVersion = '3.1.7'
   }
 
@@ -615,7 +623,17 @@ function GetNuGetPackageCachePath() {
 
 # Returns a full path to an Arcade SDK task project file.
 function GetSdkTaskProject([string]$taskName) {
-  return Join-Path (Split-Path (InitializeToolset) -Parent) "SdkTasks\$taskName.proj"
+  $toolsetDir = Split-Path (InitializeToolset) -Parent
+  $proj = Join-Path $toolsetDir "$taskName.proj"
+  if (Test-Path $proj) {
+    return $proj
+  }
+  # TODO: Remove this fallback once all supported versions use the new layout.
+  $legacyProj = Join-Path $toolsetDir "SdkTasks\$taskName.proj"
+  if (Test-Path $legacyProj) {
+    return $legacyProj
+  }
+  throw "Unable to find $taskName.proj in toolset at: $toolsetDir"
 }
 
 function InitializeNativeTools() {
@@ -652,13 +670,18 @@ function InitializeToolset() {
   $nugetCache = GetNuGetPackageCachePath
 
   $toolsetVersion = Read-ArcadeSdkVersion
-  $toolsetLocationFile = Join-Path $ToolsetDir "$toolsetVersion.txt"
+  $toolsetToolsDir = Join-Path $ToolsetDir $toolsetVersion
 
-  if (Test-Path $toolsetLocationFile) {
-    $path = Get-Content $toolsetLocationFile -TotalCount 1
-    if (Test-Path $path) {
-      return $global:_InitializeToolset = $path
-    }
+  # Check if the toolset has already been extracted
+  $toolsetBuildProj = $null
+  $buildProjPath = Join-Path $toolsetToolsDir 'Build.proj'
+
+  if (Test-Path $buildProjPath) {
+    $toolsetBuildProj = $buildProjPath
+  }
+
+  if ($toolsetBuildProj -ne $null) {
+    return $global:_InitializeToolset = $toolsetBuildProj
   }
 
   if (-not $restore) {
@@ -666,21 +689,50 @@ function InitializeToolset() {
     ExitWithExitCode 1
   }
 
-  $buildTool = InitializeBuildTool
+  $downloadArgs = @("package", "download", "Microsoft.DotNet.Arcade.Sdk@$toolsetVersion", "--verbosity", "minimal", "--prerelease", "--output", "$nugetCache")
+  $nugetConfig = $env:NUGET_CONFIG
+  if (-not $nugetConfig) {
+    # Search for any variation of nuget.config in the RepoRoot
+    $configFile = Get-ChildItem -Path $RepoRoot -File | Where-Object { $_.Name -ieq "nuget.config" } | Select-Object -First 1
 
-  $proj = Join-Path $ToolsetDir 'restore.proj'
-  $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'ToolsetRestore.binlog') } else { '' }
-
-  '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' | Set-Content $proj
-
-  MSBuild-Core $proj $bl /t:__WriteToolsetLocation /clp:ErrorsOnly`;NoSummary /p:__ToolsetLocationOutputFile=$toolsetLocationFile
-
-  $path = Get-Content $toolsetLocationFile -Encoding UTF8 -TotalCount 1
-  if (!(Test-Path $path)) {
-    throw "Invalid toolset path: $path"
+    if ($configFile) {
+        $nugetConfig = $configFile.FullName
+    }
   }
 
-  return $global:_InitializeToolset = $path
+  if ($nugetConfig) {
+    $downloadArgs += "--configfile"
+    $downloadArgs += $nugetConfig
+  }
+  DotNet @downloadArgs
+
+  $packageDir = Join-Path $nugetCache (Join-Path 'microsoft.dotnet.arcade.sdk' $toolsetVersion)
+  $packageToolsetDir = Join-Path $packageDir 'toolset'
+  $packageToolsDir = Join-Path $packageDir 'tools'
+
+  # TODO: Remove the tools/ check once all supported versions have the toolset folder.
+  if (!(Test-Path $packageToolsetDir) -and !(Test-Path $packageToolsDir)) {
+    Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Arcade SDK package does not contain a toolset or tools folder: $packageDir"
+    ExitWithExitCode 3
+  }
+
+  New-Item -ItemType Directory -Path $toolsetToolsDir -Force | Out-Null
+
+  # Copy toolset if present at the package root (new layout), otherwise fall back to tools
+  if (Test-Path $packageToolsetDir) {
+    Copy-Item -Path "$packageToolsetDir\*" -Destination $toolsetToolsDir -Recurse -Force
+  } else {
+    # TODO: Remove this fallback once all supported versions have the toolset folder.
+    Copy-Item -Path "$packageToolsDir\*" -Destination $toolsetToolsDir -Recurse -Force
+  }
+
+  if (Test-Path $buildProjPath) {
+    $toolsetBuildProj = $buildProjPath
+  } else {
+    throw "Unable to find Build.proj in toolset at: $toolsetToolsDir"
+  }
+
+  return $global:_InitializeToolset = $toolsetBuildProj
 }
 
 function ExitWithExitCode([int] $exitCode) {
@@ -742,6 +794,40 @@ function MSBuild() {
 }
 
 #
+# Executes a dotnet command with arguments passed to the function.
+# Terminates the script if the command fails.
+#
+function DotNet() {
+  $dotnetRoot = InitializeDotNetCli -install:$restore
+  $dotnetPath = Join-Path $dotnetRoot (GetExecutableFileName 'dotnet')
+
+  $cmdArgs = ""
+  foreach ($arg in $args) {
+    if ($null -ne $arg -and $arg.Trim() -ne "") {
+      if ($arg.EndsWith('\')) {
+        $arg = $arg + "\"
+      }
+      $cmdArgs += " `"$arg`""
+    }
+  }
+
+  $env:ARCADE_BUILD_TOOL_COMMAND = "`"$dotnetPath`" $cmdArgs"
+
+  $exitCode = Exec-Process $dotnetPath $cmdArgs
+
+  if ($exitCode -ne 0) {
+    Write-Host "dotnet command failed with exit code $exitCode. Check errors above." -ForegroundColor Red
+
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
+      Write-PipelineSetResult -Result "Failed" -Message "dotnet command execution failed."
+      ExitWithExitCode 0
+    } else {
+      ExitWithExitCode $exitCode
+    }
+  }
+}
+
+#
 # Executes msbuild (or 'dotnet msbuild') with arguments passed to the function.
 # The arguments are automatically quoted.
 # Terminates the script if the build fails.
@@ -764,6 +850,10 @@ function MSBuild-Core() {
   $buildTool = InitializeBuildTool
 
   $cmdArgs = "$($buildTool.Command) /m /nologo /clp:Summary /v:$verbosity /nr:$nodeReuse /p:ContinuousIntegrationBuild=$ci"
+
+  if ($ci -and $buildTool.Tool -eq 'dotnet') {
+    $cmdArgs += ' /p:MSBuildEnableWorkloadResolver=false'
+  }
 
   # Add -mt flag for MSBuild multithreaded mode if enabled via environment variable
   if ($env:MSBUILD_MT_ENABLED -eq "1") {
@@ -874,6 +964,12 @@ $globalJsonHasRuntimes = if ($GlobalJson.tools.PSObject.Properties.Name -Match '
 Create-Directory $ToolsetDir
 Create-Directory $TempDir
 Create-Directory $LogDir
+
+# Direct MSBuild crash diagnostics (MSB4166 failure.txt files) to a known location
+# under artifacts/log so they are captured as build artifacts in CI.
+if (-not $env:MSBUILDDEBUGPATH) {
+  $env:MSBUILDDEBUGPATH = Join-Path $LogDir 'MsbuildDebugLogs'
+}
 
 Write-PipelineSetVariable -Name 'Artifacts' -Value $ArtifactsDir
 Write-PipelineSetVariable -Name 'Artifacts.Toolset' -Value $ToolsetDir
