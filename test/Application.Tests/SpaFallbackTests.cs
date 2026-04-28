@@ -3,9 +3,14 @@
 
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Yarp.Application.Configuration;
 
@@ -80,6 +85,28 @@ public class SpaFallbackTests
         {
             AllowAutoRedirect = false
         });
+
+    private static async Task<WebApplication> CreateBackendAsync(RequestDelegate requestDelegate)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
+
+        var app = builder.Build();
+        app.Run(requestDelegate);
+        await app.StartAsync();
+        return app;
+    }
+
+    private static string GetAddress(WebApplication app)
+    {
+        var addresses = app.Services.GetRequiredService<IServer>()
+            .Features.Get<IServerAddressesFeature>()?.Addresses;
+
+        var address = addresses?.Single()
+            ?? throw new InvalidOperationException("The test backend did not publish an address.");
+
+        return address.EndsWith('/') ? address : $"{address}/";
+    }
 
     [Fact]
     public async Task SpaFallback_ReturnsIndexHtml_ForUnknownRoutes()
@@ -797,6 +824,31 @@ public class SpaFallbackTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         var content = await response.Content.ReadAsStringAsync();
         Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ProxiedPage_PreservesOriginalStatusWhenTargetWrites200()
+    {
+        await using var backend = await CreateBackendAsync(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            await context.Response.WriteAsync("Proxied error page");
+        });
+
+        using var app = CreateApp(new Dictionary<string, string?>
+        {
+            ["ErrorPages:404"] = "/error-page",
+            ["ReverseProxy:Routes:error:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:error:Match:Path"] = "/error-page",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = GetAddress(backend)
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Proxied error page", content);
     }
 
     [Fact]

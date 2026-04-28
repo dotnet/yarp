@@ -41,18 +41,34 @@ public static class ErrorPagesFeature
             // adapted to look up the destination per status code instead of using a single template.
             var originalPath = http.Request.Path;
             var originalQueryString = http.Request.QueryString;
+            var originalStatusCode = http.Response.StatusCode;
+            var originalEndpoint = http.GetEndpoint();
+            var routeValuesFeature = http.Features.Get<IRouteValuesFeature>();
+            var originalRouteValues = routeValuesFeature?.RouteValues is { } routeValues
+                ? new RouteValueDictionary(routeValues)
+                : null;
 
-            http.Features.Set<IStatusCodeReExecuteFeature>(new StatusCodeReExecuteFeature
+            http.Features.Set<IStatusCodeReExecuteFeature>(new ErrorPageReExecuteFeature
             {
                 OriginalPathBase = http.Request.PathBase.Value!,
                 OriginalPath = originalPath.Value!,
                 OriginalQueryString = originalQueryString.HasValue ? originalQueryString.Value : null,
+                OriginalStatusCode = originalStatusCode,
+                Endpoint = originalEndpoint,
+                RouteValues = originalRouteValues,
             });
 
             // Clear the chosen endpoint and route values so the re-executed request can be
             // matched fresh against routing/static-files.
             http.SetEndpoint(null);
             http.Features.Get<IRouteValuesFeature>()?.RouteValues?.Clear();
+            http.Response.Clear();
+            http.Response.OnStarting(static state =>
+            {
+                var (response, statusCode) = ((HttpResponse Response, int StatusCode))state;
+                response.StatusCode = statusCode;
+                return Task.CompletedTask;
+            }, (http.Response, originalStatusCode));
 
             http.Request.Path = path;
             http.Request.QueryString = QueryString.Empty;
@@ -62,13 +78,34 @@ public static class ErrorPagesFeature
             }
             finally
             {
+                if (!http.Response.HasStarted)
+                {
+                    http.Response.StatusCode = originalStatusCode;
+                }
+
                 http.Request.QueryString = originalQueryString;
                 http.Request.Path = originalPath;
+                http.SetEndpoint(originalEndpoint);
+                if (routeValuesFeature is not null)
+                {
+                    routeValuesFeature.RouteValues = originalRouteValues ?? new RouteValueDictionary();
+                }
+
                 http.Features.Set<IStatusCodeReExecuteFeature?>(null);
             }
         });
 
         return app;
+    }
+
+    private sealed class ErrorPageReExecuteFeature : IStatusCodeReExecuteFeature
+    {
+        public string OriginalPathBase { get; set; } = string.Empty;
+        public string OriginalPath { get; set; } = string.Empty;
+        public string? OriginalQueryString { get; set; }
+        public int OriginalStatusCode { get; init; }
+        public Endpoint? Endpoint { get; set; }
+        public RouteValueDictionary? RouteValues { get; set; }
     }
 
     private sealed class ErrorPageRules
