@@ -75,7 +75,43 @@ Simple toggles work as environment variables. Complex config (proxy routes, etc.
 
 All configuration goes through `IConfiguration` — JSON files, environment variables, or any other provider. See [`yarp-config.schema.json`](yarp-config.schema.json) for IDE autocomplete and validation.
 
-Route-like features use ASP.NET route pattern syntax: `Headers`, `Redirects`, and `Rewrites` match on `Match.Path`, and fallback exclusions use the same syntax in `Exclude[].Path`.
+### Request pipeline
+
+Every request flows through the pipeline below in this fixed order. Knowing the order is usually enough to reason about which feature wins for a given URL.
+
+```text
+┌─────────────────────────────────────────┐
+│ 1. Rewrites           (pre-routing)     │  Regex-based path rewrite. Mutates Request.Path.
+├─────────────────────────────────────────┤
+│ 2. Routing match      (endpoint chosen) │  ASP.NET selects an endpoint, but doesn't run it yet.
+├─────────────────────────────────────────┤
+│ 3. Redirects          (short-circuit)   │  If a redirect endpoint matched, send 30x and stop.
+├─────────────────────────────────────────┤
+│ 4. Static files       (special)         │  If a file at Request.Path exists in wwwroot, serve it.
+├─────────────────────────────────────────┤
+│ 5. Headers            (response phase)  │  Apply Header rules to static-file & SPA-fallback responses.
+├─────────────────────────────────────────┤
+│ 6. Reverse proxy      (endpoint)        │  YARP routes that matched in step 2 run here.
+├─────────────────────────────────────────┤
+│ 7. Fallback exclude   (endpoint)        │  Listed paths return 404 instead of falling back.
+├─────────────────────────────────────────┤
+│ 8. SPA fallback       (endpoint)        │  Otherwise serve NavigationFallback.Path (e.g. index.html).
+└─────────────────────────────────────────┘
+```
+
+A few consequences worth internalizing:
+
+- **Rewrites run first**, so every later stage sees the rewritten path. Use them to canonicalize URLs before anything else makes a decision.
+- **Redirects beat static files and the proxy.** If a redirect rule matches, the response is a 30x — the file or upstream is never consulted.
+- **Static files beat fallback exclusions and the SPA fallback.** A real file in `wwwroot` always wins over routed fallback endpoints, even though those fallbacks were chosen by `UseRouting` first. (This is preserved by clearing/restoring the selected endpoint around `UseFileServer`.)
+- **`Headers` only apply to static-file and SPA-fallback responses** — not to redirects, not to proxy responses. Use YARP response transforms for proxy headers.
+- **Fallback exclusions and the SPA fallback are real routed endpoints**, so reverse-proxy routes (and any `MapGet`/`MapPost` registered earlier) can still claim a path before either fires.
+
+### Match syntax
+
+Routed features (`Headers`, `Redirects`, `NavigationFallback.Exclude`) match using ASP.NET route templates — `/blog/{slug}`, `/api/{**catch-all}`. The same engine that powers `MapGet`. Captures from `Match.Path` are available in `Destination` as `{name}` substitutions.
+
+`Rewrites` use a different syntax — regex with `$n` capture groups — because they delegate to the standard ASP.NET [URL rewrite middleware](https://learn.microsoft.com/aspnet/core/fundamentals/url-rewriting). This is intentional: routed features are routes (so they use route-template syntax), and rewrites are rewrites (so they use the existing rewrite syntax). No new syntax is introduced.
 
 ### `StaticFiles`
 
