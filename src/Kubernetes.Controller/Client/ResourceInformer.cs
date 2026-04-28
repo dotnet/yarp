@@ -283,7 +283,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
     }
 
     // Encapsulate LastEventUtcTicks into a class to eliminate IDE warning `Captured variable is modified in the outer scope`.
-    private record WatchState
+    private class WatchState
     {
         public long LastEventUtcTicks =  DateTime.UtcNow.Ticks;
     }
@@ -296,7 +296,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             typeof(TResource).Name,
             _lastResourceVersion);
 
-        var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
         var watchState =  new WatchState();
         // reconnect if no events have arrived after a certain time
@@ -312,7 +312,14 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
                         EventId(EventType.DisposingToReconnect),
                         "Disposing watcher for {ResourceType} to cause reconnect.",
                         typeof(TResource).Name);
-                    linkedCancellationTokenSource.Cancel();
+                    try
+                    {
+                        linkedCancellationTokenSource.Cancel();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // The outer scope has already disposed of the cancellation token source.
+                    }
                 }
             },
             state: null,
