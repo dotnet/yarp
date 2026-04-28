@@ -20,6 +20,7 @@ public static class RedirectsFeature
         for (var i = 0; i < config.Redirects.Count; i++)
         {
             var rule = new CompiledRedirectRule(config.Redirects[i]);
+            var order = -1000 + i;
             app.Map(
                     rule.Path,
                     context =>
@@ -34,7 +35,7 @@ public static class RedirectsFeature
                 .Add(endpointBuilder =>
                 {
                     endpointBuilder.DisplayName = $"Redirect {rule.Path}";
-                    ((RouteEndpointBuilder)endpointBuilder).Order = -1000 + i;
+                    ((RouteEndpointBuilder)endpointBuilder).Order = order;
                 });
         }
 

@@ -38,7 +38,15 @@ public static class RewritesFeature
                     $"Rewrite rule '{rule.Regex}' requires a Replacement.");
             }
 
-            options.AddRewrite(rule.Regex, rule.Replacement, rule.SkipRemainingRules);
+            try
+            {
+                options.AddRewrite(rule.Regex, rule.Replacement, rule.SkipRemainingRules);
+            }
+            catch (ArgumentException ex)
+            {
+                throw new InvalidOperationException(
+                    $"Rewrite rule at index {i} has an invalid Regex pattern '{rule.Regex}': {ex.Message}", ex);
+            }
         }
 
         app.UseRewriter(options);

@@ -721,4 +721,19 @@ public class SpaFallbackTests
 
         Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    [Fact]
+    public void ObjectModel_Rewrites_InvalidRegex_ThrowsClearError()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            Rewrites =
+            {
+                new RewriteRule { Regex = "[unterminated(", Replacement = "/x" }
+            }
+        });
+
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
+        Assert.Contains("invalid Regex pattern", ex.Message);
+    }
 }

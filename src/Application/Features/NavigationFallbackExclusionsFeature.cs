@@ -20,6 +20,7 @@ public static class NavigationFallbackExclusionsFeature
         for (var i = 0; i < config.NavigationFallback.Exclude.Count; i++)
         {
             var path = RequestMatchEvaluator.ValidatePath(config.NavigationFallback.Exclude[i], "NavigationFallback exclusion");
+            var order = int.MaxValue - 1000 + i;
             app.MapFallback(
                     path,
                     context =>
@@ -32,7 +33,7 @@ public static class NavigationFallbackExclusionsFeature
                     endpointBuilder.DisplayName = $"Fallback exclusion {path}";
                     // Keep exclusions just ahead of the SPA fallback while still letting proxy
                     // routes and other normal endpoints win when they match.
-                    ((RouteEndpointBuilder)endpointBuilder).Order = int.MaxValue - 1000 + i;
+                    ((RouteEndpointBuilder)endpointBuilder).Order = order;
                 });
         }
 
