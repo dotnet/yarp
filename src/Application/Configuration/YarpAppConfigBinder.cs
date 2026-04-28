@@ -17,6 +17,8 @@ public static class YarpAppConfigBinder
 
         configuration.GetSection(nameof(config.StaticFiles)).Bind(config.StaticFiles);
         configuration.GetSection(nameof(config.NavigationFallback)).Bind(config.NavigationFallback);
+        configuration.GetSection(nameof(config.Headers)).Bind(config.Headers);
+        configuration.GetSection(nameof(config.Redirects)).Bind(config.Redirects);
         configuration.GetSection(nameof(config.Telemetry)).Bind(config.Telemetry);
 
         // Legacy env var support

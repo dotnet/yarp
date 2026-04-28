@@ -65,9 +65,12 @@ var app = builder.Build();
 LoggingFeature.PrintBanner(config, configFilePath, app);
 
 // Middleware pipeline — order matters
-app.UseStaticFiles(config);
 app.UseRouting();
+app.UseStaticFiles(config);
+app.UseStaticHostHeaders(config);
+app.MapRedirects(config);
 app.MapReverseProxy();
+app.MapNavigationFallbackExclusions(config);
 app.MapNavigationFallback(config);
 
 await app.RunAsync();

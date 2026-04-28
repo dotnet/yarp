@@ -75,6 +75,8 @@ Simple toggles work as environment variables. Complex config (proxy routes, etc.
 
 All configuration goes through `IConfiguration` — JSON files, environment variables, or any other provider. See [`yarp-config.schema.json`](yarp-config.schema.json) for IDE autocomplete and validation.
 
+Route-like features use ASP.NET route pattern syntax: `Headers` and `Redirects` match on `Match.Path`, and fallback exclusions use the same syntax in `Exclude[].Path`.
+
 ### `StaticFiles`
 
 Serve static files from `wwwroot/`.
@@ -88,8 +90,70 @@ Serve static files from `wwwroot/`.
 SPA fallback — serve a file (typically `index.html`) for unmatched routes so client-side routing works.
 
 ```json
-{ "NavigationFallback": { "Path": "/index.html" } }
+{
+  "NavigationFallback": {
+    "Path": "/index.html",
+    "Exclude": [
+      { "Path": "/api/{**catch-all}" },
+      { "Path": "/.well-known/{**catch-all}" }
+    ]
+  }
+}
 ```
+
+### `Headers`
+
+Response header rules for static-file and SPA-fallback responses. All matching rules are applied.
+
+```json
+{
+  "Headers": [
+    {
+      "Match": {
+        "Path": "/{**path}"
+      },
+      "Set": {
+        "X-Content-Type-Options": "nosniff"
+      }
+    },
+    {
+      "Match": {
+        "Path": "/_astro/{**path}"
+      },
+      "Set": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    }
+  ]
+}
+```
+
+### `Redirects`
+
+Declarative redirects. Rules are evaluated in order and the first match wins.
+
+```json
+{
+  "Redirects": [
+    {
+      "Match": {
+        "Path": "/old-page"
+      },
+      "Destination": "/new-page",
+      "StatusCode": 301
+    },
+    {
+      "Match": {
+        "Path": "/install.sh"
+      },
+      "Destination": "https://aka.ms/install.sh",
+      "StatusCode": 302
+    }
+  ]
+}
+```
+
+`Destination` can reference route values captured by `Match.Path`, such as `{slug}`.
 
 ### `ReverseProxy`
 
@@ -131,12 +195,19 @@ This is an opinionated, pre-built application — not an extensible framework. U
 Configuration/                  Config model (IConfiguration → POCOs)
   YarpAppConfig.cs              Root config object
   YarpAppConfigBinder.cs        Single conversion point + legacy key mapping
+  RequestMatch.cs               Shared route-style match object
   StaticFilesOptions.cs         Per-feature options
   NavigationFallbackOptions.cs
+  HeaderRule.cs
+  RedirectRule.cs
   TelemetryOptions.cs
 Features/                       Per-feature extension methods
+  RequestMatchEvaluator.cs      Route-template-based match evaluation
   StaticFilesFeature.cs
   NavigationFallbackFeature.cs
+  NavigationFallbackExclusionsFeature.cs
+  RedirectsFeature.cs
+  StaticHostHeadersFeature.cs
   ReverseProxyFeature.cs
   LoggingFeature.cs
 Program.cs                      Pipeline ordering
