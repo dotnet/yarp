@@ -83,19 +83,21 @@ Every request flows through the pipeline below in this fixed order. Knowing the 
 ┌─────────────────────────────────────────┐
 │ 1. Rewrites           (pre-routing)     │  Regex-based path rewrite. Mutates Request.Path.
 ├─────────────────────────────────────────┤
-│ 2. Routing match      (endpoint chosen) │  ASP.NET selects an endpoint, but doesn't run it yet.
+│ 2. Error pages        (wraps everything)│  Re-execute against a configured page on 4xx/5xx.
 ├─────────────────────────────────────────┤
-│ 3. Redirects          (short-circuit)   │  If a redirect endpoint matched, send 30x and stop.
+│ 3. Routing match      (endpoint chosen) │  ASP.NET selects an endpoint, but doesn't run it yet.
 ├─────────────────────────────────────────┤
-│ 4. Static files       (special)         │  If a file at Request.Path exists in wwwroot, serve it.
+│ 4. Redirects          (short-circuit)   │  If a redirect endpoint matched, send 30x and stop.
 ├─────────────────────────────────────────┤
-│ 5. Headers            (response phase)  │  Apply Header rules to static-file & SPA-fallback responses.
+│ 5. Static files       (special)         │  If a file at Request.Path exists in wwwroot, serve it.
 ├─────────────────────────────────────────┤
-│ 6. Reverse proxy      (endpoint)        │  YARP routes that matched in step 2 run here.
+│ 6. Headers            (response phase)  │  Apply Header rules to static-file & SPA-fallback responses.
 ├─────────────────────────────────────────┤
-│ 7. Fallback exclude   (endpoint)        │  Listed paths return 404 instead of falling back.
+│ 7. Reverse proxy      (endpoint)        │  YARP routes that matched in step 3 run here.
 ├─────────────────────────────────────────┤
-│ 8. SPA fallback       (endpoint)        │  Otherwise serve NavigationFallback.Path (e.g. index.html).
+│ 8. Fallback exclude   (endpoint)        │  Listed paths return 404 instead of falling back.
+├─────────────────────────────────────────┤
+│ 9. SPA fallback       (endpoint)        │  Otherwise serve NavigationFallback.Path (e.g. index.html).
 └─────────────────────────────────────────┘
 ```
 
@@ -212,6 +214,30 @@ URL rewrites applied **before routing**, so every downstream stage (routing, sta
 
 Set `SkipRemainingRules: false` to allow subsequent rules to also evaluate against the rewritten path.
 
+### `ErrorPages`
+
+Custom error pages for 4xx/5xx responses. The request is internally re-executed against the configured path while the original status code is preserved (the browser still sees `404`, `500`, etc.). Built on top of ASP.NET's [`UseStatusCodePages`](https://learn.microsoft.com/aspnet/core/fundamentals/error-handling#usestatuscodepageswithreexecute) — only fires when the response has not started and the body is empty.
+
+```json
+{
+  "ErrorPages": {
+    "404": "/404.html",
+    "503": "/maintenance.html",
+    "4xx": "/client-error.html",
+    "5xx": "/server-error.html"
+  }
+}
+```
+
+Keys are either a 3-digit HTTP status code (`"404"`) or a class wildcard (`"4xx"`, `"5xx"`). **Exact codes win over wildcards**, so in the example above:
+
+| Status | Page |
+|---|---|
+| 400, 403 | `/client-error.html` |
+| 404 | `/404.html` |
+| 500, 502 | `/server-error.html` |
+| 503 | `/maintenance.html` |
+
 ### `ReverseProxy`
 
 YARP reverse proxy routes and clusters. See the [YARP configuration docs](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/config-files) for the full reference.
@@ -266,6 +292,7 @@ Features/                       Per-feature extension methods
   NavigationFallbackExclusionsFeature.cs
   RedirectsFeature.cs
   RewritesFeature.cs
+  ErrorPagesFeature.cs
   StaticHostHeadersFeature.cs
   ReverseProxyFeature.cs
   LoggingFeature.cs

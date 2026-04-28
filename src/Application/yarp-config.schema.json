@@ -117,6 +117,15 @@
         "additionalProperties": false
       }
     },
+    "ErrorPages": {
+      "type": "object",
+      "description": "Custom error pages, re-executed against the configured path while preserving the original status code. Keys are 3-digit status codes (e.g. '404') or class wildcards (e.g. '5xx'); exact codes win over wildcards.",
+      "patternProperties": {
+        "^[0-9]{3}$": { "type": "string" },
+        "^[0-9][xX][xX]$": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
     "Telemetry": {
       "type": "object",
       "description": "Telemetry configuration. OTLP export uses standard OTEL_* env vars.",

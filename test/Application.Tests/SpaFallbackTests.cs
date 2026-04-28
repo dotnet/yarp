@@ -736,4 +736,96 @@ public class SpaFallbackTests
         var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
         Assert.Contains("invalid Regex pattern", ex.Message);
     }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ExactCode_ServesPageWithOriginalStatus()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages = { ["404"] = "/404.html" }
+        });
+        using var client = app.CreateClient();
+
+        // Unknown path → 404 (no SPA fallback configured) → re-execute against /404.html
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ClassWildcard_MatchesAllCodesInClass()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            },
+            ErrorPages = { ["4xx"] = "/404.html" }
+        });
+        using var client = app.CreateClient();
+
+        // The exclusion produces a 404 → wildcard '4xx' rule fires.
+        var response = await client.GetAsync("/api/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ExactBeatsWildcard()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages =
+            {
+                ["404"] = "/404.html",
+                ["4xx"] = "/server-error.html"
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_NoMatch_PassesThrough()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            // Only configure 5xx; a 404 should pass through unchanged.
+            ErrorPages = { ["5xx"] = "/server-error.html" }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("Server error", content);
+    }
+
+    [Fact]
+    public void ObjectModel_ErrorPages_InvalidKey_ThrowsClearError()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            ErrorPages = { ["nope"] = "/x.html" }
+        });
+
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
+        Assert.Contains("3-digit status code", ex.Message);
+    }
 }

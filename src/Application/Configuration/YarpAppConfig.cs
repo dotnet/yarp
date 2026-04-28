@@ -14,5 +14,6 @@ public sealed class YarpAppConfig
     public List<HeaderRule> Headers { get; set; } = [];
     public List<RedirectRule> Redirects { get; set; } = [];
     public List<RewriteRule> Rewrites { get; set; } = [];
+    public Dictionary<string, string> ErrorPages { get; set; } = new(StringComparer.OrdinalIgnoreCase);
     public TelemetryOptions Telemetry { get; set; } = new();
 }

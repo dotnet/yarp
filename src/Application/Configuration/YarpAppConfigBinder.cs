@@ -20,6 +20,7 @@ public static class YarpAppConfigBinder
         configuration.GetSection(nameof(config.Headers)).Bind(config.Headers);
         configuration.GetSection(nameof(config.Redirects)).Bind(config.Redirects);
         configuration.GetSection(nameof(config.Rewrites)).Bind(config.Rewrites);
+        configuration.GetSection(nameof(config.ErrorPages)).Bind(config.ErrorPages);
         configuration.GetSection(nameof(config.Telemetry)).Bind(config.Telemetry);
 
         // Legacy env var support
