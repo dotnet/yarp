@@ -51,6 +51,13 @@ public class DistributedTracingTests
             },
         };
 
+        // Microsoft.ApplicationInsights (transitive dependency brought in by
+        // Microsoft.Testing.Extensions.Telemetry) sets Activity.ForceDefaultIdFormat = true
+        // globally, which forces every new Activity to use W3C format regardless of the
+        // parent activity's format. Disable the override so that child activities inherit
+        // the parent's format as they would in a normal application.
+        Activity.ForceDefaultIdFormat = false;
+
         var clientActivity = new Activity("Foo");
         clientActivity.SetIdFormat(idFormat);
         clientActivity.TraceStateString = "Bar";
