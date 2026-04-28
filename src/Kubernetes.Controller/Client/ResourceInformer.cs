@@ -197,7 +197,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
     }
 
     protected abstract Task<HttpOperationResponse<TListResource>> RetrieveResourceListAsync(string resourceVersion = null, ResourceSelector<TResource> resourceSelector = null, CancellationToken cancellationToken = default);
-    protected abstract Watcher<TResource> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<TResource> resourceSelector = null, Action<WatchEventType, TResource> onEvent = null, Action<Exception> onError = null, Action onClosed = null);
+    protected abstract IAsyncEnumerable<(WatchEventType, TResource)> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<TResource> resourceSelector = null, Action<Exception> onError = null);
 
     private static EventId EventId(EventType eventType) => new EventId((int)eventType, eventType.ToString());
 
@@ -282,6 +282,12 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             typeof(TResource).Name);
     }
 
+    // Encapsulate LastEventUtcTicks into a class to eliminate IDE warning `Captured variable is modified in the outer scope`.
+    private class WatchState
+    {
+        public long LastEventUtcTicks =  DateTime.UtcNow.Ticks;
+    }
+
     private async Task WatchAsync(CancellationToken cancellationToken)
     {
         Logger.LogInformation(
@@ -290,75 +296,69 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             typeof(TResource).Name,
             _lastResourceVersion);
 
-        // completion source helps turn OnClose callback into something awaitable
-        var watcherCompletionSource = new TaskCompletionSource<int>();
+        using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        // begin watching where list left off
-        var watcher = WatchResourceListAsync(resourceVersion: _lastResourceVersion, resourceSelector: _selector,
-            (watchEventType, item) =>
-            {
-                if (!watcherCompletionSource.Task.IsCompleted)
-                {
-                    OnEvent(watchEventType, item);
-                }
-            },
-            error =>
-            {
-                if (error is KubernetesException kubernetesError)
-                {
-                    // deal with this non-recoverable condition "too old resource version"
-                    if (string.Equals(kubernetesError.Status.Reason, "Expired", StringComparison.Ordinal))
-                    {
-                        // cause this error to surface
-                        watcherCompletionSource.TrySetException(error);
-                        throw error;
-                    }
-                }
-
-                Logger.LogDebug(
-                    EventId(EventType.IgnoringError),
-                    "Ignoring error {ErrorType}: {ErrorMessage}",
-                    error.GetType().Name,
-                    error.Message);
-            },
-            () =>
-            {
-                watcherCompletionSource.TrySetResult(0);
-            }
-        );
-
-        var lastEventUtc = DateTime.UtcNow;
-
+        var watchState =  new WatchState();
         // reconnect if no events have arrived after a certain time
-        using var checkLastEventUtcTimer = new Timer(
+        await using var checkLastEventUtcTimer = new Timer(
             _ =>
             {
-                var lastEvent = DateTime.UtcNow - lastEventUtc;
-                if (lastEvent > TimeSpan.FromMinutes(9.5))
+                var currentTicks = Interlocked.Read(ref watchState.LastEventUtcTicks);
+                var timeSinceLastEvent = TimeSpan.FromTicks(DateTime.UtcNow.Ticks - currentTicks);
+                if (timeSinceLastEvent > TimeSpan.FromMinutes(9.5))
                 {
-                    lastEventUtc = DateTime.MaxValue;
+                    Interlocked.Exchange(ref watchState.LastEventUtcTicks, DateTime.MaxValue.Ticks);
                     Logger.LogDebug(
                         EventId(EventType.DisposingToReconnect),
                         "Disposing watcher for {ResourceType} to cause reconnect.",
                         typeof(TResource).Name);
-
-                    watcherCompletionSource.TrySetCanceled();
-                    watcher.Dispose();
-
+                    try
+                    {
+                        linkedCancellationTokenSource.Cancel();
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // The outer scope has already disposed of the cancellation token source.
+                    }
                 }
             },
             state: null,
             dueTime: TimeSpan.FromSeconds(45),
             period: TimeSpan.FromSeconds(45));
 
-        using var registration = cancellationToken.Register(watcher.Dispose);
         try
         {
-            await watcherCompletionSource.Task;
+            await foreach (var (watchEventType, item) in WatchResourceListAsync(resourceVersion: _lastResourceVersion,
+                                   resourceSelector: _selector, onError: OnError)
+                               .WithCancellation(linkedCancellationTokenSource.Token))
+            {
+                Interlocked.Exchange(ref watchState.LastEventUtcTicks, DateTime.UtcNow.Ticks);
+                OnEvent(watchEventType, item);
+            }
         }
-        catch (TaskCanceledException)
+        catch (OperationCanceledException)
         {
+            // The loop was canceled safely, either by the timer or the original cancellationToken
         }
+    }
+
+    private void OnError(Exception error)
+    {
+        if (error is KubernetesException kubernetesError)
+        {
+            // deal with this non-recoverable condition "too old resource version"
+            if (string.Equals(kubernetesError.Status.Reason, "Expired", StringComparison.Ordinal))
+            {
+                // cause this error to surface
+                throw error;
+            }
+        }
+
+        Logger.LogDebug(
+            EventId(EventType.IgnoringError),
+            "Ignoring error {ErrorType}: {ErrorMessage}",
+            error.GetType().Name,
+            error.Message);
     }
 
     private void OnEvent(WatchEventType watchEventType, TResource item)
