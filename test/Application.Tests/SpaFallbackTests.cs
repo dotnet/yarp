@@ -538,4 +538,187 @@ public class SpaFallbackTests
         Assert.Equal(HttpStatusCode.NotFound, indexResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, cssResponse.StatusCode);
     }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_RewriteToStaticFile()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^styles$",
+                    Replacement = "style.css"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/styles");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_SubstituteCaptureGroups()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^assets/(.*)$",
+                    Replacement = "$1"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/assets/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_RunBeforeRouting_AffectFallbackExclude()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            },
+            Rewrites =
+            {
+                // /old-api/* gets rewritten to /api/* — the exclude rule should still match
+                new RewriteRule
+                {
+                    Regex = "^old-api/(.*)$",
+                    Replacement = "api/$1"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/old-api/users");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_RunBeforeRedirects()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch { Path = "/new" },
+                    Destination = "/destination",
+                    StatusCode = 302
+                }
+            },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^old$",
+                    Replacement = "new"
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        var response = await client.GetAsync("/old");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("/destination", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_FirstMatchWins_NoChaining()
+    {
+        // SkipRemainingRules defaults to true, so the second rule must NOT re-fire
+        // even though the rewritten path matches it.
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^a$",
+                    Replacement = "b"
+                },
+                new RewriteRule
+                {
+                    Regex = "^b$",
+                    Replacement = "style.css"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var responseA = await client.GetAsync("/a");
+        var responseB = await client.GetAsync("/b");
+
+        // /a -> /b, no chaining, so /a returns 404 (no /b file)
+        Assert.Equal(HttpStatusCode.NotFound, responseA.StatusCode);
+        // /b matches the second rule directly and rewrites to /style.css
+        Assert.Equal(HttpStatusCode.OK, responseB.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_NoMatch_PassesThroughUnchanged()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^blog/(.*)$",
+                    Replacement = "posts/$1"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_AffectReverseProxyRouting()
+    {
+        using var factory = CreateApp(new Dictionary<string, string?>()
+        {
+            ["Rewrites:0:Regex"] = "^legacy/(.*)$",
+            ["Rewrites:0:Replacement"] = "api/$1",
+            ["ReverseProxy:Routes:api:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:api:Match:Path"] = "/api/{**catch-all}",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = "https://localhost:9999"
+        });
+        using var client = factory.CreateClient();
+
+        // Should hit the proxy route (which fails to connect, but routing matched).
+        var response = await client.GetAsync("/legacy/ping");
+
+        Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
+    }
 }

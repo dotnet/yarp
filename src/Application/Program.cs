@@ -65,6 +65,7 @@ var app = builder.Build();
 LoggingFeature.PrintBanner(config, configFilePath, app);
 
 // Middleware pipeline — order matters
+app.UseRewrites(config);
 app.UseRouting();
 app.UseStaticFiles(config);
 app.UseStaticHostHeaders(config);

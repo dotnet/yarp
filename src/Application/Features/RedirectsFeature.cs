@@ -72,19 +72,6 @@ public static class RedirectsFeature
         public string Path { get; }
 
         public string BuildDestination(RouteValueDictionary values)
-        {
-            if (values.Count == 0 || Destination.IndexOf('{') < 0)
-            {
-                return Destination;
-            }
-
-            var builder = new System.Text.StringBuilder(Destination);
-            foreach (var value in values)
-            {
-                builder.Replace("{" + value.Key + "}", value.Value?.ToString() ?? string.Empty);
-            }
-
-            return builder.ToString();
-        }
+            => RequestMatchEvaluator.ExpandTemplate(Destination, values);
     }
 }

@@ -75,7 +75,7 @@ Simple toggles work as environment variables. Complex config (proxy routes, etc.
 
 All configuration goes through `IConfiguration` — JSON files, environment variables, or any other provider. See [`yarp-config.schema.json`](yarp-config.schema.json) for IDE autocomplete and validation.
 
-Route-like features use ASP.NET route pattern syntax: `Headers` and `Redirects` match on `Match.Path`, and fallback exclusions use the same syntax in `Exclude[].Path`.
+Route-like features use ASP.NET route pattern syntax: `Headers`, `Redirects`, and `Rewrites` match on `Match.Path`, and fallback exclusions use the same syntax in `Exclude[].Path`.
 
 ### `StaticFiles`
 
@@ -155,6 +155,27 @@ Declarative redirects. Rules are evaluated in order and the first match wins.
 
 `Destination` can reference route values captured by `Match.Path`, such as `{slug}`.
 
+### `Rewrites`
+
+URL rewrites applied **before routing**, so every downstream stage (routing, static files, redirects, SPA fallback, reverse proxy) sees the rewritten path. Uses the standard [ASP.NET rewrite middleware](https://learn.microsoft.com/aspnet/core/fundamentals/url-rewriting) — regex pattern + `$n` capture-group substitution. By default, the first matching rule wins.
+
+```json
+{
+  "Rewrites": [
+    {
+      "Regex": "^blog/(.*)$",
+      "Replacement": "posts/$1"
+    },
+    {
+      "Regex": "^legacy/(.*)$",
+      "Replacement": "$1"
+    }
+  ]
+}
+```
+
+Set `SkipRemainingRules: false` to allow subsequent rules to also evaluate against the rewritten path.
+
 ### `ReverseProxy`
 
 YARP reverse proxy routes and clusters. See the [YARP configuration docs](https://learn.microsoft.com/aspnet/core/fundamentals/servers/yarp/config-files) for the full reference.
@@ -200,6 +221,7 @@ Configuration/                  Config model (IConfiguration → POCOs)
   NavigationFallbackOptions.cs
   HeaderRule.cs
   RedirectRule.cs
+  RewriteRule.cs
   TelemetryOptions.cs
 Features/                       Per-feature extension methods
   RequestMatchEvaluator.cs      Route-template-based match evaluation
@@ -207,6 +229,7 @@ Features/                       Per-feature extension methods
   NavigationFallbackFeature.cs
   NavigationFallbackExclusionsFeature.cs
   RedirectsFeature.cs
+  RewritesFeature.cs
   StaticHostHeadersFeature.cs
   ReverseProxyFeature.cs
   LoggingFeature.cs

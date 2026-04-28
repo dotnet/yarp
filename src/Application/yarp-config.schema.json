@@ -93,6 +93,30 @@
         "additionalProperties": false
       }
     },
+    "Rewrites": {
+      "type": "array",
+      "description": "URL rewrite rules applied before routing using the ASP.NET rewrite middleware (regex syntax).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Regex": {
+            "type": "string",
+            "description": "Regular expression matched against the request path"
+          },
+          "Replacement": {
+            "type": "string",
+            "description": "Replacement string. May reference capture groups via $1, $2, etc."
+          },
+          "SkipRemainingRules": {
+            "type": "boolean",
+            "default": true,
+            "description": "If true (default), skip remaining rules when this rule matches"
+          }
+        },
+        "required": ["Regex", "Replacement"],
+        "additionalProperties": false
+      }
+    },
     "Telemetry": {
       "type": "object",
       "description": "Telemetry configuration. OTLP export uses standard OTEL_* env vars.",

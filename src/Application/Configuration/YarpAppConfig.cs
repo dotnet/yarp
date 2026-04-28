@@ -13,5 +13,6 @@ public sealed class YarpAppConfig
     public NavigationFallbackOptions NavigationFallback { get; set; } = new();
     public List<HeaderRule> Headers { get; set; } = [];
     public List<RedirectRule> Redirects { get; set; } = [];
+    public List<RewriteRule> Rewrites { get; set; } = [];
     public TelemetryOptions Telemetry { get; set; } = new();
 }

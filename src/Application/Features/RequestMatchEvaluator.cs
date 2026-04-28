@@ -57,4 +57,24 @@ internal sealed class RequestMatchEvaluator
         path = string.IsNullOrEmpty(path.Value) ? new PathString("/") : path;
         return _pathMatcher.TryMatch(path, values);
     }
+
+    /// <summary>
+    /// Substitutes <c>{name}</c> placeholders in <paramref name="template"/> with values from
+    /// <paramref name="values"/>. Missing or null values resolve to an empty string.
+    /// </summary>
+    public static string ExpandTemplate(string template, RouteValueDictionary values)
+    {
+        if (values.Count == 0 || template.IndexOf('{') < 0)
+        {
+            return template;
+        }
+
+        var builder = new System.Text.StringBuilder(template);
+        foreach (var value in values)
+        {
+            builder.Replace("{" + value.Key + "}", value.Value?.ToString() ?? string.Empty);
+        }
+
+        return builder.ToString();
+    }
 }
