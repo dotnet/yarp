@@ -232,7 +232,7 @@ Custom error pages for 4xx/5xx responses. The request is internally re-executed 
 Keys are either a 3-digit HTTP status code (`"404"`) or a class wildcard (`"4xx"`, `"5xx"`). **Exact codes win over wildcards**, so in the example above:
 
 | Status | Page |
-|---|---|
+| --- | --- |
 | 400, 403 | `/client-error.html` |
 | 404 | `/404.html` |
 | 500, 502 | `/server-error.html` |

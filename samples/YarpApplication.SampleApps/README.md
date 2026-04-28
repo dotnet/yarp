@@ -23,4 +23,3 @@ Then open `http://127.0.0.1:5000`. Samples that include `ReverseProxy` use reali
 | `03-dashboard-spa` | A dashboard SPA that falls back to `index.html` while forwarding `/api` traffic to a backend. |
 | `04-commerce-errors` | A commerce frontend with branded exact and wildcard custom error pages. |
 | `05-edge-composition` | A composed edge frontend using rewrites, redirects, static assets, proxy routes, SPA fallback exclusions, and custom error pages together. |
-
