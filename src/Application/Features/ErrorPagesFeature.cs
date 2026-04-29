@@ -164,6 +164,8 @@ public static class ErrorPagesFeature
                         $"ErrorPages entry '{key}' must have a non-empty path.");
                 }
 
+                // Parse ErrorPages keys as either exact status codes ("404") or status classes
+                // ("5xx"). Exact matches are stored separately so "404" wins over "4xx".
                 if (TryParseExactCode(key, out var code))
                 {
                     exact[code] = value;
@@ -185,6 +187,7 @@ public static class ErrorPagesFeature
         private static bool TryParseExactCode(string key, out int code)
         {
             code = 0;
+            // Parse exact status-code keys like "404" into the integer 404.
             if (key.Length != 3)
             {
                 return false;
@@ -205,6 +208,7 @@ public static class ErrorPagesFeature
         private static bool TryParseClassWildcard(string key, out int hundreds)
         {
             hundreds = 0;
+            // Parse status-class wildcard keys like "5xx" or "5XX" into the hundreds digit 5.
             if (key.Length != 3 || !char.IsDigit(key[0]))
             {
                 return false;

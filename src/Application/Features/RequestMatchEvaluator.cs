@@ -16,6 +16,8 @@ internal sealed class RequestMatchEvaluator
     {
         var path = ValidatePath(match, ruleDisplayName);
         Path = path;
+        // Parse ASP.NET route-template syntax such as "/api/{**catch-all}" or
+        // "/docs/{slug}" so static-host header rules use the same path semantics as endpoints.
         _pathMatcher = new TemplateMatcher(TemplateParser.Parse(path), new RouteValueDictionary());
     }
 
@@ -60,7 +62,9 @@ internal sealed class RequestMatchEvaluator
 
     /// <summary>
     /// Substitutes <c>{name}</c> placeholders in <paramref name="template"/> with values from
-    /// <paramref name="values"/>. Missing or null values resolve to an empty string.
+    /// <paramref name="values"/>. For example, <c>"/docs/{slug}"</c> with slug
+    /// <c>"intro"</c> becomes <c>"/docs/intro"</c>. Missing or null values resolve to an
+    /// empty string.
     /// </summary>
     public static string ExpandTemplate(string template, RouteValueDictionary values)
     {

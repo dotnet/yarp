@@ -40,6 +40,9 @@ public static class RewritesFeature
 
             try
             {
+                // Parse the ASP.NET rewrite-middleware regex/replacement pair. Example:
+                // Regex "^docs/current/(.*)$" and Replacement "docs/v2/$1" rewrites
+                // "/docs/current/intro.html" to "/docs/v2/intro.html".
                 options.AddRewrite(rule.Regex, rule.Replacement, rule.SkipRemainingRules);
             }
             catch (ArgumentException ex)
