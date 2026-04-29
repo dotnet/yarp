@@ -36,9 +36,9 @@ public static class ErrorPagesFeature
                 return;
             }
 
-            // Mirror the re-execute pattern from
-            // Microsoft.AspNetCore.Diagnostics.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute,
-            // adapted to look up the destination per status code instead of using a single template.
+            // StatusCodePages runs after the downstream pipeline has produced an error response.
+            // Mirror UseStatusCodePagesWithReExecute, but choose the destination from the status
+            // code map instead of using one template for every status.
             var originalPath = http.Request.Path;
             var originalQueryString = http.Request.QueryString;
             var originalStatusCode = http.Response.StatusCode;
@@ -48,6 +48,9 @@ public static class ErrorPagesFeature
                 ? new RouteValueDictionary(routeValues)
                 : null;
 
+            // StatusCodeReExecuteFeature has an internal/private setter for OriginalStatusCode
+            // in some target frameworks. Use our own feature so custom error endpoints can still
+            // inspect the original status if they need it.
             http.Features.Set<IStatusCodeReExecuteFeature>(new ErrorPageReExecuteFeature
             {
                 OriginalPathBase = http.Request.PathBase.Value!,
@@ -58,11 +61,21 @@ public static class ErrorPagesFeature
                 RouteValues = originalRouteValues,
             });
 
-            // Clear the chosen endpoint and route values so the re-executed request can be
-            // matched fresh against routing/static-files.
+            // Routing has already selected an endpoint for the original request. Clear it so the
+            // re-executed path can be matched as a new request against redirects/static/proxy/
+            // fallback endpoints.
             http.SetEndpoint(null);
             http.Features.Get<IRouteValuesFeature>()?.RouteValues?.Clear();
+
+            // The response currently contains the original error status (for example 404). Clear
+            // it before re-executing so the target can run normally. This is especially important
+            // for YARP proxy targets because the forwarder refuses to start when the response has
+            // already been set to a non-200 status.
             http.Response.Clear();
+
+            // Error page targets typically produce a 200 response (static files, proxy backends,
+            // etc.). Restore the original status immediately before headers are sent so the client
+            // sees the original 404/500 while receiving the custom page body.
             http.Response.OnStarting(static state =>
             {
                 var (response, statusCode) = ((HttpResponse Response, int StatusCode))state;
@@ -78,11 +91,15 @@ public static class ErrorPagesFeature
             }
             finally
             {
+                // If the target did not start the response, OnStarting will not run. Preserve the
+                // same status-code guarantee for empty/not-started responses.
                 if (!http.Response.HasStarted)
                 {
                     http.Response.StatusCode = originalStatusCode;
                 }
 
+                // Restore request/routing state for anything later in the pipeline and for logging
+                // or diagnostics that observe the context after the re-execute completes.
                 http.Request.QueryString = originalQueryString;
                 http.Request.Path = originalPath;
                 http.SetEndpoint(originalEndpoint);

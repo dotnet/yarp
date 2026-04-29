@@ -66,6 +66,8 @@ LoggingFeature.PrintBanner(config, configFilePath, app);
 
 // Middleware pipeline — order matters
 app.UseRewrites(config);
+// StatusCodePages wraps the rest of the pipeline, so register it before anything
+// that can produce the 4xx/5xx response it may re-execute.
 app.UseErrorPages(config);
 app.UseRouting();
 app.UseStaticFiles(config);
