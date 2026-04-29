@@ -10,6 +10,11 @@ namespace Yarp.Application.Features;
 
 public static class RedirectsFeature
 {
+    // Endpoint routing chooses the lowest Order first when multiple route patterns match.
+    // Put configured redirects in a negative range so "/old/{**path}" beats normal proxy/
+    // fallback endpoints, and add the config index so earlier redirect rules win ties.
+    private const int RedirectEndpointOrderBase = -1000;
+
     public static WebApplication MapRedirects(this WebApplication app, YarpAppConfig config)
     {
         if (config.Redirects.Count == 0)
@@ -20,7 +25,7 @@ public static class RedirectsFeature
         for (var i = 0; i < config.Redirects.Count; i++)
         {
             var rule = new CompiledRedirectRule(config.Redirects[i]);
-            var order = -1000 + i;
+            var order = RedirectEndpointOrderBase + i;
             app.Map(
                     rule.Path,
                     context =>
