@@ -23,6 +23,7 @@ public static class StaticFilesFeature
             var endpoint = context.GetEndpoint();
             if (endpoint?.RequestDelegate is null)
             {
+                context.Items.Remove(PreservedEndpointKey);
                 return next();
             }
 
@@ -55,12 +56,18 @@ public static class StaticFilesFeature
 
         app.Use((context, next) =>
         {
-            if (!context.Response.HasStarted
-                && context.GetEndpoint() is null
-                && context.Items.TryGetValue(PreservedEndpointKey, out var endpoint)
-                && endpoint is Endpoint preservedEndpoint)
+            if (context.Items.TryGetValue(PreservedEndpointKey, out var endpoint))
             {
-                context.SetEndpoint(preservedEndpoint);
+                // The same HttpContext can be re-executed by StatusCodePages. Once this saved
+                // endpoint has been considered, remove it so a re-executed error-page path cannot
+                // accidentally restore the original request's endpoint.
+                context.Items.Remove(PreservedEndpointKey);
+                if (!context.Response.HasStarted
+                    && context.GetEndpoint() is null
+                    && endpoint is Endpoint preservedEndpoint)
+                {
+                    context.SetEndpoint(preservedEndpoint);
+                }
             }
 
             return next();

@@ -10,9 +10,10 @@ namespace Yarp.Application.Features;
 
 public static class NavigationFallbackExclusionsFeature
 {
-    // Endpoint routing chooses the lowest Order first. Fallback endpoints sit at the end of
-    // the table, so place exclusions just before the SPA fallback while still letting normal
-    // endpoints (including proxy routes) win. Add the config index to preserve rule order.
+    // Endpoint routing chooses the lowest Order first. Exclusions are regular endpoints, not
+    // MapFallback endpoints, so patterns like "/.well-known/{**catch-all}" also match dotted
+    // file-like paths. Place them just before the SPA fallback while still letting normal
+    // endpoints (including proxy routes) win, and add the config index to preserve rule order.
     private const int FallbackExclusionEndpointOrderBase = int.MaxValue - 1000;
 
     public static WebApplication MapNavigationFallbackExclusions(this WebApplication app, YarpAppConfig config)
@@ -26,7 +27,7 @@ public static class NavigationFallbackExclusionsFeature
         {
             var path = RequestMatchEvaluator.ValidatePath(config.NavigationFallback.Exclude[i], "NavigationFallback exclusion");
             var order = FallbackExclusionEndpointOrderBase + i;
-            app.MapFallback(
+            app.Map(
                     path,
                     context =>
                     {

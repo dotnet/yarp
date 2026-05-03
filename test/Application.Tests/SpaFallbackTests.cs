@@ -9,10 +9,12 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Yarp.Application.Configuration;
+using Yarp.Application.Features;
 
 namespace Yarp.Application.Tests;
 
@@ -356,6 +358,27 @@ public class SpaFallbackTests
         var response = await client.GetAsync("/api/v1/users");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_FallbackExclude_MatchesDottedFileLikePaths()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/.well-known/{**catch-all}" } }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/.well-known/assetlinks.json");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("SPA Index", content);
     }
 
     [Fact]
@@ -852,6 +875,26 @@ public class SpaFallbackTests
     }
 
     [Fact]
+    public async Task ObjectModel_ErrorPages_MissingPageDoesNotRestoreOriginalEndpointDuringReExecute()
+    {
+        var webRoot = Directory.CreateTempSubdirectory();
+        try
+        {
+            await using var app = await CreateAppWithOriginalEndpointAsync(webRoot.FullName);
+            using var client = app.GetTestClient();
+
+            var response = await client.GetAsync("/original");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(1, app.Services.GetRequiredService<OriginalEndpointCounter>().Count);
+        }
+        finally
+        {
+            webRoot.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task ObjectModel_ErrorPages_NoMatch_PassesThrough()
     {
         using var app = CreateApp(new YarpAppConfig
@@ -879,5 +922,40 @@ public class SpaFallbackTests
 
         var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
         Assert.Contains("3-digit status code", ex.Message);
+    }
+
+    private static async Task<WebApplication> CreateAppWithOriginalEndpointAsync(string webRoot)
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<OriginalEndpointCounter>();
+
+        var config = new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages = { ["404"] = "/missing-error-page.html" }
+        };
+
+        var app = builder.Build();
+        app.UseErrorPages(config);
+        app.UseRouting();
+        app.UseStaticFiles(config);
+        app.MapGet("/original", context =>
+        {
+            context.RequestServices.GetRequiredService<OriginalEndpointCounter>().Count++;
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.CompletedTask;
+        });
+
+        await app.StartAsync();
+        return app;
+    }
+
+    private sealed class OriginalEndpointCounter
+    {
+        public int Count { get; set; }
     }
 }
