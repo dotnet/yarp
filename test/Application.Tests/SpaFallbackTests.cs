@@ -512,6 +512,41 @@ public class SpaFallbackTests
     }
 
     [Fact]
+    public async Task ObjectModel_Rewrites_AffectStaticHeaderMatching()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/style.css" },
+                    Set = { ["X-Rewritten-Static"] = "true" }
+                }
+            },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^legacy-style$",
+                    Replacement = "style.css"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        // Rewrites run before static files and header matching, so the header rule sees
+        // /style.css rather than the original /legacy-style request path.
+        var response = await client.GetAsync("/legacy-style");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("true", response.Headers.GetValues("X-Rewritten-Static").Single());
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
     public async Task ObjectModel_Redirects_RunBeforeStaticFiles()
     {
         using var app = CreateApp(new YarpAppConfig
@@ -553,6 +588,37 @@ public class SpaFallbackTests
 
         Assert.Equal(HttpStatusCode.Found, response.StatusCode);
         Assert.Equal("/docs", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task ObjectModel_Redirects_RunBeforeFallbackExclusions()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            },
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch { Path = "/api/old" },
+                    Destination = "/api/new",
+                    StatusCode = 302
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        // Both the redirect and exclusion match. Redirects use an earlier endpoint order, so
+        // the request redirects instead of becoming the exclusion's 404.
+        var response = await client.GetAsync("/api/old");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("/api/new", response.Headers.Location?.ToString());
     }
 
     [Fact]
@@ -803,6 +869,34 @@ public class SpaFallbackTests
         var response = await client.GetAsync("/missing");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_StaticFilePageReceivesHeaderRules()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages = { ["404"] = "/404.html" },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/404.html" },
+                    Set = { ["X-Error-Page"] = "static-file" }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        // ErrorPages re-executes /404.html through static files, so static-host header rules
+        // still apply to the custom error page body while the original 404 status is preserved.
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("static-file", response.Headers.GetValues("X-Error-Page").Single());
         var content = await response.Content.ReadAsStringAsync();
         Assert.Contains("Custom 404", content);
     }
