@@ -374,6 +374,8 @@ public class SpaFallbackTests
         });
         using var client = app.CreateClient();
 
+        // This looks like a file request, so MapFallback would not catch it. The exclusion must
+        // still win so /.well-known assets do not accidentally fall back to the SPA shell.
         var response = await client.GetAsync("/.well-known/assetlinks.json");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -883,6 +885,9 @@ public class SpaFallbackTests
             await using var app = await CreateAppWithOriginalEndpointAsync(webRoot.FullName);
             using var client = app.GetTestClient();
 
+            // /original produces an empty 404, so ErrorPages re-executes /missing-error-page.html.
+            // If StaticFilesFeature restores the preserved /original endpoint during that second
+            // pass, this counter would be incremented twice.
             var response = await client.GetAsync("/original");
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
