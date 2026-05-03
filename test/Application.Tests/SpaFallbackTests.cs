@@ -1023,6 +1023,18 @@ public class SpaFallbackTests
         Assert.Contains("3-digit status code", ex.Message);
     }
 
+    [Fact]
+    public void ObjectModel_ErrorPages_RelativePath_ThrowsClearError()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            ErrorPages = { ["404"] = "404.html" }
+        });
+
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
+        Assert.Contains("must start with '/'", ex.Message);
+    }
+
     private static async Task<WebApplication> CreateAppWithOriginalEndpointAsync(string webRoot)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions

@@ -158,21 +158,17 @@ public static class ErrorPagesFeature
 
             foreach (var (key, value) in source)
             {
-                if (string.IsNullOrWhiteSpace(value))
-                {
-                    throw new InvalidOperationException(
-                        $"ErrorPages entry '{key}' must have a non-empty path.");
-                }
+                var path = ValidatePath(key, value);
 
                 // Parse ErrorPages keys as either exact status codes ("404") or status classes
                 // ("5xx"). Exact matches are stored separately so "404" wins over "4xx".
                 if (TryParseExactCode(key, out var code))
                 {
-                    exact[code] = value;
+                    exact[code] = path;
                 }
                 else if (TryParseClassWildcard(key, out var hundreds))
                 {
-                    classes[hundreds] = value;
+                    classes[hundreds] = path;
                 }
                 else
                 {
@@ -182,6 +178,23 @@ public static class ErrorPagesFeature
             }
 
             return new ErrorPageRules(exact, classes);
+        }
+
+        private static string ValidatePath(string key, string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                throw new InvalidOperationException(
+                    $"ErrorPages entry '{key}' must have a non-empty path.");
+            }
+
+            if (path[0] != '/')
+            {
+                throw new InvalidOperationException(
+                    $"ErrorPages entry '{key}' path '{path}' must start with '/'.");
+            }
+
+            return path;
         }
 
         private static bool TryParseExactCode(string key, out int code)

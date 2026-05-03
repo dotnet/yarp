@@ -124,6 +124,20 @@ public class YarpAppConfigBinderTests
     }
 
     [Fact]
+    public void Legacy_EnableStaticFiles_ImpliesFallback_WhenOnlyFallbackExclusionsConfigured()
+    {
+        var config = Bind(new()
+        {
+            ["YARP_ENABLE_STATIC_FILES"] = "true",
+            ["NavigationFallback:Exclude:0:Path"] = "/api/{**catch-all}"
+        });
+
+        Assert.Equal("/index.html", config.NavigationFallback.Path);
+        var exclusion = Assert.Single(config.NavigationFallback.Exclude);
+        Assert.Equal("/api/{**catch-all}", exclusion.Path);
+    }
+
+    [Fact]
     public void Legacy_DisableSpaFallback()
     {
         var config = Bind(new()
@@ -145,15 +159,14 @@ public class YarpAppConfigBinderTests
     // Precedence: new config wins over legacy
 
     [Fact]
-    public void Precedence_NewConfigSection_PreventsLegacyFallback()
+    public void Precedence_ExplicitFallbackPathWinsOverLegacyFallback()
     {
-        // When NavigationFallback section exists explicitly, legacy
-        // YARP_ENABLE_STATIC_FILES doesn't auto-set fallback path
         var config = Bind(new()
         {
             ["YARP_ENABLE_STATIC_FILES"] = "true",
             ["NavigationFallback:Path"] = "/custom.html"
         });
+
         Assert.Equal("/custom.html", config.NavigationFallback.Path);
     }
 

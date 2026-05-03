@@ -229,7 +229,7 @@ Custom error pages for 4xx/5xx responses. The request is internally re-executed 
 }
 ```
 
-Keys are either a 3-digit HTTP status code (`"404"`) or a class wildcard (`"4xx"`, `"5xx"`). **Exact codes win over wildcards**, so in the example above:
+Keys are either a 3-digit HTTP status code (`"404"`) or a class wildcard (`"4xx"`, `"5xx"`). Values must be rooted request paths that start with `/`. **Exact codes win over wildcards**, so in the example above:
 
 | Status | Page |
 | --- | --- |
