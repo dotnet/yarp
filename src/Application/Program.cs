@@ -65,9 +65,16 @@ var app = builder.Build();
 LoggingFeature.PrintBanner(config, configFilePath, app);
 
 // Middleware pipeline — order matters
-app.UseStaticFiles(config);
+app.UseRewrites(config);
+// StatusCodePages wraps the rest of the pipeline, so register it before anything
+// that can produce the 4xx/5xx response it may re-execute.
+app.UseErrorPages(config);
 app.UseRouting();
+app.UseStaticFiles(config);
+app.UseStaticHostHeaders(config);
+app.MapRedirects(config);
 app.MapReverseProxy();
+app.MapNavigationFallbackExclusions(config);
 app.MapNavigationFallback(config);
 
 await app.RunAsync();

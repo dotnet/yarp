@@ -1,0 +1,12 @@
+body {
+  color: #17324d;
+  font-family: system-ui, sans-serif;
+  margin: 4rem;
+}
+
+.eyebrow {
+  color: #476f95;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+

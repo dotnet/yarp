@@ -3,6 +3,20 @@
   "title": "YARP Container Configuration",
   "description": "Configuration schema for the YARP container application",
   "type": "object",
+  "definitions": {
+    "requestMatch": {
+      "type": "object",
+      "description": "Request match criteria. Path uses ASP.NET route pattern syntax.",
+      "properties": {
+        "Path": {
+          "type": "string",
+          "description": "Request path route pattern to match"
+        }
+      },
+      "required": ["Path"],
+      "additionalProperties": false
+    }
+  },
   "properties": {
     "StaticFiles": {
       "type": "object",
@@ -23,6 +37,99 @@
         "Path": {
           "type": "string",
           "description": "File to serve for unmatched non-file routes (e.g., /index.html)"
+        },
+        "Exclude": {
+          "type": "array",
+          "description": "Route-style path matches that bypass SPA fallback",
+          "items": {
+            "$ref": "#/definitions/requestMatch"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Headers": {
+      "type": "array",
+      "description": "Response header rules for static-host responses only. All matching rules are applied.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Match": {
+            "$ref": "#/definitions/requestMatch"
+          },
+          "Set": {
+            "type": "object",
+            "description": "Headers to set on matching responses",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["Match", "Set"],
+        "additionalProperties": false
+      }
+    },
+    "Redirects": {
+      "type": "array",
+      "description": "Redirect rules. First matching rule wins.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Match": {
+            "$ref": "#/definitions/requestMatch"
+          },
+          "Destination": {
+            "type": "string",
+            "description": "Redirect target (relative or absolute)"
+          },
+          "StatusCode": {
+            "type": "integer",
+            "enum": [301, 302, 307, 308],
+            "default": 301,
+            "description": "HTTP redirect status code"
+          }
+        },
+        "required": ["Match", "Destination"],
+        "additionalProperties": false
+      }
+    },
+    "Rewrites": {
+      "type": "array",
+      "description": "URL rewrite rules applied before routing using the ASP.NET rewrite middleware (regex syntax).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Regex": {
+            "type": "string",
+            "description": "Regular expression matched against the request path"
+          },
+          "Replacement": {
+            "type": "string",
+            "description": "Replacement string. May reference capture groups via $1, $2, etc."
+          },
+          "SkipRemainingRules": {
+            "type": "boolean",
+            "default": true,
+            "description": "If true (default), skip remaining rules when this rule matches"
+          }
+        },
+        "required": ["Regex", "Replacement"],
+        "additionalProperties": false
+      }
+    },
+    "ErrorPages": {
+      "type": "object",
+      "description": "Custom error pages, re-executed against the configured path while preserving the original status code. Keys are 3-digit status codes (e.g. '404') or class wildcards (e.g. '5xx'); exact codes win over wildcards.",
+      "patternProperties": {
+        "^[0-9]{3}$": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "Rooted request path for the custom error page (e.g. /404.html)"
+        },
+        "^[0-9][xX][xX]$": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "Rooted request path for the custom error page (e.g. /server-error.html)"
         }
       },
       "additionalProperties": false

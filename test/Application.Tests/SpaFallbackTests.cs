@@ -3,11 +3,18 @@
 
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Yarp.Application.Configuration;
+using Yarp.Application.Features;
 
 namespace Yarp.Application.Tests;
 
@@ -74,6 +81,34 @@ public class SpaFallbackTests
     {
         ["YARP_ENABLE_STATIC_FILES"] = "true"
     };
+
+    private static HttpClient CreateNoRedirectClient(WebApplicationFactory<Program> factory)
+        => factory.CreateClient(new WebApplicationFactoryClientOptions
+        {
+            AllowAutoRedirect = false
+        });
+
+    private static async Task<WebApplication> CreateBackendAsync(RequestDelegate requestDelegate)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
+
+        var app = builder.Build();
+        app.Run(requestDelegate);
+        await app.StartAsync();
+        return app;
+    }
+
+    private static string GetAddress(WebApplication app)
+    {
+        var addresses = app.Services.GetRequiredService<IServer>()
+            .Features.Get<IServerAddressesFeature>()?.Addresses;
+
+        var address = addresses?.Single()
+            ?? throw new InvalidOperationException("The test backend did not publish an address.");
+
+        return address.EndsWith('/') ? address : $"{address}/";
+    }
 
     [Fact]
     public async Task SpaFallback_ReturnsIndexHtml_ForUnknownRoutes()
@@ -234,6 +269,25 @@ public class SpaFallbackTests
         Assert.NotEqual(HttpStatusCode.OK, response.StatusCode);
     }
 
+    [Fact]
+    public async Task StaticFiles_StillWinOverCatchAllYarpRoute()
+    {
+        using var factory = CreateApp(new Dictionary<string, string?>()
+        {
+            ["YARP_ENABLE_STATIC_FILES"] = "true",
+            ["ReverseProxy:Routes:catchall:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:catchall:Match:Path"] = "{**catch-all}",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = "https://localhost:9999"
+        });
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
     // Tests using the strongly-typed config object model
 
     [Fact]
@@ -288,6 +342,309 @@ public class SpaFallbackTests
     }
 
     [Fact]
+    public async Task ObjectModel_FallbackExclude_Returns404_ForExcludedPaths()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/api/v1/users");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_FallbackExclude_MatchesDottedFileLikePaths()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/.well-known/{**catch-all}" } }
+            }
+        });
+        using var client = app.CreateClient();
+
+        // This looks like a file request, so MapFallback would not catch it. The exclusion must
+        // still win so /.well-known assets do not accidentally fall back to the SPA shell.
+        var response = await client.GetAsync("/.well-known/assetlinks.json");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("SPA Index", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_FallbackExclude_DoesNotAffectOtherSpaRoutes()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/dashboard/settings");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("SPA Index", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_FallbackExclude_DoesNotAffectStaticFiles()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/style.css" } }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_FallbackExclude_DoesNotAffectReverseProxyRoutes()
+    {
+        using var factory = CreateApp(new Dictionary<string, string?>()
+        {
+            ["StaticFiles:Enabled"] = "true",
+            ["NavigationFallback:Path"] = "/index.html",
+            ["NavigationFallback:Exclude:0:Path"] = "/api/{**catch-all}",
+            ["ReverseProxy:Routes:api:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:api:Match:Path"] = "/api/{**catch-all}",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = "https://localhost:9999"
+        });
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/ping");
+
+        Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_HeaderRules_ApplyToStaticFiles()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/{**path}" },
+                    Set = { ["X-Test"] = "applied" }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("applied", response.Headers.GetValues("X-Test").Single());
+    }
+
+    [Fact]
+    public async Task ObjectModel_HeaderRules_ApplyToFallbackResponses()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback = { Path = "/index.html" },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/{**path}" },
+                    Set = { ["X-Test"] = "applied" }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/docs/spa/route");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("applied", response.Headers.GetValues("X-Test").Single());
+    }
+
+    [Fact]
+    public async Task HeaderRules_DoNotApplyToProxiedResponses()
+    {
+        using var factory = CreateApp(new Dictionary<string, string?>()
+        {
+            ["StaticFiles:Enabled"] = "true",
+            ["Headers:0:Match:Path"] = "/{**path}",
+            ["Headers:0:Set:X-Test"] = "applied",
+            ["ReverseProxy:Routes:api:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:api:Match:Path"] = "/api/{**catch-all}",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = "https://localhost:9999"
+        });
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/api/ping");
+
+        Assert.NotEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.False(response.Headers.Contains("X-Test"));
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_AffectStaticHeaderMatching()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/style.css" },
+                    Set = { ["X-Rewritten-Static"] = "true" }
+                }
+            },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^legacy-style$",
+                    Replacement = "style.css"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        // Rewrites run before static files and header matching, so the header rule sees
+        // /style.css rather than the original /legacy-style request path.
+        var response = await client.GetAsync("/legacy-style");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("true", response.Headers.GetValues("X-Rewritten-Static").Single());
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Redirects_RunBeforeStaticFiles()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch { Path = "/style.css" },
+                    Destination = "/redirected.css",
+                    StatusCode = 302
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        var response = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("/redirected.css", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task Redirects_RunBeforeReverseProxy()
+    {
+        using var factory = CreateApp(new Dictionary<string, string?>()
+        {
+            ["Redirects:0:Match:Path"] = "/api/{**catch-all}",
+            ["Redirects:0:Destination"] = "/docs",
+            ["Redirects:0:StatusCode"] = "302",
+            ["ReverseProxy:Routes:api:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:api:Match:Path"] = "/api/{**catch-all}",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = "https://localhost:9999"
+        });
+        using var client = CreateNoRedirectClient(factory);
+
+        var response = await client.GetAsync("/api/ping");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("/docs", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task ObjectModel_Redirects_RunBeforeFallbackExclusions()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            },
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch { Path = "/api/old" },
+                    Destination = "/api/new",
+                    StatusCode = 302
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        // Both the redirect and exclusion match. Redirects use an earlier endpoint order, so
+        // the request redirects instead of becoming the exclusion's 404.
+        var response = await client.GetAsync("/api/old");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("/api/new", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task ObjectModel_Redirects_CanUseRouteValuesInDestination()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch { Path = "/docs/{**slug}" },
+                    Destination = "/articles/{slug}",
+                    StatusCode = 302
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        var response = await client.GetAsync("/docs/getting-started/install");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("/articles/getting-started/install", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
     public async Task ObjectModel_EverythingDisabled()
     {
         using var app = CreateApp(new YarpAppConfig());
@@ -298,5 +655,418 @@ public class SpaFallbackTests
 
         Assert.Equal(HttpStatusCode.NotFound, indexResponse.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, cssResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_RewriteToStaticFile()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^styles$",
+                    Replacement = "style.css"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/styles");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_SubstituteCaptureGroups()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^assets/(.*)$",
+                    Replacement = "$1"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/assets/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_RunBeforeRouting_AffectFallbackExclude()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            },
+            Rewrites =
+            {
+                // /old-api/* gets rewritten to /api/* — the exclude rule should still match
+                new RewriteRule
+                {
+                    Regex = "^old-api/(.*)$",
+                    Replacement = "api/$1"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/old-api/users");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_RunBeforeRedirects()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch { Path = "/new" },
+                    Destination = "/destination",
+                    StatusCode = 302
+                }
+            },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^old$",
+                    Replacement = "new"
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        var response = await client.GetAsync("/old");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("/destination", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_FirstMatchWins_NoChaining()
+    {
+        // SkipRemainingRules defaults to true, so the second rule must NOT re-fire
+        // even though the rewritten path matches it.
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^a$",
+                    Replacement = "b"
+                },
+                new RewriteRule
+                {
+                    Regex = "^b$",
+                    Replacement = "style.css"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var responseA = await client.GetAsync("/a");
+        var responseB = await client.GetAsync("/b");
+
+        // /a -> /b, no chaining, so /a returns 404 (no /b file)
+        Assert.Equal(HttpStatusCode.NotFound, responseA.StatusCode);
+        // /b matches the second rule directly and rewrites to /style.css
+        Assert.Equal(HttpStatusCode.OK, responseB.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_NoMatch_PassesThroughUnchanged()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Rewrites =
+            {
+                new RewriteRule
+                {
+                    Regex = "^blog/(.*)$",
+                    Replacement = "posts/$1"
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/style.css");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("color: red", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_Rewrites_AffectReverseProxyRouting()
+    {
+        using var factory = CreateApp(new Dictionary<string, string?>()
+        {
+            ["Rewrites:0:Regex"] = "^legacy/(.*)$",
+            ["Rewrites:0:Replacement"] = "api/$1",
+            ["ReverseProxy:Routes:api:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:api:Match:Path"] = "/api/{**catch-all}",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = "https://localhost:9999"
+        });
+        using var client = factory.CreateClient();
+
+        // Should hit the proxy route (which fails to connect, but routing matched).
+        var response = await client.GetAsync("/legacy/ping");
+
+        Assert.NotEqual(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public void ObjectModel_Rewrites_InvalidRegex_ThrowsClearError()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            Rewrites =
+            {
+                new RewriteRule { Regex = "[unterminated(", Replacement = "/x" }
+            }
+        });
+
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
+        Assert.Contains("invalid Regex pattern", ex.Message);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ExactCode_ServesPageWithOriginalStatus()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages = { ["404"] = "/404.html" }
+        });
+        using var client = app.CreateClient();
+
+        // Unknown path → 404 (no SPA fallback configured) → re-execute against /404.html
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_StaticFilePageReceivesHeaderRules()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages = { ["404"] = "/404.html" },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/404.html" },
+                    Set = { ["X-Error-Page"] = "static-file" }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        // ErrorPages re-executes /404.html through static files, so static-host header rules
+        // still apply to the custom error page body while the original 404 status is preserved.
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("static-file", response.Headers.GetValues("X-Error-Page").Single());
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ClassWildcard_MatchesAllCodesInClass()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            },
+            ErrorPages = { ["4xx"] = "/404.html" }
+        });
+        using var client = app.CreateClient();
+
+        // The exclusion produces a 404 → wildcard '4xx' rule fires.
+        var response = await client.GetAsync("/api/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ExactBeatsWildcard()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages =
+            {
+                ["404"] = "/404.html",
+                ["4xx"] = "/server-error.html"
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_ProxiedPage_PreservesOriginalStatusWhenTargetWrites200()
+    {
+        await using var backend = await CreateBackendAsync(async context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status200OK;
+            await context.Response.WriteAsync("Proxied error page");
+        });
+
+        using var app = CreateApp(new Dictionary<string, string?>
+        {
+            ["ErrorPages:404"] = "/error-page",
+            ["ReverseProxy:Routes:error:ClusterId"] = "backend",
+            ["ReverseProxy:Routes:error:Match:Path"] = "/error-page",
+            ["ReverseProxy:Clusters:backend:Destinations:d1:Address"] = GetAddress(backend)
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.Contains("Proxied error page", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_MissingPageDoesNotRestoreOriginalEndpointDuringReExecute()
+    {
+        var webRoot = Directory.CreateTempSubdirectory();
+        try
+        {
+            await using var app = await CreateAppWithOriginalEndpointAsync(webRoot.FullName);
+            using var client = app.GetTestClient();
+
+            // /original produces an empty 404, so ErrorPages re-executes /missing-error-page.html.
+            // If StaticFilesFeature restores the preserved /original endpoint during that second
+            // pass, this counter would be incremented twice.
+            var response = await client.GetAsync("/original");
+
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(1, app.Services.GetRequiredService<OriginalEndpointCounter>().Count);
+        }
+        finally
+        {
+            webRoot.Delete(recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_NoMatch_PassesThrough()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            // Only configure 5xx; a 404 should pass through unchanged.
+            ErrorPages = { ["5xx"] = "/server-error.html" }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        var content = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("Server error", content);
+    }
+
+    [Fact]
+    public void ObjectModel_ErrorPages_InvalidKey_ThrowsClearError()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            ErrorPages = { ["nope"] = "/x.html" }
+        });
+
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
+        Assert.Contains("3-digit status code", ex.Message);
+    }
+
+    [Fact]
+    public void ObjectModel_ErrorPages_RelativePath_ThrowsClearError()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            ErrorPages = { ["404"] = "404.html" }
+        });
+
+        var ex = Assert.ThrowsAny<InvalidOperationException>(() => app.CreateClient());
+        Assert.Contains("must start with '/'", ex.Message);
+    }
+
+    private static async Task<WebApplication> CreateAppWithOriginalEndpointAsync(string webRoot)
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
+        {
+            WebRootPath = webRoot
+        });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton<OriginalEndpointCounter>();
+
+        var config = new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages = { ["404"] = "/missing-error-page.html" }
+        };
+
+        var app = builder.Build();
+        app.UseErrorPages(config);
+        app.UseRouting();
+        app.UseStaticFiles(config);
+        app.MapGet("/original", context =>
+        {
+            context.RequestServices.GetRequiredService<OriginalEndpointCounter>().Count++;
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.CompletedTask;
+        });
+
+        await app.StartAsync();
+        return app;
+    }
+
+    private sealed class OriginalEndpointCounter
+    {
+        public int Count { get; set; }
     }
 }
