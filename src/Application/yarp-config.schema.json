@@ -99,7 +99,7 @@
     },
     "Headers": {
       "type": "array",
-      "description": "Response header rules for static-host responses only. All matching rules are applied.",
+      "description": "Response header rules for app-generated responses. Proxy responses are excluded; use YARP response transforms for proxy headers. All matching rules are applied.",
       "items": {
         "type": "object",
         "properties": {

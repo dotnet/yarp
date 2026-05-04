@@ -71,7 +71,7 @@ app.UseRewrites(config);
 app.UseErrorPages(config);
 app.UseRouting();
 app.UseStaticFiles(config);
-app.UseStaticHostHeaders(config);
+app.UseResponseHeaders(config);
 app.MapRedirects(config);
 app.MapReverseProxy();
 app.MapNavigationFallbackExclusions(config);

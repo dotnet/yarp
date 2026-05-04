@@ -22,6 +22,7 @@ public static class RedirectsFeature
             return app;
         }
 
+        var headerRules = ResponseHeadersFeature.CompileHeaderRules(config);
         for (var i = 0; i < config.Redirects.Count; i++)
         {
             var rule = new CompiledRedirectRule(config.Redirects[i]);
@@ -32,6 +33,7 @@ public static class RedirectsFeature
                     {
                         context.Response.StatusCode = rule.StatusCode;
                         context.Response.Headers.Location = rule.BuildDestination(context.Request.RouteValues);
+                        ResponseHeadersFeature.ApplyHeaders(context, context.Request.Path, context.Response.Headers, headerRules);
                         return Task.CompletedTask;
                     })
                 // Redirects need to run ahead of static files, so execute them directly from

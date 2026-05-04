@@ -605,6 +605,65 @@ public class SpaFallbackTests
     }
 
     [Fact]
+    public async Task ObjectModel_HeaderRules_ApplyToRedirectResponses()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/old" },
+                    Set = { ["X-App-Header"] = "redirect" }
+                }
+            },
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch { Path = "/old" },
+                    Destination = "/new",
+                    StatusCode = 302
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        var response = await client.GetAsync("/old");
+
+        Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+        Assert.Equal("redirect", response.Headers.GetValues("X-App-Header").Single());
+    }
+
+    [Fact]
+    public async Task ObjectModel_HeaderRules_ApplyToFallbackExclusionResponses()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude = { new RequestMatch { Path = "/api/{**catch-all}" } }
+            },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/api/{**catch-all}" },
+                    Set = { ["X-App-Header"] = "excluded" }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/api/users");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("excluded", response.Headers.GetValues("X-App-Header").Single());
+    }
+
+    [Fact]
     public async Task ObjectModel_Rewrites_AffectStaticHeaderMatching()
     {
         using var app = CreateApp(new YarpAppConfig
@@ -1033,7 +1092,7 @@ public class SpaFallbackTests
         });
         using var client = app.CreateClient();
 
-        // ErrorPages re-executes /404.html through static files, so static-host header rules
+        // ErrorPages re-executes /404.html through static files, so app header rules
         // still apply to the custom error page body while the original 404 status is preserved.
         var response = await client.GetAsync("/missing");
 
@@ -1041,6 +1100,35 @@ public class SpaFallbackTests
         Assert.Equal("static-file", response.Headers.GetValues("X-Error-Page").Single());
         var content = await response.Content.ReadAsStringAsync();
         Assert.Contains("Custom 404", content);
+    }
+
+    [Fact]
+    public async Task ObjectModel_ErrorPages_HeadersUseReExecutedPath()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            ErrorPages = { ["404"] = "/404.html" },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/missing" },
+                    Set = { ["X-Error-Page"] = "original" }
+                },
+                new HeaderRule
+                {
+                    Match = new RequestMatch { Path = "/404.html" },
+                    Set = { ["X-Error-Page"] = "reexecuted" }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        var response = await client.GetAsync("/missing");
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        Assert.Equal("reexecuted", response.Headers.GetValues("X-Error-Page").Single());
     }
 
     [Fact]

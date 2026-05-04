@@ -2,15 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.StaticFiles;
 using Yarp.Application.Configuration;
+using Yarp.ReverseProxy.Model;
 
 namespace Yarp.Application.Features;
 
-public static class StaticHostHeadersFeature
+public static class ResponseHeadersFeature
 {
-    public static WebApplication UseStaticHostHeaders(this WebApplication app, YarpAppConfig config)
+    public static WebApplication UseResponseHeaders(this WebApplication app, YarpAppConfig config)
     {
         var headerRules = CompileHeaderRules(config);
         if (headerRules.Length == 0)
@@ -20,9 +22,7 @@ public static class StaticHostHeadersFeature
 
         app.Use((context, next) =>
         {
-            // This middleware runs after UseRouting. The SPA fallback endpoint carries explicit
-            // metadata, while static files use OnPrepareResponse because they are not endpoints.
-            if (context.GetEndpoint()?.Metadata.GetMetadata<NavigationFallbackEndpointMetadata>() is null)
+            if (IsProxyEndpoint(context))
             {
                 return next();
             }
@@ -33,7 +33,11 @@ public static class StaticHostHeadersFeature
                 static state =>
                 {
                     var (httpContext, originalPath, rules) = ((HttpContext, PathString, CompiledHeaderRule[]))state;
-                    ApplyHeaders(httpContext, originalPath, httpContext.Response.Headers, rules);
+                    if (!IsSupersededByStatusCodeReExecute(httpContext, originalPath))
+                    {
+                        ApplyHeaders(httpContext, originalPath, httpContext.Response.Headers, rules);
+                    }
+
                     return Task.CompletedTask;
                 },
                 (context, requestPath, headerRules));
@@ -53,14 +57,14 @@ public static class StaticHostHeadersFeature
         }
 
         // StaticFileMiddleware doesn't create endpoints, so apply the same header rules through
-        // OnPrepareResponse to keep static files and SPA fallback behavior aligned.
+        // OnPrepareResponse to keep static files aligned with routed app-generated responses.
         return context => ApplyHeaders(context.Context, context.Context.Request.Path, context.Context.Response.Headers, headerRules);
     }
 
-    private static CompiledHeaderRule[] CompileHeaderRules(YarpAppConfig config)
+    internal static CompiledHeaderRule[] CompileHeaderRules(YarpAppConfig config)
         => config.Headers.Select(rule => new CompiledHeaderRule(rule)).ToArray();
 
-    private static void ApplyHeaders(HttpContext context, PathString requestPath, IHeaderDictionary headers, CompiledHeaderRule[] headerRules)
+    internal static void ApplyHeaders(HttpContext context, PathString requestPath, IHeaderDictionary headers, CompiledHeaderRule[] headerRules)
     {
         foreach (var headerRule in headerRules)
         {
@@ -68,7 +72,14 @@ public static class StaticHostHeadersFeature
         }
     }
 
-    private sealed class CompiledHeaderRule
+    private static bool IsProxyEndpoint(HttpContext context)
+        => context.GetEndpoint()?.Metadata.GetMetadata<RouteModel>() is not null;
+
+    private static bool IsSupersededByStatusCodeReExecute(HttpContext context, PathString registeredPath)
+        => context.Features.Get<IStatusCodeReExecuteFeature>() is not null
+            && !string.Equals(context.Request.Path.Value, registeredPath.Value, StringComparison.Ordinal);
+
+    internal sealed class CompiledHeaderRule
     {
         private readonly RequestMatchEvaluator _matcher;
         private readonly KeyValuePair<string, string>[] _headers;

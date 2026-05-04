@@ -91,7 +91,7 @@ Every request flows through the pipeline below in this fixed order. Knowing the 
 ├─────────────────────────────────────────┤
 │ 5. Static files       (special)         │  If a file at Request.Path exists in wwwroot, serve it.
 ├─────────────────────────────────────────┤
-│ 6. Headers            (response phase)  │  Apply Header rules to static-file & SPA-fallback responses.
+│ 6. Headers            (response phase)  │  Apply Header rules to non-proxy app responses.
 ├─────────────────────────────────────────┤
 │ 7. Reverse proxy      (endpoint)        │  YARP routes that matched in step 3 run here.
 ├─────────────────────────────────────────┤
@@ -106,7 +106,7 @@ A few consequences worth internalizing:
 - **Rewrites run first**, so every later stage sees the rewritten path. Use them to canonicalize URLs before anything else makes a decision.
 - **Redirects beat static files and the proxy.** If a redirect rule matches, the response is a 30x — the file or upstream is never consulted.
 - **Static files beat fallback exclusions and the SPA fallback.** A real file in `wwwroot` always wins over routed fallback endpoints, even though those fallbacks were chosen by `UseRouting` first. (This is preserved by clearing/restoring the selected endpoint around `UseFileServer`.)
-- **`Headers` only apply to static-file and SPA-fallback responses** — not to redirects, not to proxy responses. Use YARP response transforms for proxy headers.
+- **`Headers` apply to app-generated responses** — static files, redirects, fallback exclusions, SPA fallback, and custom error pages. They do not apply to proxy responses; use YARP response transforms for proxy headers.
 - **Fallback exclusions and the SPA fallback are real routed endpoints**, so reverse-proxy routes (and any `MapGet`/`MapPost` registered earlier) can still claim a path before either fires.
 
 ### Match syntax
@@ -160,7 +160,7 @@ SPA fallback — serve a file (typically `index.html`) for unmatched routes so c
 
 ### `Headers`
 
-Response header rules for static-file and SPA-fallback responses. All matching rules are applied.
+Response header rules for app-generated responses. All matching rules are applied. Proxy responses are intentionally excluded; use YARP response transforms for proxy headers.
 
 ```json
 {
@@ -312,7 +312,7 @@ Features/                       Per-feature extension methods
   RedirectsFeature.cs
   RewritesFeature.cs
   ErrorPagesFeature.cs
-  StaticHostHeadersFeature.cs
+  ResponseHeadersFeature.cs
   ReverseProxyFeature.cs
   LoggingFeature.cs
 Program.cs                      Pipeline ordering

@@ -36,7 +36,7 @@ public static class StaticFilesFeature
             return next();
         });
 
-        var onPrepareResponse = StaticHostHeadersFeature.CreateStaticFileHeaderCallback(config);
+        var onPrepareResponse = ResponseHeadersFeature.CreateStaticFileHeaderCallback(config);
         if (onPrepareResponse is null)
         {
             app.UseFileServer();
