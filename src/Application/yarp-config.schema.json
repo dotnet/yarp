@@ -6,14 +6,63 @@
   "definitions": {
     "requestMatch": {
       "type": "object",
-      "description": "Request match criteria. Path uses ASP.NET route pattern syntax.",
+      "description": "Request match criteria aligned with YARP route matching. Path uses ASP.NET route pattern syntax; omitted Path matches all paths.",
       "properties": {
         "Path": {
           "type": "string",
           "description": "Request path route pattern to match"
+        },
+        "Hosts": {
+          "type": "array",
+          "description": "Host patterns to match. Supports endpoint-routing host patterns such as example.com, *.example.com, and example.com:8443.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Methods": {
+          "type": "array",
+          "description": "HTTP methods to match, such as GET, HEAD, or POST.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "QueryParameters": {
+          "type": "array",
+          "description": "YARP-style query parameter matchers. All configured query parameters must match.",
+          "items": {
+            "$ref": "#/definitions/queryParameterMatch"
+          }
         }
       },
-      "required": ["Path"],
+      "additionalProperties": false
+    },
+    "queryParameterMatch": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "description": "Query parameter name to match"
+        },
+        "Values": {
+          "type": "array",
+          "description": "Allowed values. Required unless Mode is Exists.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Mode": {
+          "type": "string",
+          "enum": ["Exact", "Contains", "NotContains", "Prefix", "Exists"],
+          "default": "Exact",
+          "description": "How query parameter values are compared"
+        },
+        "IsCaseSensitive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether value matching is case-sensitive"
+        }
+      },
+      "required": ["Name"],
       "additionalProperties": false
     }
   },

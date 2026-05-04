@@ -41,6 +41,7 @@ public static class RedirectsFeature
                 {
                     endpointBuilder.DisplayName = $"Redirect {rule.Path}";
                     ((RouteEndpointBuilder)endpointBuilder).Order = order;
+                    RequestMatchEvaluator.AddEndpointMetadata(endpointBuilder, rule.Match, "Redirect rules");
                 });
         }
 
@@ -53,7 +54,8 @@ public static class RedirectsFeature
 
         public CompiledRedirectRule(RedirectRule rule)
         {
-            Path = RequestMatchEvaluator.ValidatePath(rule.Match, "Redirect rules");
+            Match = rule.Match ?? throw new InvalidOperationException("Redirect rules requires a Match object.");
+            Path = RequestMatchEvaluator.GetPathPattern(Match, "Redirect rules");
 
             if (string.IsNullOrWhiteSpace(rule.Destination))
             {
@@ -76,6 +78,8 @@ public static class RedirectsFeature
         public int StatusCode { get; }
 
         public string Path { get; }
+
+        public RequestMatch Match { get; }
 
         public string BuildDestination(RouteValueDictionary values)
             => RequestMatchEvaluator.ExpandTemplate(Destination, values);

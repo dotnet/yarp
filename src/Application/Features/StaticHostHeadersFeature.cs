@@ -33,7 +33,7 @@ public static class StaticHostHeadersFeature
                 static state =>
                 {
                     var (httpContext, originalPath, rules) = ((HttpContext, PathString, CompiledHeaderRule[]))state;
-                    ApplyHeaders(originalPath, httpContext.Response.Headers, rules);
+                    ApplyHeaders(httpContext, originalPath, httpContext.Response.Headers, rules);
                     return Task.CompletedTask;
                 },
                 (context, requestPath, headerRules));
@@ -54,17 +54,17 @@ public static class StaticHostHeadersFeature
 
         // StaticFileMiddleware doesn't create endpoints, so apply the same header rules through
         // OnPrepareResponse to keep static files and SPA fallback behavior aligned.
-        return context => ApplyHeaders(context.Context.Request.Path, context.Context.Response.Headers, headerRules);
+        return context => ApplyHeaders(context.Context, context.Context.Request.Path, context.Context.Response.Headers, headerRules);
     }
 
     private static CompiledHeaderRule[] CompileHeaderRules(YarpAppConfig config)
         => config.Headers.Select(rule => new CompiledHeaderRule(rule)).ToArray();
 
-    private static void ApplyHeaders(PathString requestPath, IHeaderDictionary headers, CompiledHeaderRule[] headerRules)
+    private static void ApplyHeaders(HttpContext context, PathString requestPath, IHeaderDictionary headers, CompiledHeaderRule[] headerRules)
     {
         foreach (var headerRule in headerRules)
         {
-            headerRule.Apply(requestPath, headers);
+            headerRule.Apply(context, requestPath, headers);
         }
     }
 
@@ -102,9 +102,9 @@ public static class StaticHostHeadersFeature
                 .ToArray();
         }
 
-        public void Apply(PathString requestPath, IHeaderDictionary headers)
+        public void Apply(HttpContext context, PathString requestPath, IHeaderDictionary headers)
         {
-            if (!_matcher.TryMatch(requestPath, new()))
+            if (!_matcher.TryMatch(context, requestPath, new()))
             {
                 return;
             }

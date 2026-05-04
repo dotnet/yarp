@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Configuration;
 using Xunit;
 using Yarp.Application.Configuration;
+using Yarp.ReverseProxy.Configuration;
 
 namespace Yarp.Application.Tests;
 
@@ -86,6 +87,44 @@ public class YarpAppConfigBinderTests
         Assert.Equal("/old-page", rule.Match.Path);
         Assert.Equal("/new-page", rule.Destination);
         Assert.Equal(302, rule.StatusCode);
+    }
+
+    [Fact]
+    public void Bind_RequestMatch_HostsMethodsAndQueryParameters()
+    {
+        var config = Bind(new()
+        {
+            ["Redirects:0:Match:Path"] = "/docs/{slug}",
+            ["Redirects:0:Match:Hosts:0"] = "example.com",
+            ["Redirects:0:Match:Hosts:1"] = "*.example.com",
+            ["Redirects:0:Match:Methods:0"] = "GET",
+            ["Redirects:0:Match:Methods:1"] = "HEAD",
+            ["Redirects:0:Match:QueryParameters:0:Name"] = "preview",
+            ["Redirects:0:Match:QueryParameters:0:Values:0"] = "true",
+            ["Redirects:0:Match:QueryParameters:0:Mode"] = "Exact",
+            ["Redirects:0:Match:QueryParameters:1:Name"] = "tenant",
+            ["Redirects:0:Match:QueryParameters:1:Mode"] = "Exists",
+            ["Redirects:0:Destination"] = "/new-docs/{slug}"
+        });
+
+        var match = Assert.Single(config.Redirects).Match;
+        Assert.Equal("/docs/{slug}", match.Path);
+        Assert.Equal(["example.com", "*.example.com"], match.Hosts);
+        Assert.Equal(["GET", "HEAD"], match.Methods);
+        Assert.Collection(
+            match.QueryParameters,
+            query =>
+            {
+                Assert.Equal("preview", query.Name);
+                Assert.Equal(["true"], query.Values);
+                Assert.Equal(QueryParameterMatchMode.Exact, query.Mode);
+            },
+            query =>
+            {
+                Assert.Equal("tenant", query.Name);
+                Assert.Null(query.Values);
+                Assert.Equal(QueryParameterMatchMode.Exists, query.Mode);
+            });
     }
 
     [Fact]

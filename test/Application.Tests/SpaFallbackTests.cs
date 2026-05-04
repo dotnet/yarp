@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Yarp.Application.Configuration;
 using Yarp.Application.Features;
+using Yarp.ReverseProxy.Configuration;
 
 namespace Yarp.Application.Tests;
 
@@ -445,6 +446,53 @@ public class SpaFallbackTests
     }
 
     [Fact]
+    public async Task ObjectModel_FallbackExclude_CanMatchHostMethodAndQuery()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            NavigationFallback =
+            {
+                Path = "/index.html",
+                Exclude =
+                {
+                    new RequestMatch
+                    {
+                        Path = "/api/{**catch-all}",
+                        Hosts = { "example.com" },
+                        Methods = { "GET" },
+                        QueryParameters =
+                        {
+                            new RouteQueryParameter
+                            {
+                                Name = "skipFallback",
+                                Mode = QueryParameterMatchMode.Exists
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        using var matchingRequest = new HttpRequestMessage(HttpMethod.Get, "/api/users?skipFallback=1");
+        matchingRequest.Headers.Host = "example.com";
+        var matchingResponse = await client.SendAsync(matchingRequest);
+
+        using var missingQueryRequest = new HttpRequestMessage(HttpMethod.Get, "/api/users");
+        missingQueryRequest.Headers.Host = "example.com";
+        var missingQueryResponse = await client.SendAsync(missingQueryRequest);
+
+        using var wrongHostRequest = new HttpRequestMessage(HttpMethod.Get, "/api/users?skipFallback=1");
+        wrongHostRequest.Headers.Host = "other.example.com";
+        var wrongHostResponse = await client.SendAsync(wrongHostRequest);
+
+        Assert.Equal(HttpStatusCode.NotFound, matchingResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, missingQueryResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, wrongHostResponse.StatusCode);
+    }
+
+    [Fact]
     public async Task ObjectModel_HeaderRules_ApplyToStaticFiles()
     {
         using var app = CreateApp(new YarpAppConfig
@@ -465,6 +513,51 @@ public class SpaFallbackTests
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal("applied", response.Headers.GetValues("X-Test").Single());
+    }
+
+    [Fact]
+    public async Task ObjectModel_HeaderRules_CanMatchHostMethodAndQuery()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            StaticFiles = { Enabled = true },
+            Headers =
+            {
+                new HeaderRule
+                {
+                    Match = new RequestMatch
+                    {
+                        Path = "/style.css",
+                        Hosts = { "example.com" },
+                        Methods = { "GET" },
+                        QueryParameters =
+                        {
+                            new RouteQueryParameter
+                            {
+                                Name = "preview",
+                                Values = ["true"],
+                                Mode = QueryParameterMatchMode.Exact
+                            }
+                        }
+                    },
+                    Set = { ["X-Matched"] = "yes" }
+                }
+            }
+        });
+        using var client = app.CreateClient();
+
+        using var matchingRequest = new HttpRequestMessage(HttpMethod.Get, "/style.css?preview=true");
+        matchingRequest.Headers.Host = "example.com";
+        var matchingResponse = await client.SendAsync(matchingRequest);
+
+        using var wrongQueryRequest = new HttpRequestMessage(HttpMethod.Get, "/style.css?preview=false");
+        wrongQueryRequest.Headers.Host = "example.com";
+        var wrongQueryResponse = await client.SendAsync(wrongQueryRequest);
+
+        Assert.Equal(HttpStatusCode.OK, matchingResponse.StatusCode);
+        Assert.Equal("yes", matchingResponse.Headers.GetValues("X-Matched").Single());
+        Assert.Equal(HttpStatusCode.OK, wrongQueryResponse.StatusCode);
+        Assert.False(wrongQueryResponse.Headers.Contains("X-Matched"));
     }
 
     [Fact]
@@ -642,6 +735,55 @@ public class SpaFallbackTests
 
         Assert.Equal(HttpStatusCode.Found, response.StatusCode);
         Assert.Equal("/articles/getting-started/install", response.Headers.Location?.ToString());
+    }
+
+    [Fact]
+    public async Task ObjectModel_Redirects_CanMatchHostMethodAndQuery()
+    {
+        using var app = CreateApp(new YarpAppConfig
+        {
+            Redirects =
+            {
+                new RedirectRule
+                {
+                    Match = new RequestMatch
+                    {
+                        Path = "/old/{slug}",
+                        Hosts = { "example.com" },
+                        Methods = { "POST" },
+                        QueryParameters =
+                        {
+                            new RouteQueryParameter
+                            {
+                                Name = "preview",
+                                Values = ["true"],
+                                Mode = QueryParameterMatchMode.Exact
+                            }
+                        }
+                    },
+                    Destination = "/new/{slug}",
+                    StatusCode = 302
+                }
+            }
+        });
+        using var client = CreateNoRedirectClient(app);
+
+        using var getRequest = new HttpRequestMessage(HttpMethod.Get, "/old/page?preview=true");
+        getRequest.Headers.Host = "example.com";
+        var getResponse = await client.SendAsync(getRequest);
+
+        using var wrongQueryRequest = new HttpRequestMessage(HttpMethod.Post, "/old/page?preview=false");
+        wrongQueryRequest.Headers.Host = "example.com";
+        var wrongQueryResponse = await client.SendAsync(wrongQueryRequest);
+
+        using var matchingRequest = new HttpRequestMessage(HttpMethod.Post, "/old/page?preview=true");
+        matchingRequest.Headers.Host = "example.com";
+        var matchingResponse = await client.SendAsync(matchingRequest);
+
+        Assert.Equal(HttpStatusCode.NotFound, getResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, wrongQueryResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.Found, matchingResponse.StatusCode);
+        Assert.Equal("/new/page", matchingResponse.Headers.Location?.ToString());
     }
 
     [Fact]

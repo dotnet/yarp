@@ -25,7 +25,8 @@ public static class NavigationFallbackExclusionsFeature
 
         for (var i = 0; i < config.NavigationFallback.Exclude.Count; i++)
         {
-            var path = RequestMatchEvaluator.ValidatePath(config.NavigationFallback.Exclude[i], "NavigationFallback exclusion");
+            var match = config.NavigationFallback.Exclude[i];
+            var path = RequestMatchEvaluator.GetPathPattern(match, "NavigationFallback exclusion");
             var order = FallbackExclusionEndpointOrderBase + i;
             app.Map(
                     path,
@@ -38,6 +39,7 @@ public static class NavigationFallbackExclusionsFeature
                 {
                     endpointBuilder.DisplayName = $"Fallback exclusion {path}";
                     ((RouteEndpointBuilder)endpointBuilder).Order = order;
+                    RequestMatchEvaluator.AddEndpointMetadata(endpointBuilder, match, "NavigationFallback exclusion");
                 });
         }
 

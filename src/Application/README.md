@@ -111,7 +111,26 @@ A few consequences worth internalizing:
 
 ### Match syntax
 
-Routed features (`Headers`, `Redirects`, `NavigationFallback.Exclude`) match using ASP.NET route templates — `/blog/{slug}`, `/api/{**catch-all}`. The same engine that powers `MapGet`. Captures from `Match.Path` are available in `Destination` as `{name}` substitutions.
+Routed features (`Headers`, `Redirects`, `NavigationFallback.Exclude`) match using YARP-style route criteria. `Match.Path` uses ASP.NET route templates — `/blog/{slug}`, `/api/{**catch-all}` — the same engine that powers `MapGet`. Omit `Path` to match all paths. Captures from `Match.Path` are available in `Destination` as `{name}` substitutions.
+
+`Match.Hosts`, `Match.Methods`, and `Match.QueryParameters` narrow the same rule. Hosts use endpoint-routing host patterns (`example.com`, `*.example.com`, `example.com:8443`). Query parameters use YARP's route-match modes: `Exact`, `Contains`, `NotContains`, `Prefix`, and `Exists`.
+
+```json
+{
+  "Match": {
+    "Path": "/docs/{slug}",
+    "Hosts": [ "example.com", "*.example.com" ],
+    "Methods": [ "GET", "HEAD" ],
+    "QueryParameters": [
+      {
+        "Name": "preview",
+        "Values": [ "true" ],
+        "Mode": "Exact"
+      }
+    ]
+  }
+}
+```
 
 `Rewrites` use a different syntax — regex with `$n` capture groups — because they delegate to the standard ASP.NET [URL rewrite middleware](https://learn.microsoft.com/aspnet/core/fundamentals/url-rewriting). This is intentional: routed features are routes (so they use route-template syntax), and rewrites are rewrites (so they use the existing rewrite syntax). No new syntax is introduced.
 
