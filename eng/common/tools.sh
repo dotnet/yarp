@@ -458,21 +458,13 @@ function InitializeToolset {
 
   local package_dir="$_GetNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
 
-  # TODO: Remove the tools/ check once all supported versions have the toolset folder.
-  if [[ ! -d "$package_dir/toolset" && ! -d "$package_dir/tools" ]]; then
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset or tools folder: $package_dir"
+  if [[ ! -d "$package_dir/toolset" ]]; then
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset folder: $package_dir"
     ExitWithExitCode 3
   fi
 
   mkdir -p "$toolset_tools_dir"
-
-  # Copy toolset if present at the package root (new layout), otherwise fall back to tools
-  if [[ -d "$package_dir/toolset" ]]; then
-    cp -r "$package_dir/toolset/." "$toolset_tools_dir"
-  else
-    # TODO: Remove this fallback once all supported versions have the toolset folder.
-    cp -r "$package_dir/tools/." "$toolset_tools_dir"
-  fi
+  cp -r "$package_dir/toolset/." "$toolset_tools_dir"
 
   if [[ -a "$toolset_tools_dir/Build.proj" ]]; then
     toolset_build_proj="$toolset_tools_dir/Build.proj"
@@ -629,12 +621,7 @@ function GetSdkTaskProject {
     echo "$proj"
     return
   fi
-  # TODO: Remove this fallback once all supported versions use the new layout.
-  local legacyProj="$toolsetDir/SdkTasks/$taskName.proj"
-  if [[ -a "$legacyProj" ]]; then
-    echo "$legacyProj"
-    return
-  fi
+
   Write-PipelineTelemetryError -category 'Build' "Unable to find $taskName.proj in toolset at: $toolsetDir"
   ExitWithExitCode 3
 }

@@ -628,11 +628,7 @@ function GetSdkTaskProject([string]$taskName) {
   if (Test-Path $proj) {
     return $proj
   }
-  # TODO: Remove this fallback once all supported versions use the new layout.
-  $legacyProj = Join-Path $toolsetDir "SdkTasks\$taskName.proj"
-  if (Test-Path $legacyProj) {
-    return $legacyProj
-  }
+
   throw "Unable to find $taskName.proj in toolset at: $toolsetDir"
 }
 
@@ -708,23 +704,14 @@ function InitializeToolset() {
 
   $packageDir = Join-Path $nugetCache (Join-Path 'microsoft.dotnet.arcade.sdk' $toolsetVersion)
   $packageToolsetDir = Join-Path $packageDir 'toolset'
-  $packageToolsDir = Join-Path $packageDir 'tools'
 
-  # TODO: Remove the tools/ check once all supported versions have the toolset folder.
-  if (!(Test-Path $packageToolsetDir) -and !(Test-Path $packageToolsDir)) {
+  if (!(Test-Path $packageToolsetDir)) {
     Write-PipelineTelemetryError -Category 'InitializeToolset' -Message "Arcade SDK package does not contain a toolset or tools folder: $packageDir"
     ExitWithExitCode 3
   }
 
   New-Item -ItemType Directory -Path $toolsetToolsDir -Force | Out-Null
-
-  # Copy toolset if present at the package root (new layout), otherwise fall back to tools
-  if (Test-Path $packageToolsetDir) {
-    Copy-Item -Path "$packageToolsetDir\*" -Destination $toolsetToolsDir -Recurse -Force
-  } else {
-    # TODO: Remove this fallback once all supported versions have the toolset folder.
-    Copy-Item -Path "$packageToolsDir\*" -Destination $toolsetToolsDir -Recurse -Force
-  }
+  Copy-Item -Path "$packageToolsetDir\*" -Destination $toolsetToolsDir -Recurse -Force
 
   if (Test-Path $buildProjPath) {
     $toolsetBuildProj = $buildProjPath
