@@ -21,6 +21,7 @@ public class RouteConfigTests
             Timeout = TimeSpan.FromSeconds(1),
             ClusterId = "c",
             CorsPolicy = "co",
+            MaxRequestBodySize = 1024,
             Match = new RouteMatch()
             {
                 Headers = new[]
@@ -52,6 +53,7 @@ public class RouteConfigTests
             Timeout = TimeSpan.FromSeconds(1),
             ClusterId = "C",
             CorsPolicy = "Co",
+            MaxRequestBodySize = 1024,
             Match = new RouteMatch()
             {
                 Headers = new[]
@@ -94,6 +96,7 @@ public class RouteConfigTests
             Timeout = TimeSpan.FromSeconds(1),
             ClusterId = "c",
             CorsPolicy = "co",
+            MaxRequestBodySize = 1024,
             Match = new RouteMatch()
             {
                 Headers = new[]
@@ -127,6 +130,7 @@ public class RouteConfigTests
         var i = a with { RateLimiterPolicy = "i" };
         var j = a with { TimeoutPolicy = "j" };
         var k = a with { Timeout = TimeSpan.FromSeconds(107) };
+        var l = a with { MaxRequestBodySize = 2048 };
 
         Assert.False(a.Equals(b));
         Assert.False(a.Equals(c));
@@ -138,6 +142,7 @@ public class RouteConfigTests
         Assert.False(a.Equals(i));
         Assert.False(a.Equals(j));
         Assert.False(a.Equals(k));
+        Assert.False(a.Equals(l));
     }
 
     [Fact]
@@ -155,6 +160,7 @@ public class RouteConfigTests
             RateLimiterPolicy = "rl",
             ClusterId = "c",
             CorsPolicy = "co",
+            MaxRequestBodySize = 1024,
             Match = new RouteMatch()
             {
                 Headers = new[]
