@@ -1,0 +1,62 @@
+{
+    "version": "2.0.0",
+    "inputs": [
+        {
+            "type": "pickString",
+            "default": "Debug",
+            "options": ["Debug", "Release"],
+            "id": "configurationType",
+            "description": "Select configuration type"
+        }
+    ],
+    "tasks": [
+        {
+            "label": "Restore",
+            "type": "shell",
+            "command": "./restore.sh",
+            "windows": {
+                "command": ".\\restore.cmd"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Build entire repository",
+            "type": "shell",
+            "command": "./build.sh -Configuration ${input:configurationType}",
+            "windows": {
+                "command": ".\\build.cmd -Configuration ${input:configurationType}"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": ["$msCompile"]
+        },
+        {
+            "label": "Run all tests",
+            "type": "shell",
+            "command": "./build.sh -test",
+            "windows": {
+                "command": ".\\build.cmd -test"
+            },
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "new"
+            },
+            "problemMatcher": ["$msCompile"]
+        }
+    ]
+}

@@ -41,6 +41,17 @@ When you're done, you can run the `deactivate` function to undo the changes to y
 
 If you're having trouble building the project, or developing in Visual Studio, please file an issue to let us know and we'll help out (and fix our scripts/tools as needed)!
 
+## Using a devcontainer
+
+YARP includes a [Dev Container](https://containers.dev/) configuration so you can develop in a consistent, prebuilt environment using VS Code or GitHub Codespaces.
+
+To use it:
+
+1. Open the repository in VS Code (or open it in a Codespace).
+2. If prompted, click **"Reopen in Container"**. Otherwise open the Command Palette (`Ctrl+Shift+P`) and select **"Dev Containers: Reopen in Container"**.
+3. The container's `onCreateCommand` runs `restore.sh`, which installs the .NET SDK pinned in `global.json` into a repo-local `.dotnet` directory. That directory is prepended to `PATH`, so plain `dotnet build` will use the correct SDK.
+4. Use the VS Code tasks defined in `.vscode/tasks.json` to build (`Ctrl+Shift+B`), restore, run tests, or clean artifacts. The default attach configuration in `.vscode/launch.json` can be used to attach the debugger to a running .NET process.
+
 # Testing
 
 The command to build and run all tests: `build.cmd/sh -test`.

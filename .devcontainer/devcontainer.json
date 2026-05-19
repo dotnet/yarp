@@ -1,0 +1,43 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+{
+    "name": "YARP",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "args": {
+            "VARIANT": "8.0-noble"
+        }
+    },
+    "hostRequirements": {
+        "cpus": 4,
+        "memory": "8gb",
+        "storage": "32gb"
+    },
+    "features": {
+        "ghcr.io/devcontainers/features/github-cli:1": {},
+        "ghcr.io/devcontainers/features/sshd:1": {},
+        "ghcr.io/devcontainers/features/copilot-cli:1": {}
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-dotnettools.csharp",
+                "ms-dotnettools.csdevkit",
+                "EditorConfig.EditorConfig"
+            ],
+            "settings": {
+                "dotnet.defaultSolution": "YARP.slnx"
+            }
+        }
+    },
+    // Use the repo's own restore script so the SDK pinned in global.json is
+    // installed into the local `.dotnet` directory. devcontainer.json then
+    // prepends that directory to PATH so `dotnet` resolves to the right SDK.
+    "onCreateCommand": "bash ${containerWorkspaceFolder}/restore.sh",
+    "postStartCommand": "dotnet dev-certs https --trust || true",
+    "remoteEnv": {
+        "PATH": "${containerWorkspaceFolder}/.dotnet:${containerEnv:PATH}",
+        "DOTNET_WATCH_SUPPRESS_LAUNCH_BROWSER": "true"
+    },
+    "remoteUser": "vscode"
+}
