@@ -5,7 +5,7 @@
     "build": {
         "dockerfile": "Dockerfile",
         "args": {
-            "VARIANT": "8.0-noble"
+            "VARIANT": "10.0-noble"
         }
     },
     "hostRequirements": {

@@ -6,7 +6,7 @@
 # directory to PATH. This matches the pattern used by dotnet/aspnetcore and
 # dotnet/runtime.
 
-ARG VARIANT="8.0-noble"
+ARG VARIANT="10.0-noble"
 FROM mcr.microsoft.com/devcontainers/dotnet:${VARIANT}
 
 SHELL [ "/bin/bash", "-c" ]
