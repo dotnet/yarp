@@ -160,6 +160,43 @@ public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
         }
     }
 
+    [Fact]
+    public async Task Invoke_SetsActivityDisplayName_FromRequestPath()
+    {
+        var httpClient = new HttpMessageInvoker(new Mock<HttpMessageHandler>().Object);
+        var cluster1 = new ClusterState(clusterId: "cluster1");
+        cluster1.Model = new ClusterModel(new ClusterConfig(), httpClient);
+        var destination1 = cluster1.Destinations.GetOrAdd(
+            "destination1",
+            id => new DestinationState(id) { Model = new DestinationModel(new DestinationConfig { Address = "https://localhost:123/a/b/" }) });
+        cluster1.DestinationsState = new ClusterDestinationsState(new[] { destination1 }, new[] { destination1 });
+
+        var routeConfig = new RouteModel(
+            config: new RouteConfig(),
+            cluster1,
+            HttpTransformer.Default);
+        var aspNetCoreEndpoint = CreateAspNetCoreEndpoint(routeConfig);
+        var httpContext = new DefaultHttpContext();
+        httpContext.SetEndpoint(aspNetCoreEndpoint);
+        httpContext.Request.Path = "/api/users/42";
+
+        var capturedActivities = new List<Activity>();
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = source => source.Name == "Yarp.ReverseProxy",
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+            ActivityStarted = activity => capturedActivities.Add(activity),
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        var sut = Create<ProxyPipelineInitializerMiddleware>();
+
+        await sut.Invoke(httpContext);
+
+        var activity = Assert.Single(capturedActivities);
+        Assert.Equal("/api/users/42", activity.DisplayName);
+    }
+
     private static Endpoint CreateAspNetCoreEndpoint(RouteModel routeConfig, Action<RouteEndpointBuilder> configure = null)
     {
         var endpointBuilder = new RouteEndpointBuilder(

@@ -63,6 +63,11 @@ internal sealed class ProxyPipelineInitializerMiddleware
 
         var activity = Observability.YarpActivitySource.CreateActivity("proxy.forwarder", ActivityKind.Server);
 
+        if (activity is not null && context.Request.Path.Value is { Length: > 0 } path)
+        {
+            activity.DisplayName = path;
+        }
+
         return activity is null
             ? _next(context)
             : AwaitWithActivity(context, activity);
