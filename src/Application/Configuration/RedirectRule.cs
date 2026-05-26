@@ -3,9 +3,11 @@
 
 namespace Yarp.Application.Configuration;
 
-public sealed class NavigationFallbackOptions
+public sealed class RedirectRule
 {
-    public string? Path { get; set; }
+    public RequestMatch Match { get; set; } = new();
 
-    public List<RequestMatch> Exclude { get; set; } = [];
+    public string? Destination { get; set; }
+
+    public int StatusCode { get; set; } = 301;
 }
