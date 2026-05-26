@@ -118,6 +118,7 @@ public sealed record RouteConfig
             && string.Equals(TimeoutPolicy, other.TimeoutPolicy, StringComparison.OrdinalIgnoreCase)
             && Timeout == other.Timeout
             && string.Equals(CorsPolicy, other.CorsPolicy, StringComparison.OrdinalIgnoreCase)
+            && MaxRequestBodySize == other.MaxRequestBodySize
             && Match == other.Match
             && CaseSensitiveEqualHelper.Equals(Metadata, other.Metadata)
             && CaseSensitiveEqualHelper.Equals(Transforms, other.Transforms);
@@ -136,6 +137,7 @@ public sealed record RouteConfig
         hash.Add(Timeout?.GetHashCode());
         hash.Add(TimeoutPolicy?.GetHashCode(StringComparison.OrdinalIgnoreCase));
         hash.Add(CorsPolicy?.GetHashCode(StringComparison.OrdinalIgnoreCase));
+        hash.Add(MaxRequestBodySize);
         hash.Add(Match);
         hash.Add(CaseSensitiveEqualHelper.GetHashCode(Metadata));
         hash.Add(CaseSensitiveEqualHelper.GetHashCode(Transforms));
