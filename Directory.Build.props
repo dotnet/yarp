@@ -7,7 +7,7 @@
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageIcon></PackageIcon>
     <PackageIconFullPath></PackageIconFullPath>
-    <LangVersion>12.0</LangVersion>
+    <LangVersion>13.0</LangVersion>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <StrongNameKeyId>Microsoft</StrongNameKeyId>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>

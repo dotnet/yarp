@@ -92,7 +92,9 @@ public static class KubernetesReverseProxyServiceCollectionExtensions
         services.RegisterResourceInformer<V1Secret, V1SecretResourceInformer>("type=kubernetes.io/tls");
 
         // Add the Ingress/Secret to certificate management
-        services.AddSingleton<IServerCertificateSelector, ServerCertificateSelector>();
+        services.AddSingleton<ServerCertificateSelector>();
+        services.AddHostedService(x => x.GetRequiredService<ServerCertificateSelector>());
+        services.AddSingleton<IServerCertificateSelector>(x => x.GetRequiredService<ServerCertificateSelector>());
         services.AddSingleton<ICertificateHelper, CertificateHelper>();
 
         // ingress status updater
