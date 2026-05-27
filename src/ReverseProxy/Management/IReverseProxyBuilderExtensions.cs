@@ -72,6 +72,7 @@ internal static class IReverseProxyBuilderExtensions
     {
         builder.Services.TryAddSingleton<ProxyConfigManager>();
         builder.Services.TryAddSingleton<IProxyStateLookup>(sp => sp.GetRequiredService<ProxyConfigManager>());
+        builder.Services.TryAddSingleton<IClusterDestinationResolver, ClusterDestinationResolver>();
         return builder;
     }
 
@@ -86,6 +87,7 @@ internal static class IReverseProxyBuilderExtensions
     public static IReverseProxyBuilder AddLoadBalancingPolicies(this IReverseProxyBuilder builder)
     {
         builder.Services.TryAddSingleton<IRandomFactory, RandomFactory>();
+        builder.Services.TryAddSingleton<ILoadBalancingDestinationSelector, LoadBalancingDestinationSelector>();
 
         builder.Services.TryAddEnumerable(new[] {
             ServiceDescriptor.Singleton<ILoadBalancingPolicy, FirstLoadBalancingPolicy>(),

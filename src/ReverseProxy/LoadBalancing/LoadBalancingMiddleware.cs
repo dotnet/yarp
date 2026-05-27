@@ -2,13 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections.Frozen;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Yarp.ReverseProxy.Model;
-using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.LoadBalancing;
 
@@ -18,44 +15,31 @@ namespace Yarp.ReverseProxy.LoadBalancing;
 internal sealed class LoadBalancingMiddleware
 {
     private readonly ILogger _logger;
-    private readonly FrozenDictionary<string, ILoadBalancingPolicy> _loadBalancingPolicies;
+    private readonly ILoadBalancingDestinationSelector _destinationSelector;
     private readonly RequestDelegate _next;
 
     public LoadBalancingMiddleware(
         RequestDelegate next,
         ILogger<LoadBalancingMiddleware> logger,
-        IEnumerable<ILoadBalancingPolicy> loadBalancingPolicies)
+        ILoadBalancingDestinationSelector destinationSelector)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(logger);
-        ArgumentNullException.ThrowIfNull(loadBalancingPolicies);
+        ArgumentNullException.ThrowIfNull(destinationSelector);
         _next = next;
         _logger = logger;
-        _loadBalancingPolicies = loadBalancingPolicies.ToDictionaryByUniqueId(p => p.Name);
+        _destinationSelector = destinationSelector;
     }
 
     public Task Invoke(HttpContext context)
     {
         var proxyFeature = context.GetReverseProxyFeature();
 
-        var destinations = proxyFeature.AvailableDestinations;
-        var destinationCount = destinations.Count;
-
-        DestinationState? destination;
-
-        if (destinationCount == 0)
-        {
-            destination = null;
-        }
-        else if (destinationCount == 1)
-        {
-            destination = destinations[0];
-        }
-        else
-        {
-            var currentPolicy = _loadBalancingPolicies.GetRequiredServiceById(proxyFeature.Cluster.Config.LoadBalancingPolicy, LoadBalancingPolicies.PowerOfTwoChoices);
-            destination = currentPolicy.PickDestination(context, proxyFeature.Route.Cluster!, destinations);
-        }
+        var destination = _destinationSelector.PickDestination(
+            context,
+            proxyFeature.Route.Cluster!,
+            proxyFeature.AvailableDestinations,
+            proxyFeature.Cluster.Config.LoadBalancingPolicy);
 
         if (destination is null)
         {
