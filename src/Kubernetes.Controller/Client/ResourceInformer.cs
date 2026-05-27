@@ -328,9 +328,8 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
 
         try
         {
-            await foreach (var (watchEventType, item) in WatchResourceListAsync(resourceVersion: _lastResourceVersion,
-                                   resourceSelector: _selector, onError: OnError)
-                               .WithCancellation(linkedCancellationTokenSource.Token))
+            await foreach (var (watchEventType, item) in WatchResourceListAsync(_lastResourceVersion, _selector, OnError)
+                .WithCancellation(linkedCancellationTokenSource.Token))
             {
                 Interlocked.Exchange(ref watchState.LastEventUtcTicks, DateTime.UtcNow.Ticks);
                 OnEvent(watchEventType, item);
@@ -347,7 +346,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
         if (error is KubernetesException kubernetesError)
         {
             // deal with this non-recoverable condition "too old resource version"
-            if (string.Equals(kubernetesError.Status.Reason, "Expired", StringComparison.Ordinal))
+            if (kubernetesError.Status.Reason == "Expired")
             {
                 // cause this error to surface
                 throw error;
