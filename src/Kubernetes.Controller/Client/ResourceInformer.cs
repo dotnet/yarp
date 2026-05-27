@@ -283,7 +283,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             typeof(TResource).Name);
     }
 
-    private class WatchState
+    private sealed class WatchState
     {
         // Stopwatch timestamp of the most recent watch event.
         // Access only through Interlocked operations.
