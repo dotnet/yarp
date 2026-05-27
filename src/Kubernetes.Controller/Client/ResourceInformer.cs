@@ -283,7 +283,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
     }
 
     // Encapsulate LastEventUtcTicks into a class to eliminate IDE warning `Captured variable is modified in the outer scope`.
-    private class WatchState
+    private sealed class WatchState
     {
         public long LastEventUtcTicks =  DateTime.UtcNow.Ticks;
     }
