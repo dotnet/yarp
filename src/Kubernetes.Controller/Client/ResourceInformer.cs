@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Sockets;
 using System.Threading;
@@ -282,10 +283,16 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             typeof(TResource).Name);
     }
 
-    // Encapsulate LastEventUtcTicks into a class to eliminate IDE warning `Captured variable is modified in the outer scope`.
     private class WatchState
     {
-        public long LastEventUtcTicks =  DateTime.UtcNow.Ticks;
+        // Stopwatch timestamp of the most recent watch event.
+        // Access only through Interlocked operations.
+        public long LastEventStopwatchTimestamp = Stopwatch.GetTimestamp();
+
+        // Used as an atomic boolean to ensure the re-connect cancellation path is triggered only once.
+        // 0 means cancellation has not been requested; 1 means cancellation has already been requested.
+        // Access only through Interlocked operations.
+        public int CancellationRequested;
     }
 
     private async Task WatchAsync(CancellationToken cancellationToken)
@@ -298,16 +305,16 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
 
         using var linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
 
-        var watchState =  new WatchState();
+        var watchState = new WatchState();
+
         // reconnect if no events have arrived after a certain time
-        await using var checkLastEventUtcTimer = new Timer(
+        await using var watchdogTimer = new Timer(
             _ =>
             {
-                var currentTicks = Interlocked.Read(ref watchState.LastEventUtcTicks);
-                var timeSinceLastEvent = TimeSpan.FromTicks(DateTime.UtcNow.Ticks - currentTicks);
-                if (timeSinceLastEvent > TimeSpan.FromMinutes(9.5))
+                var currentTimestamp = Interlocked.Read(ref watchState.LastEventStopwatchTimestamp);
+                if (Stopwatch.GetElapsedTime(currentTimestamp) > TimeSpan.FromMinutes(9.5) &&
+                    Interlocked.Exchange(ref watchState.CancellationRequested, 1) == 0)
                 {
-                    Interlocked.Exchange(ref watchState.LastEventUtcTicks, DateTime.MaxValue.Ticks);
                     Logger.LogDebug(
                         EventId(EventType.DisposingToReconnect),
                         "Disposing watcher for {ResourceType} to cause reconnect.",
@@ -331,7 +338,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             await foreach (var (watchEventType, item) in WatchResourceListAsync(_lastResourceVersion, _selector, OnError)
                 .WithCancellation(linkedCancellationTokenSource.Token))
             {
-                Interlocked.Exchange(ref watchState.LastEventUtcTicks, DateTime.UtcNow.Ticks);
+                Interlocked.Exchange(ref watchState.LastEventStopwatchTimestamp, Stopwatch.GetTimestamp());
                 OnEvent(watchEventType, item);
             }
         }
