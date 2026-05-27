@@ -307,7 +307,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
 
         var watchState = new WatchState();
 
-        // reconnect if no events have arrived after a certain time
+        // reconnect if no events have arrived after a certain time.
         await using var watchdogTimer = new Timer(
             _ =>
             {
@@ -344,7 +344,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
         }
         catch (OperationCanceledException)
         {
-            // The loop was canceled safely, either by the timer or the original cancellationToken
+            // The loop was canceled safely, either by the timer or the original cancellationToken.
         }
     }
 
