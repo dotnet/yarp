@@ -31,7 +31,7 @@ internal class V1IngressResourceInformer : ResourceInformer<V1Ingress, V1Ingress
 
     protected override IAsyncEnumerable<(WatchEventType, V1Ingress)> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Ingress> resourceSelector = null, Action<Exception> onError = null)
     {
-        return Client.NetworkingV1.WatchListIngressForAllNamespacesAsync();
+        return Client.NetworkingV1.WatchListIngressForAllNamespacesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, onError: onError);
     }
 
 }
