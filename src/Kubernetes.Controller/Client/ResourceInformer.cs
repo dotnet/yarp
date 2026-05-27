@@ -311,8 +311,8 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
         await using var watchdogTimer = new Timer(
             _ =>
             {
-                var currentTimestamp = Interlocked.Read(ref watchState.LastEventStopwatchTimestamp);
-                if (Stopwatch.GetElapsedTime(currentTimestamp) > TimeSpan.FromMinutes(9.5) &&
+                var lastEventTimestamp = Interlocked.Read(ref watchState.LastEventStopwatchTimestamp);
+                if (Stopwatch.GetElapsedTime(lastEventTimestamp) > TimeSpan.FromMinutes(9.5) &&
                     Interlocked.Exchange(ref watchState.CancellationRequested, 1) == 0)
                 {
                     Logger.LogDebug(
