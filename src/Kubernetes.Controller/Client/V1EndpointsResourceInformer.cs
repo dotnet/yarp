@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Generic;
 using k8s;
 using k8s.Autorest;
 using k8s.Models;
@@ -28,8 +29,9 @@ internal class V1EndpointsResourceInformer : ResourceInformer<V1Endpoints, V1End
         return Client.CoreV1.ListEndpointsForAllNamespacesWithHttpMessagesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, cancellationToken: cancellationToken);
     }
 
-    protected override Watcher<V1Endpoints> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Endpoints> resourceSelector = null, Action<WatchEventType, V1Endpoints> onEvent = null, Action<Exception> onError = null, Action onClosed = null)
+    protected override IAsyncEnumerable<(WatchEventType, V1Endpoints)> WatchResourceListAsync(string resourceVersion = null, ResourceSelector<V1Endpoints> resourceSelector = null,
+        Action<Exception> onError = null)
     {
-        return Client.CoreV1.WatchListEndpointsForAllNamespaces(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, onEvent: onEvent, onError: onError, onClosed: onClosed);
+        return Client.CoreV1.WatchListEndpointsForAllNamespacesAsync(resourceVersion: resourceVersion, fieldSelector: resourceSelector?.FieldSelector, onError: onError);
     }
 }
