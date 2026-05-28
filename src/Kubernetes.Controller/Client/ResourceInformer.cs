@@ -288,11 +288,6 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
         // Stopwatch timestamp of the most recent watch event.
         // Access only through Interlocked operations.
         public long LastEventStopwatchTimestamp = Stopwatch.GetTimestamp();
-
-        // Used as an atomic boolean to ensure the re-connect cancellation path is triggered only once.
-        // 0 means cancellation has not been requested; 1 means cancellation has already been requested.
-        // Access only through Interlocked operations.
-        public int CancellationRequested;
     }
 
     private async Task WatchAsync(CancellationToken cancellationToken)
@@ -312,8 +307,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
             _ =>
             {
                 var lastEventTimestamp = Interlocked.Read(ref watchState.LastEventStopwatchTimestamp);
-                if (Stopwatch.GetElapsedTime(lastEventTimestamp) > TimeSpan.FromMinutes(9.5) &&
-                    Interlocked.Exchange(ref watchState.CancellationRequested, 1) == 0)
+                if (Stopwatch.GetElapsedTime(lastEventTimestamp) > TimeSpan.FromMinutes(9.5))
                 {
                     Logger.LogDebug(
                         EventId(EventType.DisposingToReconnect),
