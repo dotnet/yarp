@@ -80,7 +80,7 @@ public static class KubernetesReverseProxyServiceCollectionExtensions
         services.AddHostedService<IngressController>();
         services.AddSingleton<ICache, IngressCache>();
         services.AddTransient<IReconciler, Reconciler>();
-        services.Configure<YarpOptions>(config.GetSection("Yarp"));
+        services.Configure<YarpOptions>(o => config.GetSection("Yarp").Bind(o));
 
         // Register the necessary Kubernetes resource informers
         services.RegisterResourceInformer<V1Ingress, V1IngressResourceInformer>();
