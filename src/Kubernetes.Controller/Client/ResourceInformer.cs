@@ -302,7 +302,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
 
         var watchState = new WatchState();
 
-        // reconnect if no events have arrived after a certain time.
+        // Reconnect if no events have arrived after a certain time.
         await using var watchdogTimer = new Timer(
             _ =>
             {
@@ -319,7 +319,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
                     }
                     catch (ObjectDisposedException)
                     {
-                        // The outer scope has already disposed of the cancellation token source.
+                        // The token source was already disposed of, so cancellation is no longer needed.
                     }
                 }
             },
@@ -346,10 +346,10 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
     {
         if (error is KubernetesException kubernetesError)
         {
-            // deal with this non-recoverable condition "too old resource version"
+            // Deal with this non-recoverable condition "too old resource version".
             if (kubernetesError.Status.Reason == "Expired")
             {
-                // cause this error to surface
+                // Cause this error to surface.
                 throw error;
             }
         }
