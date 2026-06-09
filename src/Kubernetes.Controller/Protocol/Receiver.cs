@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Yarp.Kubernetes.Controller.Configuration;
 using Yarp.Kubernetes.Controller.Hosting;
+using Yarp.Kubernetes.Controller.Protocol;
 using Yarp.Kubernetes.Controller.Rate;
 
 namespace Yarp.Kubernetes.Protocol;
@@ -65,7 +66,7 @@ public class Receiver : BackgroundHostedService
                         break;
                     }
 
-                    var message = System.Text.Json.JsonSerializer.Deserialize<Message>(json);
+                    var message = System.Text.Json.JsonSerializer.Deserialize<Message>(json, KubernetesJsonSerializerContext.Default.Message);
                     Logger.LogInformation("Received {MessageType} for {MessageKey}", message.MessageType, message.Key);
 
                     Logger.LogInformation(json);

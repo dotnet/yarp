@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Yarp.Kubernetes.Controller.Protocol;
 using Yarp.Kubernetes.Protocol;
 
 namespace Yarp.Kubernetes.Controller.Dispatching;
@@ -54,7 +55,7 @@ public class DispatchActionResult : IActionResult, IDispatchTarget
             var utf8Bytes = JsonSerializer.SerializeToUtf8Bytes(new Message
             {
                 MessageType = MessageType.Heartbeat
-            });
+            }, KubernetesJsonSerializerContext.Default.Message);
 
             while (!cancellationToken.IsCancellationRequested)
             {
