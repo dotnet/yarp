@@ -466,7 +466,8 @@ function ExitWithExitCode {
 function StopProcesses {
   echo "Killing running build processes..."
   pkill -9 "dotnet" || true
-  pkill -9 "vbcscompiler" || true
+  pkill -9 -i -x VBCSCompiler || true
+  pkill -9 -i -x MSBuild || true
   return 0
 }
 
@@ -497,7 +498,9 @@ function MSBuild {
       ExitWithExitCode 1
     fi
 
-    if [[ "$node_reuse" == true ]]; then
+    # Node reuse must be disabled in CI builds unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
+    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
+    if [[ "$node_reuse" == true && "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
       Write-PipelineTelemetryError -category 'Build'  "Node reuse must be disabled in CI build."
       ExitWithExitCode 1
     fi
