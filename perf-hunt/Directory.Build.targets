@@ -1,0 +1,3 @@
+<Project>
+  <!-- Standalone: stops the Directory.Build.targets walk-up to the repo-root Arcade targets. -->
+</Project>
