@@ -24,12 +24,11 @@ public static class ReverseProxyIEndpointRouteBuilderExtensions
     /// </summary>
     public static ReverseProxyConventionBuilder MapReverseProxy(this IEndpointRouteBuilder endpoints)
     {
-        return endpoints.MapReverseProxy(app =>
+        return MapReverseProxy(endpoints, app =>
         {
             app.UseSessionAffinity();
             app.UseLoadBalancing();
-            app.UsePassiveHealthChecks();
-        });
+        }, recordPassiveHealthChecks: true);
     }
 
     /// <summary>
@@ -37,6 +36,12 @@ public static class ReverseProxyIEndpointRouteBuilderExtensions
     /// by default the initialization step and the final proxy step, but not LoadBalancingMiddleware or other intermediate components.
     /// </summary>
     public static ReverseProxyConventionBuilder MapReverseProxy(this IEndpointRouteBuilder endpoints, Action<IReverseProxyApplicationBuilder> configureApp)
+        => MapReverseProxy(endpoints, configureApp, recordPassiveHealthChecks: false);
+
+    private static ReverseProxyConventionBuilder MapReverseProxy(
+        IEndpointRouteBuilder endpoints,
+        Action<IReverseProxyApplicationBuilder> configureApp,
+        bool recordPassiveHealthChecks)
     {
         ArgumentNullException.ThrowIfNull(endpoints);
         ArgumentNullException.ThrowIfNull(configureApp);
@@ -45,7 +50,7 @@ public static class ReverseProxyIEndpointRouteBuilderExtensions
         proxyAppBuilder.UseMiddleware<ProxyPipelineInitializerMiddleware>();
         configureApp(proxyAppBuilder);
         proxyAppBuilder.UseMiddleware<LimitsMiddleware>();
-        proxyAppBuilder.UseMiddleware<ForwarderMiddleware>();
+        proxyAppBuilder.UseMiddleware<ForwarderMiddleware>(recordPassiveHealthChecks);
         var app = proxyAppBuilder.Build();
 
         var proxyEndpointFactory = endpoints.ServiceProvider.GetRequiredService<ProxyEndpointFactory>();

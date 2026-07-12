@@ -51,9 +51,9 @@ attributes to the proxy.
 
 `PassiveHealthCheckMiddleware.Invoke` was an `async` method that always awaited `_next`, forcing a
 **~112 B/request async state-machine allocation on every proxied request through the default pipeline**,
-even though passive health checks are **disabled by default**. Short-circuiting to `return _next(context)`
-when passive health is not engaged (read at entry, like `SessionAffinityMiddleware`/`LimitsMiddleware`)
-removes it; outcome recording still re-reads the cluster/destination after `_next`, preserving
+even though passive health checks are **disabled by default**. The parameterless `MapReverseProxy()`
+pipeline now records passive-health outcomes in the terminal forwarder's existing async frame instead.
+The public `UsePassiveHealthChecks()` middleware is unchanged, preserving custom-pipeline ordering and
 `ReassignProxyRequest` semantics.
 
 Measured on Apple M-series (arm64), .NET 9.0.2:
@@ -62,7 +62,7 @@ Measured on Apple M-series (arm64), .NET 9.0.2:
 | --- | ---: | ---: | ---: |
 | PipelineBench `min-1r-1c-1d` async B/req | 1856 | 1744 | **−112** |
 | …all default-pipeline shapes (routes/dests/LB/affinity) | — | — | **−112** each |
-| PipelineBench `passivehealth-1d` (enabled) | 1856 | 1856 | 0 (unchanged) |
+| PipelineBench `passivehealth-1d` (enabled) | 1856 | 1744 | **−112** |
 | E2E proxy HTTP/1.1 alloc/req | ~4372 | ~4259 | **−112** |
 | E2E proxy HTTP/2 alloc/req | ~5900 | ~5795 | **−106** |
 | E2E proxy HTTP/1.1 & HTTP/2 throughput/latency | — | — | flat (no regression) |
