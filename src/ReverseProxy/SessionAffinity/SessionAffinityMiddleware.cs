@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -54,14 +56,54 @@ internal sealed class SessionAffinityMiddleware
         return InvokeInternal(context, proxyFeature, config);
     }
 
-    private async Task InvokeInternal(HttpContext context, IReverseProxyFeature proxyFeature, SessionAffinityConfig config)
+    private Task InvokeInternal(HttpContext context, IReverseProxyFeature proxyFeature, SessionAffinityConfig config)
+    {
+        try
+        {
+            return InvokeInternalCore(context, proxyFeature, config);
+        }
+        catch (Exception ex)
+        {
+            return CaptureException(ex);
+        }
+    }
+
+    private Task InvokeInternalCore(HttpContext context, IReverseProxyFeature proxyFeature, SessionAffinityConfig config)
     {
         var destinations = proxyFeature.AvailableDestinations;
         var cluster = proxyFeature.Route.Cluster!;
 
         var policy = _sessionAffinityPolicies.GetRequiredServiceById(config.Policy, SessionAffinityConstants.Policies.HashCookie);
-        var affinityResult = await policy.FindAffinitizedDestinationsAsync(context, cluster, config, destinations, context.RequestAborted);
+        var affinityResultTask = policy.FindAffinitizedDestinationsAsync(context, cluster, config, destinations, context.RequestAborted);
 
+        if (!affinityResultTask.IsCompletedSuccessfully)
+        {
+            return AwaitAffinityResult(affinityResultTask, context, proxyFeature, config, cluster, policy);
+        }
+
+        return HandleAffinityResult(context, proxyFeature, config, cluster, policy, affinityResultTask.Result);
+    }
+
+    private async Task AwaitAffinityResult(
+        ValueTask<AffinityResult> affinityResultTask,
+        HttpContext context,
+        IReverseProxyFeature proxyFeature,
+        SessionAffinityConfig config,
+        ClusterState cluster,
+        ISessionAffinityPolicy policy)
+    {
+        var affinityResult = await affinityResultTask;
+        await HandleAffinityResult(context, proxyFeature, config, cluster, policy, affinityResult);
+    }
+
+    private Task HandleAffinityResult(
+        HttpContext context,
+        IReverseProxyFeature proxyFeature,
+        SessionAffinityConfig config,
+        ClusterState cluster,
+        ISessionAffinityPolicy policy,
+        AffinityResult affinityResult)
+    {
         // Used for Distributed Tracing as part of Open Telemetry, null if there are no listeners
         var activity = context.GetYarpActivity();
         activity?.SetTag("proxy.session_affinity.policy", policy.Name);
@@ -79,26 +121,56 @@ internal sealed class SessionAffinityMiddleware
             case AffinityStatus.DestinationNotFound:
 
                 var failurePolicy = _affinityFailurePolicies.GetRequiredServiceById(config.FailurePolicy, SessionAffinityConstants.FailurePolicies.Redistribute);
-                var keepProcessing = await failurePolicy.Handle(context, proxyFeature.Route.Cluster!, affinityResult.Status);
-
-                if (!keepProcessing)
+                var failureTask = failurePolicy.Handle(context, cluster, affinityResult.Status);
+                if (!failureTask.IsCompletedSuccessfully)
                 {
-                    // Policy reported the failure is unrecoverable and took the full responsibility for its handling,
-                    // so we simply stop processing.
-                    Log.AffinityResolutionFailedForCluster(_logger, cluster.ClusterId);
-                    activity?.SetTag("proxy.session_affinity.status", "failed");
-                    return;
+                    return AwaitFailurePolicy(failureTask, context, cluster, failurePolicy, activity);
                 }
 
-                Log.AffinityResolutionFailureWasHandledProcessingWillBeContinued(_logger, cluster.ClusterId, failurePolicy.Name);
-                activity?.SetTag("proxy.session_affinity.status", "recovered");
-
-                break;
+                return HandleFailurePolicyResult(context, cluster, failurePolicy, activity, failureTask.Result);
             default:
                 throw new NotSupportedException($"Affinity status '{affinityResult.Status}' is not supported.");
         }
 
-        await _next(context);
+        return _next(context) ?? throw new NullReferenceException();
+    }
+
+    private async Task AwaitFailurePolicy(
+        Task<bool> failureTask,
+        HttpContext context,
+        ClusterState cluster,
+        IAffinityFailurePolicy failurePolicy,
+        Activity? activity)
+    {
+        var keepProcessing = await failureTask;
+        await HandleFailurePolicyResult(context, cluster, failurePolicy, activity, keepProcessing);
+    }
+
+    private Task HandleFailurePolicyResult(
+        HttpContext context,
+        ClusterState cluster,
+        IAffinityFailurePolicy failurePolicy,
+        Activity? activity,
+        bool keepProcessing)
+    {
+        if (!keepProcessing)
+        {
+            // Policy reported the failure is unrecoverable and took the full responsibility for its handling,
+            // so we simply stop processing.
+            Log.AffinityResolutionFailedForCluster(_logger, cluster.ClusterId);
+            activity?.SetTag("proxy.session_affinity.status", "failed");
+            return Task.CompletedTask;
+        }
+
+        Log.AffinityResolutionFailureWasHandledProcessingWillBeContinued(_logger, cluster.ClusterId, failurePolicy.Name);
+        activity?.SetTag("proxy.session_affinity.status", "recovered");
+        return _next(context) ?? throw new NullReferenceException();
+    }
+
+    private static async Task CaptureException(Exception exception)
+    {
+        await Task.CompletedTask;
+        ExceptionDispatchInfo.Capture(exception).Throw();
     }
 
     private static class Log

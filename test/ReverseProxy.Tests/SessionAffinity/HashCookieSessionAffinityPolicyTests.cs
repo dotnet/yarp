@@ -4,7 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Hashing;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -120,6 +122,88 @@ public class HashCookieSessionAffinityPolicyTests
         policy.AffinitizeResponse(context, cluster, _config, affinitizedDestination);
 
         Assert.False(context.Response.Headers.ContainsKey("Cookie"));
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void FindAffinitizedDestination_DuplicateAffinityCookie_LastValueWins(bool validValueLast)
+    {
+        var policy = new HashCookieSessionAffinityPolicy(
+            new TestTimeProvider(),
+            NullLogger<HashCookieSessionAffinityPolicy>.Instance);
+        var validCookie = GetCookieWithAffinity(_destinations[1])[1];
+        var staleCookie = $"{_config.AffinityKeyName}=0000000000000000";
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Cookie = validValueLast
+            ? $"{staleCookie}; {validCookie}"
+            : $"{validCookie}; {staleCookie}";
+
+        var result = policy.FindAffinitizedDestinations(context, new ClusterState("cluster"), _config, _destinations);
+
+        Assert.Equal(validValueLast ? AffinityStatus.OK : AffinityStatus.DestinationNotFound, result.Status);
+        Assert.Same(validValueLast ? _destinations[1] : null, result.Destinations?.Single());
+    }
+
+    [Theory]
+    [InlineData("HTTP/1.1")]
+    [InlineData("HTTP/2")]
+    public void FindAffinitizedDestination_ProtocolDoesNotChangeResolution(string protocol)
+    {
+        var policy = new HashCookieSessionAffinityPolicy(
+            new TestTimeProvider(),
+            NullLogger<HashCookieSessionAffinityPolicy>.Instance);
+        var context = new DefaultHttpContext();
+        context.Request.Protocol = protocol;
+        context.Request.Headers.Cookie = GetCookieWithAffinity(_destinations[1]);
+
+        var result = policy.FindAffinitizedDestinations(context, new ClusterState("cluster"), _config, _destinations);
+
+        Assert.Equal(AffinityStatus.OK, result.Status);
+        Assert.Same(_destinations[1], result.Destinations?.Single());
+    }
+
+    [Fact]
+    public void FindAffinitizedDestination_UsesCurrentDestinationSnapshot()
+    {
+        var policy = new HashCookieSessionAffinityPolicy(
+            new TestTimeProvider(),
+            NullLogger<HashCookieSessionAffinityPolicy>.Instance);
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Cookie = GetCookieWithAffinity(_destinations[1]);
+        var cluster = new ClusterState("cluster");
+
+        var beforeChurn = policy.FindAffinitizedDestinations(context, cluster, _config, _destinations);
+        var afterRemoval = policy.FindAffinitizedDestinations(context, cluster, _config, new[] { _destinations[0], _destinations[2] });
+        var replacement = new DestinationState(_destinations[1].DestinationId);
+        var afterReplacement = policy.FindAffinitizedDestinations(context, cluster, _config, new[] { replacement });
+
+        Assert.Equal(AffinityStatus.OK, beforeChurn.Status);
+        Assert.Equal(AffinityStatus.DestinationNotFound, afterRemoval.Status);
+        Assert.Equal(AffinityStatus.OK, afterReplacement.Status);
+        Assert.Same(replacement, afterReplacement.Destinations?.Single());
+    }
+
+    [Fact]
+    public async Task FindAffinitizedDestination_ConcurrentRequestsRemainIsolated()
+    {
+        var policy = new HashCookieSessionAffinityPolicy(
+            new TestTimeProvider(),
+            NullLogger<HashCookieSessionAffinityPolicy>.Instance);
+        var cookie = GetCookieWithAffinity(_destinations[1]);
+
+        var results = await Task.WhenAll(Enumerable.Range(0, 256).Select(_ => Task.Run(() =>
+        {
+            var context = new DefaultHttpContext();
+            context.Request.Headers.Cookie = cookie;
+            return policy.FindAffinitizedDestinations(context, new ClusterState("cluster"), _config, _destinations);
+        })));
+
+        Assert.All(results, result =>
+        {
+            Assert.Equal(AffinityStatus.OK, result.Status);
+            Assert.Same(_destinations[1], result.Destinations?.Single());
+        });
     }
 
     private string[] GetCookieWithAffinity(DestinationState affinitizedDestination)

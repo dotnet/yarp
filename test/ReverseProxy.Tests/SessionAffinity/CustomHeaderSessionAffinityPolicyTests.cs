@@ -87,4 +87,20 @@ public class CustomHeaderSessionAffinityPolicyTests
 
         Assert.False(context.Response.Headers.ContainsKey(AffinityHeaderName));
     }
+
+    [Fact]
+    public void FindAffinitizedDestination_DuplicateHeaderValues_AreRejectedAsAmbiguous()
+    {
+        var policy = new CustomHeaderSessionAffinityPolicy(
+            AffinityTestHelper.GetDataProtector().Object,
+            AffinityTestHelper.GetLogger<CustomHeaderSessionAffinityPolicy>().Object);
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Append(AffinityHeaderName, _destinations[0].DestinationId.ToUTF8BytesInBase64());
+        context.Request.Headers.Append(AffinityHeaderName, _destinations[1].DestinationId.ToUTF8BytesInBase64());
+
+        var result = policy.FindAffinitizedDestinations(context, new ClusterState("cluster"), _defaultOptions, _destinations);
+
+        Assert.Equal(AffinityStatus.AffinityKeyExtractionFailed, result.Status);
+        Assert.Null(result.Destinations);
+    }
 }

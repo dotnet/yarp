@@ -122,6 +122,25 @@ public class CookieSessionAffinityPolicyTests
         Assert.False(context.Response.Headers.ContainsKey("Cookie"));
     }
 
+    [Theory]
+    [InlineData("QQ==", AffinityStatus.OK)]
+    [InlineData("QQ%3D%3D", AffinityStatus.OK)]
+    public void FindAffinitizedDestination_CookieValueIsUnescaped(string cookieValue, AffinityStatus expectedStatus)
+    {
+        var policy = new CookieSessionAffinityPolicy(
+            AffinityTestHelper.GetDataProtector().Object,
+            new TestTimeProvider(),
+            AffinityTestHelper.GetLogger<CookieSessionAffinityPolicy>().Object);
+        var destination = new DestinationState("A");
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Cookie = $"{_config.AffinityKeyName}={cookieValue}";
+
+        var result = policy.FindAffinitizedDestinations(context, new ClusterState("cluster"), _config, new[] { destination });
+
+        Assert.Equal(expectedStatus, result.Status);
+        Assert.Same(expectedStatus == AffinityStatus.OK ? destination : null, result.Destinations?[0]);
+    }
+
     private string[] GetCookieWithAffinity(DestinationState affinitizedDestination)
     {
         return new[] { $"Some-Cookie=ZZZ", $"{_config.AffinityKeyName}={affinitizedDestination.DestinationId.ToUTF8BytesInBase64()}" };
