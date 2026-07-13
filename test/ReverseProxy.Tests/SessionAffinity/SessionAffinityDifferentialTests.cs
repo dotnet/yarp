@@ -187,6 +187,24 @@ public class SessionAffinityDifferentialTests
     }
 
     [Fact]
+    public async Task Invoke_AsyncCanceledProviderProducesCanceledTask()
+    {
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+        var (_, _, context) = CreateContext("HTTP/1.1");
+        var middleware = new SessionAffinityMiddleware(
+            _ => Task.CompletedTask,
+            new ISessionAffinityPolicy[] { new AsyncCanceledAffinityPolicy() },
+            Array.Empty<IAffinityFailurePolicy>(),
+            NullLogger<SessionAffinityMiddleware>.Instance);
+
+        var invokeTask = middleware.Invoke(context);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => invokeTask);
+        Assert.True(invokeTask.IsCanceled);
+    }
+
+    [Fact]
     public async Task Invoke_NullTaskFromNextIsCapturedInReturnedTask()
     {
         var (_, destinations, context) = CreateContext("HTTP/1.1");
@@ -387,6 +405,39 @@ public class SessionAffinityDifferentialTests
         {
             await Task.Yield();
             throw _exception;
+        }
+    }
+
+    private sealed class AsyncCanceledAffinityPolicy : ISessionAffinityPolicy
+    {
+        public string Name => "Custom";
+
+        public AffinityResult FindAffinitizedDestinations(
+            HttpContext context,
+            ClusterState cluster,
+            SessionAffinityConfig config,
+            IReadOnlyList<DestinationState> destinations)
+        {
+            throw new NotSupportedException();
+        }
+
+        public async ValueTask<AffinityResult> FindAffinitizedDestinationsAsync(
+            HttpContext context,
+            ClusterState cluster,
+            SessionAffinityConfig config,
+            IReadOnlyList<DestinationState> destinations,
+            CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            throw new OperationCanceledException(cancellationToken);
+        }
+
+        public void AffinitizeResponse(
+            HttpContext context,
+            ClusterState cluster,
+            SessionAffinityConfig config,
+            DestinationState destination)
+        {
         }
     }
 
