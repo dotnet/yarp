@@ -353,6 +353,15 @@ function GetDotNetInstallScript {
 }
 
 function InitializeBuildTool {
+  # Allow a caller (e.g. a bootstrap script running out-of-proc) to inject the build tool via
+  # environment variables instead of the in-proc _InitializeBuildTool variable. Only the tool path and
+  # command are consumed by the MSBuild function below, so those are all that's needed.
+  if [[ -n "${_BuildToolPath:-}" ]]; then
+    _InitializeBuildTool="$_BuildToolPath"
+    _InitializeBuildToolCommand="$_BuildToolCommand"
+    return
+  fi
+
   if [[ -n "${_InitializeBuildTool:-}" ]]; then
     return
   fi
@@ -457,7 +466,7 @@ function InitializeToolset {
 }
 
 function ExitWithExitCode {
-  if [[ "$ci" == true && "$prepare_machine" == true ]]; then
+  if [[ "$prepare_machine" == true ]]; then
     StopProcesses
   fi
   exit $1
@@ -494,14 +503,7 @@ function DotNet {
 function MSBuild {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true && "$exclude_ci_binary_log" != true ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the -noBinaryLog switch."
-      ExitWithExitCode 1
-    fi
-
-    # Node reuse must be disabled in CI builds unless explicitly opted in via MSBUILD_NODEREUSE_ENABLED.
-    # Internal testing only; this env var will be replaced with a switch (https://github.com/dotnet/arcade/issues/17013) and must not be depended on.
-    if [[ "$node_reuse" == true && "${MSBUILD_NODEREUSE_ENABLED:-}" != "1" ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Node reuse must be disabled in CI build."
+      Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the --excludeCIBinarylog switch."
       ExitWithExitCode 1
     fi
   fi
