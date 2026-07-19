@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -42,6 +43,8 @@ public class StructuredTransformerFastPathTests
 
         var optimized = CreateTransformer(Configure);
         var fallback = CreateTransformerWithFallback(Configure);
+        Assert.True(UsesFastPath(optimized));
+        Assert.False(UsesFastPath(fallback));
 
         var optimizedResult = await TransformRequestAsync(optimized, protocol, IPAddress.Parse(remoteIp), cancellation.Token);
         var fallbackResult = await TransformRequestAsync(fallback, protocol, IPAddress.Parse(remoteIp), cancellation.Token);
@@ -72,6 +75,8 @@ public class StructuredTransformerFastPathTests
 
         var optimized = CreateTransformer(Configure);
         var fallback = CreateTransformerWithFallback(Configure);
+        Assert.True(UsesFastPath(optimized));
+        Assert.False(UsesFastPath(fallback));
 
         var optimizedResult = await TransformRequestAsync(optimized, protocol, IPAddress.Parse(remoteIp), default, remotePort);
         var fallbackResult = await TransformRequestAsync(fallback, protocol, IPAddress.Parse(remoteIp), default, remotePort);
@@ -96,6 +101,7 @@ public class StructuredTransformerFastPathTests
         }
 
         var transformer = CreateTransformer(Configure);
+        Assert.False(UsesFastPath(transformer));
         var result = await TransformRequestAsync(transformer, protocol, IPAddress.IPv6Loopback, default);
 
         Assert.Equal("http://destination/base/v2/%252F/items/%252Fvalue?key=replacement&escaped=a%2Fb&added=a%2Fb", result.Uri);
@@ -125,6 +131,7 @@ public class StructuredTransformerFastPathTests
                 transformContext.ProxyRequest.Headers.TryAddWithoutValidation("X-Async", "set");
             });
         });
+        Assert.False(UsesFastPath(transformer));
 
         var result = await TransformRequestAsync(transformer, "HTTP/2", IPAddress.Loopback, cancellation.Token);
 
@@ -141,10 +148,92 @@ public class StructuredTransformerFastPathTests
             context.UseDefaultForwarders = false;
             context.RequestTransforms.Add(new DerivedRequestHeaderValueTransform());
         });
+        Assert.False(UsesFastPath(transformer));
 
         var result = await TransformRequestAsync(transformer, "HTTP/2", IPAddress.Loopback, default);
 
         Assert.Contains("X-Derived:derived", result.Headers);
+    }
+
+    [Fact]
+    public async Task HeadersAllowed_OrderingAndHeadersCopied_MatchContextFallback()
+    {
+        static void Configure(TransformBuilderContext context)
+        {
+            context.UseDefaultForwarders = false;
+            context.AddRequestHeader("X-Before", "before", append: true);
+            context.AddRequestHeadersAllowed("X-Before", "X-After");
+            context.AddRequestHeader("X-After", "after", append: true);
+        }
+
+        var optimized = CreateTransformer(Configure);
+        var fallback = CreateTransformerWithFallback(Configure);
+        Assert.True(UsesFastPath(optimized));
+        Assert.False(UsesFastPath(fallback));
+
+        var optimizedResult = await TransformRequestAsync(optimized, "HTTP/2", IPAddress.Loopback, default);
+        var fallbackResult = await TransformRequestAsync(fallback, "HTTP/2", IPAddress.Loopback, default);
+
+        Assert.Equal(fallbackResult, optimizedResult);
+        Assert.Contains("X-Before:original-before\u001fbefore\u001foriginal-before", optimizedResult.Headers);
+        Assert.Contains("X-After:original-after\u001fafter", optimizedResult.Headers);
+    }
+
+    [Fact]
+    public async Task OriginalHostAndRouteValue_MatchContextFallback()
+    {
+        static void Configure(TransformBuilderContext context)
+        {
+            context.UseDefaultForwarders = false;
+            context.AddOriginalHost(useOriginal: true);
+            context.AddRequestHeaderRouteValue("X-Route", "id", append: false);
+        }
+
+        var optimized = CreateTransformer(Configure);
+        var fallback = CreateTransformerWithFallback(Configure);
+        Assert.True(UsesFastPath(optimized));
+        Assert.False(UsesFastPath(fallback));
+
+        var optimizedResult = await TransformRequestAsync(optimized, "HTTP/2", IPAddress.Loopback, default);
+        var fallbackResult = await TransformRequestAsync(fallback, "HTTP/2", IPAddress.Loopback, default);
+
+        Assert.Equal(fallbackResult, optimizedResult);
+        Assert.Contains("Host:xn--host-6j1i.example:8443", optimizedResult.Headers);
+        Assert.Contains("X-Route:route-value", optimizedResult.Headers);
+    }
+
+    [Fact]
+    public void EligibleBuiltIns_OverrideFastPath()
+    {
+        RequestTransform[] transforms =
+        [
+            RequestHeaderOriginalHostTransform.OriginalHost,
+            new RequestHeaderXForwardedForTransform("X-Forwarded-For", ForwardedTransformActions.Set),
+            new RequestHeaderXForwardedHostTransform("X-Forwarded-Host", ForwardedTransformActions.Set),
+            new RequestHeaderXForwardedProtoTransform("X-Forwarded-Proto", ForwardedTransformActions.Set),
+            new RequestHeaderXForwardedPrefixTransform("X-Forwarded-Prefix", ForwardedTransformActions.Set),
+            new RequestHeaderForwardedTransform(
+                new TestRandomFactory(),
+                NodeFormat.Ip,
+                NodeFormat.None,
+                host: true,
+                proto: true,
+                ForwardedTransformActions.Set),
+            new RequestHeaderRemoveTransform("X-Remove"),
+            new RequestHeaderValueTransform("X-Value", "value", append: false),
+            new RequestHeaderRouteValueTransform("X-Route", "id", append: false),
+            new RequestHeadersAllowedTransform(["X-Allowed"]),
+        ];
+
+        foreach (var transform in transforms)
+        {
+            var method = transform.GetType().GetMethod(
+                "ApplyFast",
+                BindingFlags.Instance | BindingFlags.NonPublic);
+
+            Assert.NotNull(method);
+            Assert.Equal(transform.GetType(), method.DeclaringType);
+        }
     }
 
     [Theory]
@@ -162,6 +251,8 @@ public class StructuredTransformerFastPathTests
 
         var optimized = CreateTransformer(Configure);
         var fallback = CreateTransformerWithFallback(Configure);
+        Assert.True(UsesFastPath(optimized));
+        Assert.False(UsesFastPath(fallback));
 
         var optimizedResult = await TransformResponseAsync(optimized, protocol);
         var fallbackResult = await TransformResponseAsync(fallback, protocol);
@@ -182,6 +273,8 @@ public class StructuredTransformerFastPathTests
 
         var optimized = CreateTransformer(Configure);
         var fallback = CreateTransformerWithFallback(Configure);
+        Assert.True(UsesFastPath(optimized));
+        Assert.False(UsesFastPath(fallback));
 
         await Parallel.ForEachAsync(Enumerable.Range(0, 200), async (index, _) =>
         {
@@ -266,8 +359,20 @@ public class StructuredTransformerFastPathTests
         context.Request.Headers["X-Duplicate"] = new StringValues(new[] { "one", "two" });
         context.Request.Headers["X-Remove"] = "remove";
         context.Request.Headers["X-Mixed-Set"] = "old";
+        context.Request.Headers["X-Before"] = "original-before";
+        context.Request.Headers["X-After"] = "original-after";
         context.Request.Headers[HeaderNames.TE] = "gzip, traiLers";
+        context.Request.RouteValues["id"] = "route-value";
         return context;
+    }
+
+    private static bool UsesFastPath(StructuredTransformer transformer)
+    {
+        var field = typeof(StructuredTransformer).GetField(
+            "_canUseRequestTransformFastPath",
+            BindingFlags.Instance | BindingFlags.NonPublic);
+        Assert.NotNull(field);
+        return Assert.IsType<bool>(field.GetValue(transformer));
     }
 
     private static string[] GetHeaders(HttpRequestMessage request)
