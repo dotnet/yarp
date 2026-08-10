@@ -77,7 +77,6 @@ extends:
               image: 1es-windows-2022
               os: windows
             variables:
-            - group: Publish-Build-Assets
             - name: _OfficialBuildArgs
               value: /p:DotNetSignType=$(_SignType)
                      /p:TeamName=$(_TeamName)
