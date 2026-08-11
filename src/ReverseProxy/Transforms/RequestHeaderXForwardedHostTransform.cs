@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Yarp.ReverseProxy.Transforms;
@@ -34,45 +36,54 @@ public class RequestHeaderXForwardedHostTransform : RequestTransform
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+        Apply(context.HttpContext, context.ProxyRequest, context.HeadersCopied);
+        return default;
+    }
 
-        var host = context.HttpContext.Request.Host;
+    internal override void ApplyFast(HttpContext httpContext, HttpRequestMessage proxyRequest, ref bool headersCopied)
+    {
+        Apply(httpContext, proxyRequest, headersCopied);
+    }
+
+    private void Apply(HttpContext httpContext, HttpRequestMessage proxyRequest, bool headersCopied)
+    {
+        var host = httpContext.Request.Host;
 
         switch (TransformAction)
         {
             case ForwardedTransformActions.Set:
-                RemoveHeader(context, HeaderName);
+                RemoveHeader(proxyRequest, HeaderName);
                 if (host.HasValue)
                 {
-                    AddHeader(context, HeaderName, host.ToUriComponent());
+                    AddHeader(proxyRequest, HeaderName, host.ToUriComponent());
                 }
                 break;
             case ForwardedTransformActions.Append:
-                Append(context, host);
+                Append(httpContext, proxyRequest, headersCopied, host);
                 break;
             case ForwardedTransformActions.Remove:
-                RemoveHeader(context, HeaderName);
+                RemoveHeader(proxyRequest, HeaderName);
                 break;
             default:
                 throw new NotImplementedException(TransformAction.ToString());
         }
 
-        return default;
     }
 
-    private void Append(RequestTransformContext context, Microsoft.AspNetCore.Http.HostString host)
+    private void Append(HttpContext httpContext, HttpRequestMessage proxyRequest, bool headersCopied, HostString host)
     {
-        var existingValues = TakeHeader(context, HeaderName);
+        var existingValues = TakeHeader(httpContext, proxyRequest, headersCopied, HeaderName);
         if (!host.HasValue)
         {
             if (!string.IsNullOrEmpty(existingValues))
             {
-                AddHeader(context, HeaderName, existingValues);
+                AddHeader(proxyRequest, HeaderName, existingValues);
             }
         }
         else
         {
             var values = StringValues.Concat(existingValues, host.ToUriComponent());
-            AddHeader(context, HeaderName, values);
+            AddHeader(proxyRequest, HeaderName, values);
         }
     }
 }

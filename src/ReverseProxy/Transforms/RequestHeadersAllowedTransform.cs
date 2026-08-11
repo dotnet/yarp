@@ -5,7 +5,9 @@ using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Yarp.ReverseProxy.Transforms;
@@ -33,20 +35,29 @@ public class RequestHeadersAllowedTransform : RequestTransform
         ArgumentNullException.ThrowIfNull(context);
 
         Debug.Assert(!context.HeadersCopied);
+        Apply(context.HttpContext, context.ProxyRequest);
+        context.HeadersCopied = true;
+        return default;
+    }
 
-        foreach (var header in context.HttpContext.Request.Headers)
+    internal override void ApplyFast(HttpContext httpContext, HttpRequestMessage proxyRequest, ref bool headersCopied)
+    {
+        Debug.Assert(!headersCopied);
+        Apply(httpContext, proxyRequest);
+        headersCopied = true;
+    }
+
+    private void Apply(HttpContext httpContext, HttpRequestMessage proxyRequest)
+    {
+        foreach (var header in httpContext.Request.Headers)
         {
             var headerName = header.Key;
             var headerValue = header.Value;
             if (!StringValues.IsNullOrEmpty(headerValue)
                 && AllowedHeadersSet.Contains(headerName))
             {
-                AddHeader(context, headerName, headerValue);
+                AddHeader(proxyRequest, headerName, headerValue);
             }
         }
-
-        context.HeadersCopied = true;
-
-        return default;
     }
 }
