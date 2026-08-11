@@ -16,7 +16,7 @@ public enum MessageType
 
 public struct Message
 {
-    [JsonConverter(typeof(JsonStringEnumConverter))]
+    [JsonConverter(typeof(JsonStringEnumConverter<MessageType>))]
     public MessageType MessageType { get; set; }
 
     public string Key { get; set; }
