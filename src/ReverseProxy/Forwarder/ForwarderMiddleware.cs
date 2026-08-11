@@ -2,10 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Frozen;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Yarp.ReverseProxy.Health;
 using Yarp.ReverseProxy.Model;
 using Yarp.ReverseProxy.Utilities;
 
@@ -20,17 +23,31 @@ internal sealed class ForwarderMiddleware
     private readonly RequestDelegate _next; // Unused, this middleware is always terminal
     private readonly ILogger _logger;
     private readonly IHttpForwarder _forwarder;
+    private readonly FrozenDictionary<string, IPassiveHealthCheckPolicy> _passiveHealthCheckPolicies;
+    private readonly bool _recordPassiveHealthChecks;
 
-    public ForwarderMiddleware(RequestDelegate next, ILogger<ForwarderMiddleware> logger, IHttpForwarder forwarder, IRandomFactory randomFactory)
+    public ForwarderMiddleware(
+        RequestDelegate next,
+        ILogger<ForwarderMiddleware> logger,
+        IHttpForwarder forwarder,
+        IRandomFactory randomFactory,
+        IEnumerable<IPassiveHealthCheckPolicy> passiveHealthCheckPolicies,
+        bool recordPassiveHealthChecks = false)
     {
         ArgumentNullException.ThrowIfNull(next);
         ArgumentNullException.ThrowIfNull(logger);
         ArgumentNullException.ThrowIfNull(forwarder);
         ArgumentNullException.ThrowIfNull(randomFactory);
+        ArgumentNullException.ThrowIfNull(passiveHealthCheckPolicies);
+
         _next = next;
         _logger = logger;
         _forwarder = forwarder;
         _randomFactory = randomFactory;
+        _recordPassiveHealthChecks = recordPassiveHealthChecks;
+        _passiveHealthCheckPolicies = recordPassiveHealthChecks
+            ? passiveHealthCheckPolicies.ToDictionaryByUniqueId(p => p.Name)
+            : FrozenDictionary<string, IPassiveHealthCheckPolicy>.Empty;
     }
 
     /// <inheritdoc/>
@@ -92,6 +109,11 @@ internal sealed class ForwarderMiddleware
         {
             destination.ConcurrencyCounter.Decrement();
             cluster.ConcurrencyCounter.Decrement();
+        }
+
+        if (_recordPassiveHealthChecks)
+        {
+            PassiveHealthCheckMiddleware.RecordOutcome(context, _passiveHealthCheckPolicies);
         }
     }
 
