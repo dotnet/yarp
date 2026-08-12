@@ -3,9 +3,9 @@
 
 namespace Yarp.Application.Configuration;
 
-public sealed class NavigationFallbackOptions
+public sealed class HeaderRule
 {
-    public string? Path { get; set; }
+    public RequestMatch Match { get; set; } = new();
 
-    public List<RequestMatch> Exclude { get; set; } = [];
+    public Dictionary<string, string?> Set { get; set; } = [];
 }
