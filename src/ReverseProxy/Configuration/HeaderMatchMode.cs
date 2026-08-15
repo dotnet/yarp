@@ -28,8 +28,8 @@ public enum HeaderMatchMode
     Contains,
 
     /// <summary>
-    /// The header must exist and the value must be non-empty.
     /// None of the headers with the given name may contain any of the match values, subject to case sensitivity settings.
+    /// The rule also matches if the header is missing or its value is empty.
     /// </summary>
     NotContains,
 
@@ -40,7 +40,7 @@ public enum HeaderMatchMode
     Exists,
 
     /// <summary>
-    /// The header must not exist.
+    /// The header must not exist, or its value must be empty.
     /// </summary>
     NotExists,
 }
