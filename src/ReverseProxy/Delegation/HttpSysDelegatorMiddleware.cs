@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -44,7 +43,7 @@ internal sealed class HttpSysDelegatorMiddleware
         var cluster = reverseProxyFeature.Cluster
             ?? throw new InvalidOperationException($"The {nameof(IReverseProxyFeature)} Cluster was not set.");
 
-        if (destinations.Any())
+        if (destinations.Count > 0)
         {
             // This logic mimics behavior in ForwarderMiddleware, except we save the chosen destination back
             // to the proxy feature to ensure a delegation destination doesn't slip past this middleware.
