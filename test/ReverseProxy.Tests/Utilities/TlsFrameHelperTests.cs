@@ -77,6 +77,65 @@ public class TlsFrameHelperTests
         Assert.Equal(TlsFrameHelper.ApplicationProtocolInfo.None, info.ApplicationProtocols);
     }
 
+    [Theory]
+    [InlineData("1602000000")]
+    [InlineData("160200000001")]
+    [InlineData("1502000002022A")]
+    [InlineData("8000010300")]
+    public void TlsFrameHelper_UnrecognizedHeader_Fails(string frameHex)
+    {
+        byte[] frame = Convert.FromHexString(frameHex);
+        TlsFrameHeader header = default;
+        Assert.False(TlsFrameHelper.TryGetFrameHeader(frame, ref header));
+        Assert.Equal(-1, header.Length);
+        Assert.Equal(SslProtocols.None, header.Version);
+
+        TlsFrameHelper.TlsFrameInfo info = default;
+        Assert.False(TlsFrameHelper.TryGetFrameInfo(frame, ref info));
+        Assert.Equal(TlsFrameHelper.ParsingStatus.InvalidFrame, info.ParsingStatus);
+        Assert.Equal(-1, info.Header.Length);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void TlsFrameHelper_TruncatedHeader_Fails(int length)
+    {
+        ReadOnlySpan<byte> frame = s_validClientHello.AsSpan(0, length);
+        TlsFrameHeader header = default;
+        Assert.False(TlsFrameHelper.TryGetFrameHeader(frame, ref header));
+        Assert.Equal(-1, header.Length);
+        Assert.Equal(SslProtocols.None, header.Version);
+
+        TlsFrameHelper.TlsFrameInfo info = default;
+        Assert.False(TlsFrameHelper.TryGetFrameInfo(frame, ref info));
+        Assert.Equal(TlsFrameHelper.ParsingStatus.IncompleteFrame, info.ParsingStatus);
+    }
+
+    [Theory]
+    [InlineData(SslProtocols.Tls, 1)]
+    [InlineData(SslProtocols.Tls11, 2)]
+    [InlineData(SslProtocols.Tls12, 3)]
+    [InlineData(SslProtocols.Tls13, 4)]
+    public void TlsFrameHelper_CreateAlertFrame_Ok(SslProtocols version, byte minorVersion)
+    {
+        foreach (TlsAlertDescription reason in new[] { TlsAlertDescription.BadCertificate, TlsAlertDescription.ProtocolVersion })
+        {
+            byte[] frame = TlsFrameHelper.CreateAlertFrame(version, reason);
+
+            Assert.Equal(new byte[] { (byte)TlsContentType.Alert, 3, minorVersion, 0, 2, (byte)TlsAlertLevel.Fatal, (byte)reason }, frame);
+
+            TlsFrameHelper.TlsFrameInfo info = default;
+            Assert.True(TlsFrameHelper.TryGetFrameInfo(frame, ref info));
+            Assert.Equal(TlsFrameHelper.ParsingStatus.Ok, info.ParsingStatus);
+            Assert.Equal(version, info.Header.Version);
+            Assert.Equal(reason, info.AlertDescription);
+        }
+    }
+
     [Fact]
     public void TlsFrameHelper_Tls12ClientHello_Ok()
     {
