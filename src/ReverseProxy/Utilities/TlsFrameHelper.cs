@@ -178,6 +178,7 @@ public static class TlsFrameHelper
 
     private const int UInt24Size = 3;
     private const int RandomSize = 32;
+    private const int MaxHostNameLength = 255;
     private const int OpaqueType1LengthSize = sizeof(byte);
     private const int OpaqueType2LengthSize = sizeof(ushort);
     private const int ProtocolVersionMajorOffset = 0;
@@ -700,7 +701,7 @@ public static class TlsFrameHelper
         }
 
         invalid = false;
-        return DecodeString(hostName);
+        return hostNameLength <= MaxHostNameLength ? DecodeString(hostName) : null;
     }
 
     private static bool TryGetSupportedVersionsFromExtension(ReadOnlySpan<byte> extensionData, out SslProtocols protocols)
