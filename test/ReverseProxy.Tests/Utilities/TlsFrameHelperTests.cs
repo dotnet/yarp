@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Security;
@@ -36,6 +37,21 @@ public class TlsFrameHelperTests
         }
     }
 
+    [Theory]
+    [InlineData(255, true)]
+    [InlineData(256, false)]
+    public void SniHelper_HostNameLength_ValidatesMaximum(int hostNameLength, bool isValid)
+    {
+        string expected = isValid ? new string('a', hostNameLength) : null;
+        byte[] clientHello = CreateClientHello(hostNameLength);
+        TlsFrameHelper.TlsFrameInfo info = default;
+
+        Assert.True(TlsFrameHelper.TryGetFrameInfo(clientHello, ref info));
+        Assert.Equal(TlsFrameHelper.ParsingStatus.Ok, info.ParsingStatus);
+        Assert.Equal(expected, info.TargetName);
+        Assert.Equal(expected, TlsFrameHelper.GetServerName(clientHello));
+    }
+
     private void InvalidClientHello(byte[] clientHello, int id, bool shouldPass)
     {
         var ret = TlsFrameHelper.GetServerName(clientHello);
@@ -59,6 +75,65 @@ public class TlsFrameHelperTests
         Assert.Equal(203, info.Header.Length);
         Assert.Equal(SslProtocols.Tls12, info.SupportedVersions);
         Assert.Equal(TlsFrameHelper.ApplicationProtocolInfo.None, info.ApplicationProtocols);
+    }
+
+    [Theory]
+    [InlineData("1602000000")]
+    [InlineData("160200000001")]
+    [InlineData("1502000002022A")]
+    [InlineData("8000010300")]
+    public void TlsFrameHelper_UnrecognizedHeader_Fails(string frameHex)
+    {
+        byte[] frame = Convert.FromHexString(frameHex);
+        TlsFrameHeader header = default;
+        Assert.False(TlsFrameHelper.TryGetFrameHeader(frame, ref header));
+        Assert.Equal(-1, header.Length);
+        Assert.Equal(SslProtocols.None, header.Version);
+
+        TlsFrameHelper.TlsFrameInfo info = default;
+        Assert.False(TlsFrameHelper.TryGetFrameInfo(frame, ref info));
+        Assert.Equal(TlsFrameHelper.ParsingStatus.InvalidFrame, info.ParsingStatus);
+        Assert.Equal(-1, info.Header.Length);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(4)]
+    public void TlsFrameHelper_TruncatedHeader_Fails(int length)
+    {
+        ReadOnlySpan<byte> frame = s_validClientHello.AsSpan(0, length);
+        TlsFrameHeader header = default;
+        Assert.False(TlsFrameHelper.TryGetFrameHeader(frame, ref header));
+        Assert.Equal(-1, header.Length);
+        Assert.Equal(SslProtocols.None, header.Version);
+
+        TlsFrameHelper.TlsFrameInfo info = default;
+        Assert.False(TlsFrameHelper.TryGetFrameInfo(frame, ref info));
+        Assert.Equal(TlsFrameHelper.ParsingStatus.IncompleteFrame, info.ParsingStatus);
+    }
+
+    [Theory]
+    [InlineData(SslProtocols.Tls, 1)]
+    [InlineData(SslProtocols.Tls11, 2)]
+    [InlineData(SslProtocols.Tls12, 3)]
+    [InlineData(SslProtocols.Tls13, 4)]
+    public void TlsFrameHelper_CreateAlertFrame_Ok(SslProtocols version, byte minorVersion)
+    {
+        foreach (TlsAlertDescription reason in new[] { TlsAlertDescription.BadCertificate, TlsAlertDescription.ProtocolVersion })
+        {
+            byte[] frame = TlsFrameHelper.CreateAlertFrame(version, reason);
+
+            Assert.Equal(new byte[] { (byte)TlsContentType.Alert, 3, minorVersion, 0, 2, (byte)TlsAlertLevel.Fatal, (byte)reason }, frame);
+
+            TlsFrameHelper.TlsFrameInfo info = default;
+            Assert.True(TlsFrameHelper.TryGetFrameInfo(frame, ref info));
+            Assert.Equal(TlsFrameHelper.ParsingStatus.Ok, info.ParsingStatus);
+            Assert.Equal(version, info.Header.Version);
+            Assert.Equal(reason, info.AlertDescription);
+        }
     }
 
     [Fact]
@@ -189,6 +264,39 @@ public class TlsFrameHelperTests
             id++;
             yield return new Tuple<int, byte[]>(id, Convert.FromBase64String(invalidClientHello));
         }
+    }
+
+    private static byte[] CreateClientHello(int hostNameLength)
+    {
+        const int HostNameOffset = 61;
+        byte[] clientHello = new byte[HostNameOffset + hostNameLength];
+
+        clientHello[0] = (byte)TlsContentType.Handshake;
+        clientHello[1] = 3;
+        clientHello[2] = 3;
+        BinaryPrimitives.WriteUInt16BigEndian(clientHello.AsSpan(3), checked((ushort)(clientHello.Length - TlsFrameHelper.HeaderSize)));
+        clientHello[5] = (byte)TlsHandshakeType.ClientHello;
+        int handshakeLength = clientHello.Length - 9;
+        clientHello[6] = (byte)(handshakeLength >> 16);
+        clientHello[7] = (byte)(handshakeLength >> 8);
+        clientHello[8] = (byte)handshakeLength;
+        clientHello[9] = 3;
+        clientHello[10] = 3;
+        clientHello[43] = 0; // Session ID length
+        BinaryPrimitives.WriteUInt16BigEndian(clientHello.AsSpan(44), 2);
+        clientHello[46] = 0x13;
+        clientHello[47] = 0x01;
+        clientHello[48] = 1;
+        clientHello[49] = 0;
+        BinaryPrimitives.WriteUInt16BigEndian(clientHello.AsSpan(50), checked((ushort)(hostNameLength + 9)));
+        BinaryPrimitives.WriteUInt16BigEndian(clientHello.AsSpan(52), (ushort)ExtensionType.ServerName);
+        BinaryPrimitives.WriteUInt16BigEndian(clientHello.AsSpan(54), checked((ushort)(hostNameLength + 5)));
+        BinaryPrimitives.WriteUInt16BigEndian(clientHello.AsSpan(56), checked((ushort)(hostNameLength + 3)));
+        clientHello[58] = 0;
+        BinaryPrimitives.WriteUInt16BigEndian(clientHello.AsSpan(59), checked((ushort)hostNameLength));
+        clientHello.AsSpan(HostNameOffset).Fill((byte)'a');
+
+        return clientHello;
     }
 
     private static readonly byte[] s_validClientHello = new byte[] {

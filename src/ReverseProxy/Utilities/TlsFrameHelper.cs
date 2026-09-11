@@ -3,7 +3,6 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
-using System.Diagnostics;
 using System.Buffers.Binary;
 using System.Globalization;
 using System.Net.Security;
@@ -178,6 +177,7 @@ public static class TlsFrameHelper
 
     private const int UInt24Size = 3;
     private const int RandomSize = 32;
+    private const int MaxHostNameLength = 255;
     private const int OpaqueType1LengthSize = sizeof(byte);
     private const int OpaqueType2LengthSize = sizeof(ushort);
     private const int ProtocolVersionMajorOffset = 0;
@@ -191,8 +191,6 @@ public static class TlsFrameHelper
 
     public static bool TryGetFrameHeader(ReadOnlySpan<byte> frame, ref TlsFrameHeader header)
     {
-        var result = frame.Length > 4;
-
         if (frame.Length >= 1)
         {
             header.Type = (TlsContentType)frame[0];
@@ -242,7 +240,7 @@ public static class TlsFrameHelper
         header.Length = -1;
         header.Version = SslProtocols.None;
 
-        return result;
+        return false;
     }
 
     // Returns frame size e.g. header + content
@@ -271,9 +269,11 @@ public static class TlsFrameHelper
             return false;
         }
 
-        // This will not fail since we have enough data.
-        var gotHeader = TryGetFrameHeader(frame, ref info.Header);
-        Debug.Assert(gotHeader);
+        if (!TryGetFrameHeader(frame, ref info.Header))
+        {
+            info.ParsingStatus = ParsingStatus.InvalidFrame;
+            return false;
+        }
 
         info.SupportedVersions = info.Header.Version;
 #pragma warning disable CS0618 // Ssl2 and Ssl3 are obsolete
@@ -384,7 +384,7 @@ public static class TlsFrameHelper
             return CreateProtocolVersionAlert(version);
         }
 #pragma warning disable SYSLIB0039 // TLS 1.0 and 1.1 are obsolete
-        else if ((int)version > (int)SslProtocols.Tls)
+        else if ((int)version >= (int)SslProtocols.Tls)
         {
             // Create TLS1.2 alert
             var buffer = new byte[] { (byte)TlsContentType.Alert, 3, 3, 0, 2, 2, (byte)reason };
@@ -700,7 +700,7 @@ public static class TlsFrameHelper
         }
 
         invalid = false;
-        return DecodeString(hostName);
+        return hostNameLength <= MaxHostNameLength ? DecodeString(hostName) : null;
     }
 
     private static bool TryGetSupportedVersionsFromExtension(ReadOnlySpan<byte> extensionData, out SslProtocols protocols)
