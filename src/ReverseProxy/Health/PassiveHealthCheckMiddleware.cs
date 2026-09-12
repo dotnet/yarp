@@ -26,7 +26,13 @@ public class PassiveHealthCheckMiddleware
     public async Task Invoke(HttpContext context)
     {
         await _next(context);
+        RecordOutcome(context, _policies);
+    }
 
+    internal static void RecordOutcome(
+        HttpContext context,
+        FrozenDictionary<string, IPassiveHealthCheckPolicy> policies)
+    {
         var proxyFeature = context.GetReverseProxyFeature();
         var options = proxyFeature.Cluster.Config.HealthCheck?.Passive;
 
@@ -36,7 +42,7 @@ public class PassiveHealthCheckMiddleware
             return;
         }
 
-        var policy = _policies.GetRequiredServiceById(options.Policy, HealthCheckConstants.PassivePolicy.TransportFailureRate);
+        var policy = policies.GetRequiredServiceById(options.Policy, HealthCheckConstants.PassivePolicy.TransportFailureRate);
         var cluster = context.GetRouteModel().Cluster!;
         policy.RequestProxied(context, cluster, proxyFeature.ProxiedDestination);
     }

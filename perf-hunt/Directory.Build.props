@@ -1,0 +1,10 @@
+<Project>
+  <!--
+    Intentionally standalone. This file stops MSBuild's Directory.Build.props walk-up so the
+    perf-hunt harness does NOT import the repo-root Arcade Directory.Build.props. That keeps the
+    throwaway benchmark isolated from Arcade tooling (signing, packaging, analyzers-as-errors,
+    version generation) and prevents it from being swept into `./build.sh`.
+    The harness references src/ReverseProxy/Yarp.ReverseProxy.csproj via ProjectReference; that
+    project still builds in its own (Arcade) directory context.
+  -->
+</Project>

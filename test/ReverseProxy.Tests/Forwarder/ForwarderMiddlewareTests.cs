@@ -7,11 +7,14 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 using Yarp.Tests.Common;
 using Yarp.ReverseProxy.Configuration;
+using Yarp.ReverseProxy.Health;
 using Yarp.ReverseProxy.Model;
+using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.Forwarder.Tests;
 
@@ -162,5 +165,236 @@ public class ForwarderMiddlewareTests : TestAutoMockBase
         var errorFeature = httpContext.Features.Get<IForwarderErrorFeature>();
         Assert.Equal(ForwarderError.NoAvailableDestinations, errorFeature?.Error);
         Assert.Null(errorFeature.Exception);
+    }
+
+    [Fact]
+    public async Task Invoke_RecordPassiveHealthChecks_RecordsAfterForwardingCompletes()
+    {
+        var (context, cluster, destination) = CreateContext("cluster1", "policy1", passiveHealthEnabled: true);
+        var order = new List<string>();
+        var policy = new Mock<IPassiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy1");
+        policy.Setup(p => p.RequestProxied(context, cluster, destination))
+            .Callback(() =>
+            {
+                Assert.Equal(0, cluster.ConcurrencyCounter.Value);
+                Assert.Equal(0, destination.ConcurrentRequestCount);
+                order.Add("recorded");
+            });
+        var forwarder = new Mock<IHttpForwarder>();
+        forwarder.Setup(f => f.SendAsync(
+                context,
+                destination.Model.Config.Address,
+                context.GetReverseProxyFeature().Cluster.HttpClient,
+                It.IsAny<ForwarderRequestConfig>(),
+                It.IsAny<HttpTransformer>()))
+            .ReturnsAsync(() =>
+            {
+                order.Add("forwarded");
+                return ForwarderError.None;
+            });
+
+        var sut = CreateMiddleware(forwarder.Object, new[] { policy.Object }, recordPassiveHealthChecks: true);
+
+        await sut.Invoke(context);
+
+        Assert.Equal(new[] { "forwarded", "recorded" }, order);
+        policy.Verify(p => p.RequestProxied(context, cluster, destination), Times.Once);
+    }
+
+    [Fact]
+    public async Task Invoke_ForwarderReportsError_RecordsPassiveHealthOutcome()
+    {
+        var (context, cluster, destination) = CreateContext("cluster1", "policy1", passiveHealthEnabled: true);
+        var policy = new Mock<IPassiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy1");
+        policy.Setup(p => p.RequestProxied(context, cluster, destination))
+            .Callback(() =>
+            {
+                var error = context.Features.Get<IForwarderErrorFeature>();
+                Assert.Equal(ForwarderError.RequestTimedOut, error?.Error);
+            });
+        var forwarder = new Mock<IHttpForwarder>();
+        forwarder.Setup(f => f.SendAsync(
+                context,
+                destination.Model.Config.Address,
+                context.GetReverseProxyFeature().Cluster.HttpClient,
+                It.IsAny<ForwarderRequestConfig>(),
+                It.IsAny<HttpTransformer>()))
+            .ReturnsAsync(() =>
+            {
+                context.Features.Set<IForwarderErrorFeature>(
+                    new ForwarderErrorFeature(ForwarderError.RequestTimedOut, new TimeoutException()));
+                return ForwarderError.RequestTimedOut;
+            });
+
+        var sut = CreateMiddleware(forwarder.Object, new[] { policy.Object }, recordPassiveHealthChecks: true);
+
+        await sut.Invoke(context);
+
+        policy.Verify(p => p.RequestProxied(context, cluster, destination), Times.Once);
+    }
+
+    [Fact]
+    public async Task Invoke_ForwarderThrows_DoesNotRecordPassiveHealthOutcome()
+    {
+        var (context, cluster, destination) = CreateContext("cluster1", "policy1", passiveHealthEnabled: true);
+        var policy = new Mock<IPassiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy1");
+        var forwarder = new Mock<IHttpForwarder>();
+        forwarder.Setup(f => f.SendAsync(
+                context,
+                destination.Model.Config.Address,
+                context.GetReverseProxyFeature().Cluster.HttpClient,
+                It.IsAny<ForwarderRequestConfig>(),
+                It.IsAny<HttpTransformer>()))
+            .ThrowsAsync(new InvalidOperationException("Forwarder failure"));
+
+        var sut = CreateMiddleware(forwarder.Object, new[] { policy.Object }, recordPassiveHealthChecks: true);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => sut.Invoke(context));
+
+        policy.VerifyGet(p => p.Name, Times.Once);
+        policy.VerifyNoOtherCalls();
+        Assert.Equal(0, cluster.ConcurrencyCounter.Value);
+        Assert.Equal(0, destination.ConcurrentRequestCount);
+    }
+
+    [Fact]
+    public async Task Invoke_RecordPassiveHealthChecksDisabled_DoesNotRecord()
+    {
+        var (context, _, destination) = CreateContext("cluster1", "policy1", passiveHealthEnabled: false);
+        var policy = new Mock<IPassiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy1");
+        var forwarder = new Mock<IHttpForwarder>();
+        forwarder.Setup(f => f.SendAsync(
+                context,
+                destination.Model.Config.Address,
+                context.GetReverseProxyFeature().Cluster.HttpClient,
+                It.IsAny<ForwarderRequestConfig>(),
+                It.IsAny<HttpTransformer>()))
+            .ReturnsAsync(ForwarderError.None);
+
+        var sut = CreateMiddleware(forwarder.Object, new[] { policy.Object }, recordPassiveHealthChecks: true);
+
+        await sut.Invoke(context);
+
+        policy.VerifyGet(p => p.Name, Times.Once);
+        policy.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Invoke_PassiveHealthRecordingNotIntegrated_DoesNotRecord()
+    {
+        var (context, _, destination) = CreateContext("cluster1", "policy1", passiveHealthEnabled: true);
+        var policy = new Mock<IPassiveHealthCheckPolicy>();
+        policy.SetupGet(p => p.Name).Returns("policy1");
+        var forwarder = new Mock<IHttpForwarder>();
+        forwarder.Setup(f => f.SendAsync(
+                context,
+                destination.Model.Config.Address,
+                context.GetReverseProxyFeature().Cluster.HttpClient,
+                It.IsAny<ForwarderRequestConfig>(),
+                It.IsAny<HttpTransformer>()))
+            .ReturnsAsync(ForwarderError.None);
+
+        var sut = CreateMiddleware(forwarder.Object, new[] { policy.Object }, recordPassiveHealthChecks: false);
+
+        await sut.Invoke(context);
+
+        policy.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Invoke_ReassignedDuringForwarding_RecordsAgainstFinalClusterAndDestination()
+    {
+        var (context, initialCluster, initialDestination) = CreateContext("cluster1", "policy1", passiveHealthEnabled: true);
+        var (_, finalCluster, finalDestination) = CreateContext("cluster2", "policy2", passiveHealthEnabled: true);
+        var initialPolicy = new Mock<IPassiveHealthCheckPolicy>();
+        initialPolicy.SetupGet(p => p.Name).Returns("policy1");
+        var finalPolicy = new Mock<IPassiveHealthCheckPolicy>();
+        finalPolicy.SetupGet(p => p.Name).Returns("policy2");
+        var forwarder = new Mock<IHttpForwarder>();
+        forwarder.Setup(f => f.SendAsync(
+                context,
+                initialDestination.Model.Config.Address,
+                context.GetReverseProxyFeature().Cluster.HttpClient,
+                It.IsAny<ForwarderRequestConfig>(),
+                It.IsAny<HttpTransformer>()))
+            .ReturnsAsync(() =>
+            {
+                var finalRoute = new RouteModel(new RouteConfig(), finalCluster, HttpTransformer.Default);
+                context.ReassignProxyRequest(finalRoute, finalCluster);
+                context.GetReverseProxyFeature().ProxiedDestination = finalDestination;
+                return ForwarderError.None;
+            });
+
+        var sut = CreateMiddleware(
+            forwarder.Object,
+            new[] { initialPolicy.Object, finalPolicy.Object },
+            recordPassiveHealthChecks: true);
+
+        await sut.Invoke(context);
+
+        initialPolicy.VerifyGet(p => p.Name, Times.Once);
+        initialPolicy.VerifyNoOtherCalls();
+        finalPolicy.Verify(p => p.RequestProxied(context, finalCluster, finalDestination), Times.Once);
+        Assert.Equal(0, initialCluster.ConcurrencyCounter.Value);
+        Assert.Equal(0, initialDestination.ConcurrentRequestCount);
+    }
+
+    private ForwarderMiddleware CreateMiddleware(
+        IHttpForwarder forwarder,
+        IEnumerable<IPassiveHealthCheckPolicy> policies,
+        bool recordPassiveHealthChecks)
+    {
+        return new ForwarderMiddleware(
+            _ => Task.CompletedTask,
+            Mock<ILogger<ForwarderMiddleware>>().Object,
+            forwarder,
+            Mock<IRandomFactory>().Object,
+            policies,
+            recordPassiveHealthChecks);
+    }
+
+    private static (DefaultHttpContext Context, ClusterState Cluster, DestinationState Destination) CreateContext(
+        string clusterId,
+        string policy,
+        bool passiveHealthEnabled)
+    {
+        var context = new DefaultHttpContext();
+        var httpClient = new HttpMessageInvoker(new Mock<HttpMessageHandler>().Object);
+        var cluster = new ClusterState(clusterId);
+        var clusterModel = new ClusterModel(
+            new ClusterConfig
+            {
+                ClusterId = clusterId,
+                HealthCheck = new HealthCheckConfig
+                {
+                    Passive = new PassiveHealthCheckConfig
+                    {
+                        Enabled = passiveHealthEnabled,
+                        Policy = policy,
+                    }
+                }
+            },
+            httpClient);
+        cluster.Model = clusterModel;
+        var destination = cluster.Destinations.GetOrAdd(
+            "destination1",
+            id => new DestinationState(id)
+            {
+                Model = new DestinationModel(new DestinationConfig { Address = "https://localhost:123/" })
+            });
+        var route = new RouteModel(new RouteConfig { RouteId = "route1" }, cluster, HttpTransformer.Default);
+        context.Features.Set<IReverseProxyFeature>(
+            new ReverseProxyFeature
+            {
+                AvailableDestinations = new List<DestinationState> { destination }.AsReadOnly(),
+                Cluster = clusterModel,
+                Route = route,
+            });
+
+        return (context, cluster, destination);
     }
 }
