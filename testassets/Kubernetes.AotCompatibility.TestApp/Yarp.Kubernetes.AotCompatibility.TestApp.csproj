@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Kubernetes.Controller\Yarp.Kubernetes.Controller.csproj" />
+    <ProjectReference Include="..\..\src\ReverseProxy\Yarp.ReverseProxy.csproj" />
+    <ProjectReference Include="..\..\src\TelemetryConsumption\Yarp.Telemetry.Consumption.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Yarp.Kubernetes.Controller" />
+    <TrimmerRootAssembly Include="Yarp.ReverseProxy" />
+    <TrimmerRootAssembly Include="Yarp.Telemetry.Consumption" />
+  </ItemGroup>
+
+</Project>

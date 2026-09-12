@@ -7,6 +7,7 @@
     <NoWarn>$(NoWarn);CS8002</NoWarn>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <IsAotCompatible>true</IsAotCompatible>
     <PackageTags>yarp;dotnet;reverse-proxy;aspnetcore;kubernetes</PackageTags>
   </PropertyGroup>
 

@@ -11,6 +11,7 @@ using Yarp.Kubernetes.Controller.Caching;
 using Yarp.Kubernetes.Controller.Client;
 using Yarp.Kubernetes.Controller.Configuration;
 using Yarp.Kubernetes.Controller.Converters;
+using Yarp.Kubernetes.Controller.Protocol;
 
 namespace Yarp.Kubernetes.Controller.Services;
 
@@ -63,8 +64,8 @@ public partial class Reconciler : IReconciler
 
             var clusters = configContext.BuildClusterConfig();
 
-            _logger.LogInformation(JsonSerializer.Serialize(configContext.Routes));
-            _logger.LogInformation(JsonSerializer.Serialize(clusters));
+            _logger.LogInformation(JsonSerializer.Serialize(configContext.Routes, KubernetesJsonSerializerContext.Default.ListRouteConfig));
+            _logger.LogInformation(JsonSerializer.Serialize(clusters, KubernetesJsonSerializerContext.Default.ListClusterConfig));
 
             await _updateConfig.UpdateAsync(configContext.Routes, clusters, cancellationToken).ConfigureAwait(false);
             await _ingressResourceStatusUpdater.UpdateStatusAsync(cancellationToken);
