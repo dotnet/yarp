@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Yarp.ReverseProxy.Forwarder;
 
@@ -17,6 +19,11 @@ public abstract class RequestTransform
     /// Transforms any of the available fields before building the outgoing request.
     /// </summary>
     public abstract ValueTask ApplyAsync(RequestTransformContext context);
+
+    internal virtual void ApplyFast(HttpContext httpContext, HttpRequestMessage proxyRequest, ref bool headersCopied)
+    {
+        throw new NotSupportedException();
+    }
 
     /// <summary>
     /// Removes and returns the current header value by first checking the HttpRequestMessage,
@@ -34,8 +41,11 @@ public abstract class RequestTransform
             throw new ArgumentException($"'{nameof(headerName)}' cannot be null or empty.", nameof(headerName));
         }
 
-        var proxyRequest = context.ProxyRequest;
+        return TakeHeader(context.HttpContext, context.ProxyRequest, context.HeadersCopied, headerName);
+    }
 
+    internal static StringValues TakeHeader(HttpContext httpContext, HttpRequestMessage proxyRequest, bool headersCopied, string headerName)
+    {
         if (RequestUtilities.TryGetValues(proxyRequest.Headers, headerName, out var existingValues))
         {
             proxyRequest.Headers.Remove(headerName);
@@ -44,9 +54,9 @@ public abstract class RequestTransform
         {
             content.Headers.Remove(headerName);
         }
-        else if (!context.HeadersCopied)
+        else if (!headersCopied)
         {
-            existingValues = context.HttpContext.Request.Headers[headerName];
+            existingValues = httpContext.Request.Headers[headerName];
         }
 
         return existingValues;
@@ -60,7 +70,12 @@ public abstract class RequestTransform
         ArgumentNullException.ThrowIfNull(context);
         ArgumentException.ThrowIfNullOrEmpty(headerName);
 
-        RequestUtilities.AddHeader(context.ProxyRequest, headerName, values);
+        AddHeader(context.ProxyRequest, headerName, values);
+    }
+
+    internal static void AddHeader(HttpRequestMessage proxyRequest, string headerName, StringValues values)
+    {
+        RequestUtilities.AddHeader(proxyRequest, headerName, values);
     }
 
     /// <summary>
@@ -71,6 +86,11 @@ public abstract class RequestTransform
         ArgumentNullException.ThrowIfNull(context);
         ArgumentException.ThrowIfNullOrEmpty(headerName);
 
-        RequestUtilities.RemoveHeader(context.ProxyRequest, headerName);
+        RemoveHeader(context.ProxyRequest, headerName);
+    }
+
+    internal static void RemoveHeader(HttpRequestMessage proxyRequest, string headerName)
+    {
+        RequestUtilities.RemoveHeader(proxyRequest, headerName);
     }
 }
