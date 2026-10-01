@@ -12,7 +12,18 @@ public static class NavigationFallbackFeature
     {
         if (config.NavigationFallback.Path is not null)
         {
-            app.MapFallbackToFile(config.NavigationFallback.Path);
+            // The fallback handler clears the matched endpoint before serving the file,
+            // so record the handler on the HttpContext rather than reading endpoint metadata later.
+            app.MapFallbackToFile(config.NavigationFallback.Path)
+                .Add(builder =>
+                {
+                    var inner = builder.RequestDelegate!;
+                    builder.RequestDelegate = context =>
+                    {
+                        context.Items[RequestLoggingFeature.HandlerKey] = RequestLoggingFeature.FallbackHandler;
+                        return inner(context);
+                    };
+                });
         }
 
         return app;
