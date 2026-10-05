@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
 using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Model;
@@ -32,17 +34,28 @@ public class RequestHeaderOriginalHostTransform : RequestTransform
 
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
-        var destinationConfigHost = context.HttpContext.Features.Get<IReverseProxyFeature>()?.ProxiedDestination?.Model.Config?.Host;
-        var originalHost = context.HttpContext.Request.Host.Value is { Length: > 0 } host ? host : null;
-        var existingHost = RequestUtilities.TryGetValues(context.ProxyRequest.Headers, HeaderNames.Host, out var currentHost) ? currentHost.ToString() : null;
+        Apply(context.HttpContext, context.ProxyRequest, context.HeadersCopied);
+        return default;
+    }
+
+    internal override void ApplyFast(HttpContext httpContext, HttpRequestMessage proxyRequest, ref bool headersCopied)
+    {
+        Apply(httpContext, proxyRequest, headersCopied);
+    }
+
+    private void Apply(HttpContext httpContext, HttpRequestMessage proxyRequest, bool headersCopied)
+    {
+        var destinationConfigHost = httpContext.Features.Get<IReverseProxyFeature>()?.ProxiedDestination?.Model.Config?.Host;
+        var originalHost = httpContext.Request.Host.Value is { Length: > 0 } host ? host : null;
+        var existingHost = RequestUtilities.TryGetValues(proxyRequest.Headers, HeaderNames.Host, out var currentHost) ? currentHost.ToString() : null;
 
         if (UseOriginalHost)
         {
-            if (!context.HeadersCopied && existingHost is null)
+            if (!headersCopied && existingHost is null)
             {
                 // Propagate the host if the transform pipeline didn't already override it.
                 // If there was no original host specified, allow the destination config host to flow through.
-                context.ProxyRequest.Headers.TryAddWithoutValidation(HeaderNames.Host, originalHost ?? destinationConfigHost);
+                proxyRequest.Headers.TryAddWithoutValidation(HeaderNames.Host, originalHost ?? destinationConfigHost);
             }
         }
         else if (existingHost is null || string.Equals(originalHost, existingHost, StringComparison.Ordinal))
@@ -50,9 +63,7 @@ public class RequestHeaderOriginalHostTransform : RequestTransform
             // Use the host from destination configuration (which may be null) if either:
             // * there is no host header set, or
             // * the original host header is being suppressed and has not been modified by the transform pipeline
-            context.ProxyRequest.Headers.Host = destinationConfigHost;
+            proxyRequest.Headers.Host = destinationConfigHost;
         }
-
-        return default;
     }
 }
