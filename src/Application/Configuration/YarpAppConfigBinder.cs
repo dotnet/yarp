@@ -17,6 +17,10 @@ public static class YarpAppConfigBinder
 
         configuration.GetSection(nameof(config.StaticFiles)).Bind(config.StaticFiles);
         configuration.GetSection(nameof(config.NavigationFallback)).Bind(config.NavigationFallback);
+        configuration.GetSection(nameof(config.Headers)).Bind(config.Headers);
+        configuration.GetSection(nameof(config.Redirects)).Bind(config.Redirects);
+        configuration.GetSection(nameof(config.Rewrites)).Bind(config.Rewrites);
+        configuration.GetSection(nameof(config.ErrorPages)).Bind(config.ErrorPages);
         configuration.GetSection(nameof(config.Telemetry)).Bind(config.Telemetry);
 
         // Legacy env var support
@@ -42,9 +46,9 @@ public static class YarpAppConfigBinder
             && !string.Equals(configuration["YARP_DISABLE_SPA_FALLBACK"], "true", StringComparison.OrdinalIgnoreCase))
         {
             // Legacy behavior: SPA fallback was on by default when static files were enabled
-            // Only apply if using legacy keys (no explicit NavigationFallback section)
-            if (!configuration.GetSection(nameof(config.NavigationFallback)).Exists()
-                && string.Equals(configuration["YARP_ENABLE_STATIC_FILES"], "true", StringComparison.OrdinalIgnoreCase))
+            // through YARP_ENABLE_STATIC_FILES. Adding new NavigationFallback children like Exclude
+            // should not disable that default unless Path itself was explicitly configured.
+            if (string.Equals(configuration["YARP_ENABLE_STATIC_FILES"], "true", StringComparison.OrdinalIgnoreCase))
             {
                 config.NavigationFallback.Path = "/index.html";
             }
