@@ -165,9 +165,7 @@ public static class RequestUtilities
                 if (requiresEscaping)
                 {
                     // the current segment requires escape
-                    var str = value.Substring(start, count);
-                    var uri = Uri.EscapeDataString(str);
-                    builder.Append(uri);
+                    builder.Append(Uri.EscapeDataString(value.AsSpan(start, count)));
 
                     requiresEscaping = false;
                     start = i;
