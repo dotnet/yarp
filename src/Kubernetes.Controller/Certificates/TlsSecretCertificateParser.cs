@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Yarp.Kubernetes.Controller.Certificates;
 
-public class TlsSecretCertificateParser : ITlsSecretCertificateParser
+internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
 {
     private const string TlsCertKey = "tls.crt";
     private const string TlsPrivateKeyKey = "tls.key";
