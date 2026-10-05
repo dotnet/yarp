@@ -43,13 +43,8 @@ public class CertificateHelper : ICertificateHelper
             {
                 // Cert needs converting. Read https://github.com/dotnet/runtime/issues/23749#issuecomment-388231655
                 using var convertedCertificate = X509Certificate2.CreateFromPem(certString, privateString);
-#if NET10_0_OR_GREATER
                 var bytes = convertedCertificate.Export(X509ContentType.Pkcs12);
                 var result = X509CertificateLoader.LoadCertificate(bytes);
-                return result;
-#else
-                return new X509Certificate2(convertedCertificate.Export(X509ContentType.Pkcs12));
-#endif
             }
 
             return X509Certificate2.CreateFromPem(certString, privateString);
