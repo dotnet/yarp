@@ -20,21 +20,6 @@ BenchmarksEventSource.MeasureAspNetVersion();
 BenchmarksEventSource.MeasureNetCoreAppVersion();
 
 var builder = WebApplication.CreateBuilder(args);
-var cb = builder.Configuration;
-var config = cb.AddEnvironmentVariables(prefix: "ASPNETCORE_")
-    .AddCommandLine(args)
-    .AddJsonFile("appsettings.json", optional: true)
-    .Build();
-var services = builder.Services;
-
-// builder.Host.ConfigureLoggingg(logging  =>
-//     {
-//         if (Enum.TryParse(config["LogLevel"], out LogLevel logLevel))
-//         {
-//             Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
-//             logging .AddConsole().SetMinimumLevel(logLevel);
-//         }
-//     });
 
 builder.WebHost.UseKestrel((context, kestrelOptions) =>
     {
@@ -44,7 +29,6 @@ builder.WebHost.UseKestrel((context, kestrelOptions) =>
         });
     })
     .UseContentRoot(Directory.GetCurrentDirectory())
-    .UseConfiguration(config)
     .ConfigureServices(services =>
     {
         services.AddHttpForwarder();
@@ -65,7 +49,7 @@ app.Run(async context =>
 
 string GetClusterUrl()
 {
-    var clusterUrls = config["clusterUrls"];
+    var clusterUrls = app.Configuration["clusterUrls"];
 
     if (string.IsNullOrWhiteSpace(clusterUrls))
     {
