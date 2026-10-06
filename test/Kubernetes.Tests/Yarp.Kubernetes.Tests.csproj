@@ -30,6 +30,8 @@
     <EmbeddedResource Include="Client\*.yaml" />
     <EmbeddedResource Include="Certificates\cert.der" />
     <EmbeddedResource Include="Certificates\cert.pem" />
+    <EmbeddedResource Include="Certificates\fullChainCert.pem" />
+    <EmbeddedResource Include="Certificates\fullChainKey.pem" />
     <EmbeddedResource Include="Certificates\key.der" />
     <EmbeddedResource Include="Certificates\key.pem" />
   </ItemGroup>
