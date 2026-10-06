@@ -11,6 +11,7 @@ internal sealed class QueryTransformFactory : ITransformFactory
 {
     internal const string QueryValueParameterKey = "QueryValueParameter";
     internal const string QueryRouteParameterKey = "QueryRouteParameter";
+    internal const string QueryParameterKey = "QueryParameter";
     internal const string QueryRemoveParameterKey = "QueryRemoveParameter";
     internal const string AppendKey = "Append";
     internal const string SetKey = "Set";
@@ -31,6 +32,14 @@ internal sealed class QueryTransformFactory : ITransformFactory
             if (!transformValues.TryGetValue(AppendKey, out var _) && !transformValues.TryGetValue(SetKey, out var _))
             {
                 context.Errors.Add(new ArgumentException($"Unexpected parameters for QueryRouteParameter: {string.Join(';', transformValues.Keys)}. Expected 'Append' or 'Set'."));
+            }
+        }
+        else if (transformValues.TryGetValue(QueryParameterKey, out var queryParameter))
+        {
+            TransformHelpers.TryCheckTooManyParameters(context, transformValues, expected: 2);
+            if (!transformValues.TryGetValue(SetKey, out var _) || transformValues.TryGetValue(AppendKey, out var _))
+            {
+                context.Errors.Add(new ArgumentException($"Unexpected parameters for QueryParameter: {string.Join(';', transformValues.Keys)}. Expected 'Set'."));
             }
         }
         else if (transformValues.TryGetValue(QueryRemoveParameterKey, out var removeQueryParameter))
@@ -73,6 +82,18 @@ internal sealed class QueryTransformFactory : ITransformFactory
             else if (transformValues.TryGetValue(SetKey, out var routeValueKeySet))
             {
                 context.AddQueryRouteValue(queryRouteParameter, routeValueKeySet, append: false);
+            }
+            else
+            {
+                throw new NotSupportedException(string.Join(";", transformValues.Keys));
+            }
+        }
+        else if (transformValues.TryGetValue(QueryParameterKey, out var queryParameter))
+        {
+            TransformHelpers.CheckTooManyParameters(transformValues, expected: 2);
+            if (transformValues.TryGetValue(SetKey, out var setValue) && !transformValues.TryGetValue(AppendKey, out var _))
+            {
+                context.AddQueryParameter(queryParameter, setValue);
             }
             else
             {
