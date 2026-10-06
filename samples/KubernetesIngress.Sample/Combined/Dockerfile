@@ -1,11 +1,11 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0  AS publish
+FROM mcr.microsoft.com/dotnet/sdk:10.0  AS publish
 WORKDIR /src
 # We need to install the SDK manually because we might target an unreleased SDK
 COPY ["global.json", ""]
@@ -30,7 +30,7 @@ WORKDIR /src
 COPY . .
 
 WORKDIR /src/samples/KubernetesIngress.Sample/Combined/
-RUN /root/.dotnet/dotnet publish -c Release --no-restore -o /app/publish -f net8.0
+RUN /root/.dotnet/dotnet publish -c Release --no-restore -o /app/publish -f net10.0
 
 FROM base AS final
 WORKDIR /app

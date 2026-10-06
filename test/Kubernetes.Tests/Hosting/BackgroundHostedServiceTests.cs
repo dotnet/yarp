@@ -41,14 +41,14 @@ public class BackgroundHostedServiceTests
     {
         var latches = new TestLatches();
 
-        using var host = new WebHostBuilder()
+        using var host = new HostBuilder()
             .ConfigureServices((hbc, services) =>
             {
                 services.AddSingleton<IServer, FakeServer>();
                 services.AddSingleton<IHostedService, FakeBackgroundHostedService>();
                 services.AddSingleton(latches);
             })
-            .Configure(app => { })
+            // .Configure(app => { })
             .Build();
 
         // TODO: figure out why the hosting takes so long to unwind naturally
@@ -69,14 +69,14 @@ public class BackgroundHostedServiceTests
     {
         var context = new TestLatches();
 
-        using var host = new WebHostBuilder()
+        using var host = new HostBuilder()
             .ConfigureServices((hbc, services) =>
             {
                 services.AddSingleton<IServer, FakeServer>();
                 services.AddSingleton<IHostedService, FakeBackgroundHostedService>();
                 services.AddSingleton(context);
             })
-            .Configure(app => { })
+            // .Configure(app => { })
             .Build();
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
@@ -84,11 +84,12 @@ public class BackgroundHostedServiceTests
         var runTask = host.RunAsync(cts.Token);
 
 #pragma warning disable CA1303 // Do not pass literals as localized parameters
-        context.RunResult.Throw(new ApplicationException("Unwind"));
+        var appException = new ApplicationException("Unwind");
+        context.RunResult.Throw(appException);
 #pragma warning restore CA1303 // Do not pass literals as localized parameters
 
-        var ex = await Assert.ThrowsAsync<AggregateException>(() => runTask);
+        var ex = await Assert.ThrowsAsync<ApplicationException>(() => runTask);
 
-        Assert.Equal("Unwind", Assert.Single(ex.Flatten().InnerExceptions).Message);
+        Assert.Equal(appException.Message, ex.Message);
     }
 }
