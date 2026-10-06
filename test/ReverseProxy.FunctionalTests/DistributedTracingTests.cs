@@ -21,6 +21,7 @@ public class DistributedTracingTests
 
     // The default propagator is now W3C-only, so the hierarchical theory case is no longer a valid “works” scenario, and "Bar" is invalid W3C tracestate. 
     // Keep this test focused on supported default end-to-end propagation, use valid W3C state, and remove obsolete legacy assertions rather than mutating global propagator state.
+    
     [Fact]
     public async Task DistributedTracing_Works()
     {
