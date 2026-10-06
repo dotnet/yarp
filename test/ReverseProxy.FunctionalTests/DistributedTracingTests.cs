@@ -15,15 +15,14 @@ namespace Yarp.ReverseProxy;
 public class DistributedTracingTests
 {
     // These constants depend on the default behavior of DistributedContextPropagator
-    private const string Baggage = "Correlation-Context";
+    private const string Baggage = "baggage";
     private const string TraceParent = "traceparent";
     private const string TraceState = "tracestate";
-    private const string RequestId = "Request-Id";
 
-    [Theory]
-    [InlineData(ActivityIdFormat.W3C)]
-    [InlineData(ActivityIdFormat.Hierarchical)]
-    public async Task DistributedTracing_Works(ActivityIdFormat idFormat)
+    // The default propagator is now W3C-only, so the hierarchical theory case is no longer a valid “works” scenario, and "Bar" is invalid W3C tracestate. 
+    // Keep this test focused on supported default end-to-end propagation, use valid W3C state, and remove obsolete legacy assertions rather than mutating global propagator state.
+    [Fact]
+    public async Task DistributedTracing_Works()
     {
         var proxyHeaders = new HeaderDictionary();
         var downstreamHeaders = new HeaderDictionary();
@@ -51,16 +50,9 @@ public class DistributedTracingTests
             },
         };
 
-        // Microsoft.ApplicationInsights (transitive dependency brought in by
-        // Microsoft.Testing.Extensions.Telemetry) sets Activity.ForceDefaultIdFormat = true
-        // globally, which forces every new Activity to use W3C format regardless of the
-        // parent activity's format. Disable the override so that child activities inherit
-        // the parent's format as they would in a normal application.
-        Activity.ForceDefaultIdFormat = false;
-
         var clientActivity = new Activity("Foo");
-        clientActivity.SetIdFormat(idFormat);
-        clientActivity.TraceStateString = "Bar";
+        clientActivity.SetIdFormat(ActivityIdFormat.W3C);
+        clientActivity.TraceStateString = "foo=bar";
         clientActivity.AddBaggage("One", "1");
         clientActivity.AddBaggage("Two", "2");
         clientActivity.Start();
@@ -74,36 +66,25 @@ public class DistributedTracingTests
         Assert.NotEmpty(proxyHeaders);
         Assert.NotEmpty(downstreamHeaders);
 
-        ValidateActivities(idFormat, clientActivity, proxyHeaders, downstreamHeaders);
+        ValidateActivities(clientActivity, proxyHeaders, downstreamHeaders);
     }
 
-    private static void ValidateActivities(ActivityIdFormat idFormat, Activity client, HeaderDictionary proxy, HeaderDictionary downstream)
+    private static void ValidateActivities(Activity client, HeaderDictionary proxy, HeaderDictionary downstream)
     {
-        var baggage = string.Join(", ", client.Baggage.Select(pair => $"{pair.Key}={pair.Value}"));
+        var baggage = string.Join(", ", client.Baggage.Select(pair => $"{pair.Key} = {pair.Value}"));
         Assert.Equal(baggage, proxy[Baggage]);
         Assert.Equal(baggage, downstream[Baggage]);
 
-        if (idFormat == ActivityIdFormat.W3C)
-        {
-            Assert.True(ActivityContext.TryParse(proxy[TraceParent], proxy[TraceState], out var proxyContext));
-            Assert.True(ActivityContext.TryParse(downstream[TraceParent], downstream[TraceState], out var downstreamContext));
-            Assert.Equal(client.TraceStateString, proxyContext.TraceState);
-            Assert.Equal(client.TraceStateString, downstreamContext.TraceState);
-            var proxyTraceId = proxyContext.TraceId.ToHexString();
-            var proxySpanId = proxyContext.SpanId.ToHexString();
-            var downstreamTraceId = downstreamContext.TraceId.ToHexString();
-            var downstreamSpanId = downstreamContext.SpanId.ToHexString();
-            Assert.Equal(client.TraceId.ToHexString(), proxyTraceId);
-            Assert.Equal(client.TraceId.ToHexString(), downstreamTraceId);
-            Assert.NotEqual(proxySpanId, downstreamSpanId);
-        }
-        else
-        {
-            var proxyId = proxy[RequestId].ToString();
-            var downstreamId = downstream[RequestId].ToString();
-            Assert.StartsWith(client.Id, proxyId);
-            Assert.StartsWith(proxyId, downstreamId);
-            Assert.NotEqual(proxyId, downstreamId);
-        }
+        Assert.True(ActivityContext.TryParse(proxy[TraceParent], proxy[TraceState], out var proxyContext));
+        Assert.True(ActivityContext.TryParse(downstream[TraceParent], downstream[TraceState], out var downstreamContext));
+        Assert.Equal(client.TraceStateString, proxyContext.TraceState);
+        Assert.Equal(client.TraceStateString, downstreamContext.TraceState);
+        var proxyTraceId = proxyContext.TraceId.ToHexString();
+        var proxySpanId = proxyContext.SpanId.ToHexString();
+        var downstreamTraceId = downstreamContext.TraceId.ToHexString();
+        var downstreamSpanId = downstreamContext.SpanId.ToHexString();
+        Assert.Equal(client.TraceId.ToHexString(), proxyTraceId);
+        Assert.Equal(client.TraceId.ToHexString(), downstreamTraceId);
+        Assert.NotEqual(proxySpanId, downstreamSpanId);
     }
 }
