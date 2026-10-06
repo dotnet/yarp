@@ -12,7 +12,7 @@ namespace Yarp.Kubernetes.Controller.Certificates.Tests;
 
 public class TlsSecretCertificateParserTests
 {
-    private readonly NullLogger<TlsSecretCertificateParser> _mockLogger;
+    private readonly NullLogger<TlsSecretCertificateParser> _logger;
     private readonly ITlsSecretCertificateParser _tlsSecretCertificateParser;
     private readonly byte[] _pemPrivateKey;
     private readonly byte[] _pemCert;
@@ -23,9 +23,9 @@ public class TlsSecretCertificateParserTests
 
     public TlsSecretCertificateParserTests()
     {
-        _mockLogger = new NullLogger<TlsSecretCertificateParser>();
+        _logger = new NullLogger<TlsSecretCertificateParser>();
 
-        _tlsSecretCertificateParser = new TlsSecretCertificateParser(_mockLogger);
+        _tlsSecretCertificateParser = new TlsSecretCertificateParser(_logger);
         _pemCert = ReadManifestData(".Certificates.cert.pem");
         _pemPrivateKey = ReadManifestData(".Certificates.key.pem");
         _pemFullChainCert = ReadManifestData(".Certificates.fullChainCert.pem");
