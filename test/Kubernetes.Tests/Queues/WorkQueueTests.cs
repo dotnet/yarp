@@ -10,7 +10,7 @@ namespace Yarp.Kubernetes.Controller.Queues.Tests;
 
 public class WorkQueueTests
 {
-    public CancellationTokenSource Cancellation => new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    public CancellationTokenSource Cancellation { get; set; } = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
     [Fact]
     public async Task NormalUsageIsAddGetDone()
