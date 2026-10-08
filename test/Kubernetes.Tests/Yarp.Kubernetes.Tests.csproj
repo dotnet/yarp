@@ -22,8 +22,10 @@
     <None Remove="Client\*.yaml" />
     <None Remove="Certificates\cert.der" />
     <None Remove="Certificates\cert.pem" />
+    <None Remove="Certificates\fullChainCert.pem" />
     <None Remove="Certificates\key.der" />
     <None Remove="Certificates\key.pem" />
+    <None Remove="Certificates\fullChainKey.pem" />
   </ItemGroup>
 
   <ItemGroup>
