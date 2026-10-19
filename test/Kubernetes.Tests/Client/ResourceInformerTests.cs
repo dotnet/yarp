@@ -5,6 +5,7 @@ using k8s;
 using k8s.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -108,5 +109,27 @@ public class ResourceInformerTests
         await registration.ReadyAsync(cancellation.Token);
 
         Assert.Equal(shouldBe, deployments.Keys);
+    }
+
+    [Fact]
+    public async Task WatchIsRestartedWhenConnectionClosesBeforeFirstEvent()
+    {
+        using var cancellation = new CancellationTokenSource(Debugger.IsAttached ? TimeSpan.FromMinutes(5) : TimeSpan.FromSeconds(5));
+        using var stopping = new CancellationTokenSource();
+
+        var hostApplicationLifetime = new Mock<IHostApplicationLifetime>();
+        hostApplicationLifetime.SetupGet(lifetime => lifetime.ApplicationStopping).Returns(stopping.Token);
+
+        using var informer = new FlakyWatchResourceInformer(hostApplicationLifetime.Object);
+
+        informer.StartWatching();
+        await informer.StartAsync(cancellation.Token);
+
+        await informer.WatchRestarted.Task.WaitAsync(cancellation.Token);
+
+        hostApplicationLifetime.Verify(lifetime => lifetime.StopApplication(), Times.Never);
+
+        stopping.Cancel();
+        await informer.StopAsync(cancellation.Token);
     }
 }
