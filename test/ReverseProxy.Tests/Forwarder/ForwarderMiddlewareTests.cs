@@ -7,20 +7,24 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using Yarp.Tests.Common;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Model;
+using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.Forwarder.Tests;
 
-public class ForwarderMiddlewareTests : TestAutoMockBase
+public class ForwarderMiddlewareTests
 {
+    private readonly Mock<IHttpForwarder> _forwarder = new();
+
     [Fact]
     public void Constructor_Works()
     {
-        Create<ForwarderMiddleware>();
+        CreateMiddleware();
     }
 
     [Fact]
@@ -67,7 +71,7 @@ public class ForwarderMiddlewareTests : TestAutoMockBase
 
         var tcs1 = new TaskCompletionSource<bool>();
         var tcs2 = new TaskCompletionSource<bool>();
-        Mock<IHttpForwarder>()
+        _forwarder
             .Setup(h => h.SendAsync(
                 httpContext,
                 It.Is<string>(uri => uri == "https://localhost:123/a/b/"),
@@ -86,7 +90,7 @@ public class ForwarderMiddlewareTests : TestAutoMockBase
                 })
             .Verifiable();
 
-        var sut = Create<ForwarderMiddleware>();
+        var sut = CreateMiddleware();
 
         Assert.Equal(0, cluster1.ConcurrencyCounter.Value);
         Assert.Equal(0, destination1.ConcurrentRequestCount);
@@ -98,7 +102,7 @@ public class ForwarderMiddlewareTests : TestAutoMockBase
             await task;
         }
 
-        Mock<IHttpForwarder>().Verify();
+        _forwarder.Verify();
 
         await tcs1.Task; // Wait until we get to the proxying step.
         Assert.Equal(1, cluster1.ConcurrencyCounter.Value);
@@ -141,7 +145,7 @@ public class ForwarderMiddlewareTests : TestAutoMockBase
                 Route = routeConfig,
             });
 
-        Mock<IHttpForwarder>()
+        _forwarder
             .Setup(h => h.SendAsync(
                 httpContext,
                 It.IsAny<string>(),
@@ -150,17 +154,26 @@ public class ForwarderMiddlewareTests : TestAutoMockBase
                 It.IsAny<HttpTransformer>()))
             .Returns(() => throw new NotImplementedException());
 
-        var sut = Create<ForwarderMiddleware>();
+        var sut = CreateMiddleware();
 
         Assert.Equal(0, cluster1.ConcurrencyCounter.Value);
 
         await sut.Invoke(httpContext);
         Assert.Equal(0, cluster1.ConcurrencyCounter.Value);
 
-        Mock<IHttpForwarder>().Verify();
+        _forwarder.Verify();
         Assert.Equal(StatusCodes.Status503ServiceUnavailable, httpContext.Response.StatusCode);
         var errorFeature = httpContext.Features.Get<IForwarderErrorFeature>();
         Assert.Equal(ForwarderError.NoAvailableDestinations, errorFeature?.Error);
         Assert.Null(errorFeature.Exception);
+    }
+
+    private ForwarderMiddleware CreateMiddleware()
+    {
+        return new ForwarderMiddleware(
+            _ => Task.CompletedTask,
+            NullLogger<ForwarderMiddleware>.Instance,
+            _forwarder.Object,
+            new Mock<IRandomFactory>().Object);
     }
 }
