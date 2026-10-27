@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -112,7 +113,22 @@ public class ResourceInformerTests
     }
 
     [Fact]
-    public async Task WatchIsRestartedWhenConnectionClosesBeforeFirstEvent()
+    public Task WatchIsRestartedWhenConnectionClosesBeforeFirstEvent()
+    {
+        return AssertWatchIsRestartedAsync(
+            new HttpRequestException("Error while copying content to a stream.", new EndOfStreamException()),
+            failAfterFirstEvent: false);
+    }
+
+    [Fact]
+    public Task WatchIsRestartedWhenServerClosesConnectionMidStream()
+    {
+        return AssertWatchIsRestartedAsync(
+            new HttpProtocolException(0, "The HTTP/2 server closed the connection. HTTP/2 error code 'NO_ERROR' (0x0).", null),
+            failAfterFirstEvent: true);
+    }
+
+    private static async Task AssertWatchIsRestartedAsync(Exception firstWatchFailure, bool failAfterFirstEvent)
     {
         using var cancellation = new CancellationTokenSource(Debugger.IsAttached ? TimeSpan.FromMinutes(5) : TimeSpan.FromSeconds(5));
         using var stopping = new CancellationTokenSource();
@@ -120,7 +136,7 @@ public class ResourceInformerTests
         var hostApplicationLifetime = new Mock<IHostApplicationLifetime>();
         hostApplicationLifetime.SetupGet(lifetime => lifetime.ApplicationStopping).Returns(stopping.Token);
 
-        using var informer = new FlakyWatchResourceInformer(hostApplicationLifetime.Object);
+        using var informer = new FlakyWatchResourceInformer(hostApplicationLifetime.Object, firstWatchFailure, failAfterFirstEvent);
 
         informer.StartWatching();
         await informer.StartAsync(cancellation.Token);

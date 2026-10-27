@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,15 +16,19 @@ namespace Yarp.Kubernetes.Controller.Client.Tests;
 
 internal class FlakyWatchResourceInformer : ResourceInformer<V1Pod, V1PodList>
 {
+    private readonly Exception _firstWatchFailure;
+    private readonly bool _failAfterFirstEvent;
     private int _watchCount;
 
-    public FlakyWatchResourceInformer(IHostApplicationLifetime hostApplicationLifetime)
+    public FlakyWatchResourceInformer(IHostApplicationLifetime hostApplicationLifetime, Exception firstWatchFailure, bool failAfterFirstEvent)
         : base(
             new k8s.Kubernetes(new KubernetesClientConfiguration { Host = "http://localhost" }),
             new ResourceSelector<V1Pod>(null),
             hostApplicationLifetime,
             NullLogger.Instance)
     {
+        _firstWatchFailure = firstWatchFailure;
+        _failAfterFirstEvent = failAfterFirstEvent;
     }
 
     public TaskCompletionSource WatchRestarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -55,7 +57,12 @@ internal class FlakyWatchResourceInformer : ResourceInformer<V1Pod, V1PodList>
 
         if (Interlocked.Increment(ref _watchCount) == 1)
         {
-            throw new HttpRequestException("Error while copying content to a stream.", new EndOfStreamException());
+            if (_failAfterFirstEvent)
+            {
+                yield return (WatchEventType.Added, new V1Pod { Metadata = new V1ObjectMeta { Name = "pod", NamespaceProperty = "default", ResourceVersion = "2" } });
+            }
+
+            throw _firstWatchFailure;
         }
 
         WatchRestarted.TrySetResult();

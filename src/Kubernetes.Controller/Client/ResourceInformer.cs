@@ -12,7 +12,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Yarp.Kubernetes.Controller.Hosting;
@@ -156,15 +155,7 @@ public abstract class ResourceInformer<TResource, TListResource> : BackgroundHos
 
                     await WatchAsync(cancellationToken).ConfigureAwait(true);
                 }
-                catch (IOException ex) when (ex.InnerException is SocketException)
-                {
-                    Logger.LogDebug(
-                        EventId(EventType.ReceivedError),
-                        "Received error watching {ResourceType}: {ErrorMessage}",
-                        typeof(TResource).Name,
-                        ex.Message);
-                }
-                catch (HttpRequestException ex)
+                catch (Exception ex) when (ex is IOException or HttpRequestException)
                 {
                     Logger.LogDebug(
                         EventId(EventType.ReceivedError),
