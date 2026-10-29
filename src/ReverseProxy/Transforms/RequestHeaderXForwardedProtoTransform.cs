@@ -3,7 +3,9 @@
 
 using System;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Yarp.ReverseProxy.Transforms;
@@ -37,27 +39,36 @@ public class RequestHeaderXForwardedProtoTransform : RequestTransform
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+        Apply(context.HttpContext, context.ProxyRequest, context.HeadersCopied);
+        return default;
+    }
 
-        var scheme = context.HttpContext.Request.Scheme;
+    internal override void ApplyFast(HttpContext httpContext, HttpRequestMessage proxyRequest, ref bool headersCopied)
+    {
+        Apply(httpContext, proxyRequest, headersCopied);
+    }
+
+    private void Apply(HttpContext httpContext, HttpRequestMessage proxyRequest, bool headersCopied)
+    {
+        var scheme = httpContext.Request.Scheme;
 
         switch (TransformAction)
         {
             case ForwardedTransformActions.Set:
-                RemoveHeader(context, HeaderName);
-                AddHeader(context, HeaderName, scheme);
+                RemoveHeader(proxyRequest, HeaderName);
+                AddHeader(proxyRequest, HeaderName, scheme);
                 break;
             case ForwardedTransformActions.Append:
-                var existingValues = TakeHeader(context, HeaderName);
+                var existingValues = TakeHeader(httpContext, proxyRequest, headersCopied, HeaderName);
                 var values = StringValues.Concat(existingValues, scheme);
-                AddHeader(context, HeaderName, values);
+                AddHeader(proxyRequest, HeaderName, values);
                 break;
             case ForwardedTransformActions.Remove:
-                RemoveHeader(context, HeaderName);
+                RemoveHeader(proxyRequest, HeaderName);
                 break;
             default:
                 throw new NotImplementedException(TransformAction.ToString());
         }
 
-        return default;
     }
 }
