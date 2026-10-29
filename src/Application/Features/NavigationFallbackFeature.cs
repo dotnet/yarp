@@ -12,7 +12,11 @@ public static class NavigationFallbackFeature
     {
         if (config.NavigationFallback.Path is not null)
         {
-            app.MapFallbackToFile(config.NavigationFallback.Path);
+            var fallback = app.MapFallbackToFile(config.NavigationFallback.Path);
+            // Mark the SPA fallback endpoint so the fallback-specific middleware can distinguish
+            // it from reverse proxy endpoints, while static files continue to flow through
+            // StaticFileMiddleware without endpoint metadata.
+            fallback.Add(endpointBuilder => endpointBuilder.Metadata.Add(NavigationFallbackEndpointMetadata.Instance));
         }
 
         return app;

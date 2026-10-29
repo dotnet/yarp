@@ -3,6 +3,69 @@
   "title": "YARP Container Configuration",
   "description": "Configuration schema for the YARP container application",
   "type": "object",
+  "definitions": {
+    "requestMatch": {
+      "type": "object",
+      "description": "Request match criteria aligned with YARP route matching. Path uses ASP.NET route pattern syntax; omitted Path matches all paths.",
+      "properties": {
+        "Path": {
+          "type": "string",
+          "description": "Request path route pattern to match"
+        },
+        "Hosts": {
+          "type": "array",
+          "description": "Host patterns to match. Supports endpoint-routing host patterns such as example.com, *.example.com, and example.com:8443.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Methods": {
+          "type": "array",
+          "description": "HTTP methods to match, such as GET, HEAD, or POST.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "QueryParameters": {
+          "type": "array",
+          "description": "YARP-style query parameter matchers. All configured query parameters must match.",
+          "items": {
+            "$ref": "#/definitions/queryParameterMatch"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "queryParameterMatch": {
+      "type": "object",
+      "properties": {
+        "Name": {
+          "type": "string",
+          "description": "Query parameter name to match"
+        },
+        "Values": {
+          "type": "array",
+          "description": "Allowed values. Required unless Mode is Exists.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "Mode": {
+          "type": "string",
+          "enum": ["Exact", "Contains", "NotContains", "Prefix", "Exists"],
+          "default": "Exact",
+          "description": "How query parameter values are compared"
+        },
+        "IsCaseSensitive": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether value matching is case-sensitive"
+        }
+      },
+      "required": ["Name"],
+      "additionalProperties": false
+    }
+  },
   "properties": {
     "StaticFiles": {
       "type": "object",
@@ -23,6 +86,99 @@
         "Path": {
           "type": "string",
           "description": "File to serve for unmatched non-file routes (e.g., /index.html)"
+        },
+        "Exclude": {
+          "type": "array",
+          "description": "Route-style path matches that bypass SPA fallback",
+          "items": {
+            "$ref": "#/definitions/requestMatch"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Headers": {
+      "type": "array",
+      "description": "Response header rules for app-generated responses. Proxy responses are excluded; use YARP response transforms for proxy headers. All matching rules are applied.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Match": {
+            "$ref": "#/definitions/requestMatch"
+          },
+          "Set": {
+            "type": "object",
+            "description": "Headers to set on matching responses",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["Match", "Set"],
+        "additionalProperties": false
+      }
+    },
+    "Redirects": {
+      "type": "array",
+      "description": "Redirect rules. First matching rule wins.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Match": {
+            "$ref": "#/definitions/requestMatch"
+          },
+          "Destination": {
+            "type": "string",
+            "description": "Redirect target (relative or absolute)"
+          },
+          "StatusCode": {
+            "type": "integer",
+            "enum": [301, 302, 307, 308],
+            "default": 301,
+            "description": "HTTP redirect status code"
+          }
+        },
+        "required": ["Match", "Destination"],
+        "additionalProperties": false
+      }
+    },
+    "Rewrites": {
+      "type": "array",
+      "description": "URL rewrite rules applied before routing using the ASP.NET rewrite middleware (regex syntax).",
+      "items": {
+        "type": "object",
+        "properties": {
+          "Regex": {
+            "type": "string",
+            "description": "Regular expression matched against the request path"
+          },
+          "Replacement": {
+            "type": "string",
+            "description": "Replacement string. May reference capture groups via $1, $2, etc."
+          },
+          "SkipRemainingRules": {
+            "type": "boolean",
+            "default": true,
+            "description": "If true (default), skip remaining rules when this rule matches"
+          }
+        },
+        "required": ["Regex", "Replacement"],
+        "additionalProperties": false
+      }
+    },
+    "ErrorPages": {
+      "type": "object",
+      "description": "Custom error pages, re-executed against the configured path while preserving the original status code. Keys are 3-digit status codes (e.g. '404') or class wildcards (e.g. '5xx'); exact codes win over wildcards.",
+      "patternProperties": {
+        "^[0-9]{3}$": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "Rooted request path for the custom error page (e.g. /404.html)"
+        },
+        "^[0-9][xX][xX]$": {
+          "type": "string",
+          "pattern": "^/",
+          "description": "Rooted request path for the custom error page (e.g. /server-error.html)"
         }
       },
       "additionalProperties": false

@@ -1,0 +1,48 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Yarp.Application.Configuration;
+
+namespace Yarp.Application.Features;
+
+public static class NavigationFallbackExclusionsFeature
+{
+    // Endpoint routing chooses the lowest Order first. Exclusions are regular endpoints, not
+    // MapFallback endpoints, so patterns like "/.well-known/{**catch-all}" also match dotted
+    // file-like paths. Place them just before the SPA fallback while still letting normal
+    // endpoints (including proxy routes) win, and add the config index to preserve rule order.
+    private const int FallbackExclusionEndpointOrderBase = int.MaxValue - 1000;
+
+    public static WebApplication MapNavigationFallbackExclusions(this WebApplication app, YarpAppConfig config)
+    {
+        if (config.NavigationFallback.Path is null || config.NavigationFallback.Exclude.Count == 0)
+        {
+            return app;
+        }
+
+        for (var i = 0; i < config.NavigationFallback.Exclude.Count; i++)
+        {
+            var match = config.NavigationFallback.Exclude[i];
+            var path = RequestMatchEvaluator.GetPathPattern(match, "NavigationFallback exclusion");
+            var order = FallbackExclusionEndpointOrderBase + i;
+            app.Map(
+                    path,
+                    context =>
+                    {
+                        context.Response.StatusCode = StatusCodes.Status404NotFound;
+                        return Task.CompletedTask;
+                    })
+                .Add(endpointBuilder =>
+                {
+                    endpointBuilder.DisplayName = $"Fallback exclusion {path}";
+                    ((RouteEndpointBuilder)endpointBuilder).Order = order;
+                    RequestMatchEvaluator.AddEndpointMetadata(endpointBuilder, match, "NavigationFallback exclusion");
+                });
+        }
+
+        return app;
+    }
+}
