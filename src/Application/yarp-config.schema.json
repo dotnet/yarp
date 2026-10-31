@@ -39,6 +39,19 @@
       },
       "additionalProperties": false
     },
+    "Log": {
+      "type": "object",
+      "description": "Console output mode. Standard Logging:LogLevel and Logging:Console:LogLevel settings still apply on top.",
+      "properties": {
+        "Level": {
+          "type": "string",
+          "enum": ["default", "requests", "debug"],
+          "default": "default",
+          "description": "default: banner and warnings/errors, with proxy failures condensed to one line. requests: also one line per request. debug: full framework logs, request lines and a resolved config dump at startup."
+        }
+      },
+      "additionalProperties": false
+    },
     "ReverseProxy": {
       "type": "object",
       "description": "YARP reverse proxy configuration. See https://microsoft.github.io/reverse-proxy/articles/config-files.html"
