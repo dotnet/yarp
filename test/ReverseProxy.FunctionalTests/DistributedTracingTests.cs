@@ -7,24 +7,29 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Yarp.ReverseProxy.Common;
+using Yarp.ReverseProxy.Forwarder;
 
 namespace Yarp.ReverseProxy;
 
+[Collection(nameof(DistributedTracingTests))]
 public class DistributedTracingTests
 {
-    // These constants depend on the default behavior of DistributedContextPropagator
-    private const string Baggage = "Correlation-Context";
     private const string TraceParent = "traceparent";
     private const string TraceState = "tracestate";
     private const string RequestId = "Request-Id";
 
     [Theory]
-    [InlineData(ActivityIdFormat.W3C)]
-    [InlineData(ActivityIdFormat.Hierarchical)]
-    public async Task DistributedTracing_Works(ActivityIdFormat idFormat)
+    [InlineData(ActivityIdFormat.W3C, false)]
+    [InlineData(ActivityIdFormat.W3C, true)]
+    [InlineData(ActivityIdFormat.Hierarchical, true)]
+    public async Task DistributedTracing_Works(ActivityIdFormat idFormat, bool usePreW3CPropagator)
     {
+        var propagator = usePreW3CPropagator
+            ? DistributedContextPropagator.CreatePreW3CPropagator()
+            : DistributedContextPropagator.CreateDefaultPropagator();
         var proxyHeaders = new HeaderDictionary();
         var downstreamHeaders = new HeaderDictionary();
 
@@ -38,6 +43,12 @@ public class DistributedTracingTests
                 await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
             })
         {
+            ConfigureProxyServices = services => services.AddSingleton(propagator),
+            ConfigureDestinationServices = services => services.AddSingleton(propagator),
+            ConfigureProxy = proxy => proxy.ConfigureHttpClient((_, handler) =>
+            {
+                handler.ActivityHeadersPropagator = new ReverseProxyPropagator(propagator);
+            }),
             ConfigureProxyApp = proxyApp =>
             {
                 proxyApp.Use(next => context =>
@@ -51,37 +62,48 @@ public class DistributedTracingTests
             },
         };
 
-        // Microsoft.ApplicationInsights (transitive dependency brought in by
-        // Microsoft.Testing.Extensions.Telemetry) sets Activity.ForceDefaultIdFormat = true
-        // globally, which forces every new Activity to use W3C format regardless of the
-        // parent activity's format. Disable the override so that child activities inherit
-        // the parent's format as they would in a normal application.
-        Activity.ForceDefaultIdFormat = false;
-
-        var clientActivity = new Activity("Foo");
-        clientActivity.SetIdFormat(idFormat);
-        clientActivity.TraceStateString = "Bar";
-        clientActivity.AddBaggage("One", "1");
-        clientActivity.AddBaggage("Two", "2");
-        clientActivity.Start();
-
-        await test.Invoke(async uri =>
+        var forceDefaultIdFormat = Activity.ForceDefaultIdFormat;
+        try
         {
-            using var client = new HttpClient();
-            Assert.Equal("Hello", await client.GetStringAsync(uri));
-        });
+            Activity.ForceDefaultIdFormat = false;
+            using var clientActivity = new Activity("Foo");
+            clientActivity.SetIdFormat(idFormat);
+            clientActivity.TraceStateString = "foo=bar";
+            clientActivity.AddBaggage("One", "1");
+            clientActivity.AddBaggage("Two", "2");
+            clientActivity.Start();
 
-        Assert.NotEmpty(proxyHeaders);
-        Assert.NotEmpty(downstreamHeaders);
+            await test.Invoke(async uri =>
+            {
+                using var client = new HttpClient(new SocketsHttpHandler
+                {
+                    ActivityHeadersPropagator = propagator,
+                });
+                Assert.Equal("Hello", await client.GetStringAsync(uri));
+            });
 
-        ValidateActivities(idFormat, clientActivity, proxyHeaders, downstreamHeaders);
+            Assert.NotEmpty(proxyHeaders);
+            Assert.NotEmpty(downstreamHeaders);
+
+            ValidateActivities(idFormat, usePreW3CPropagator, clientActivity, proxyHeaders, downstreamHeaders);
+        }
+        finally
+        {
+            Activity.ForceDefaultIdFormat = forceDefaultIdFormat;
+        }
     }
 
-    private static void ValidateActivities(ActivityIdFormat idFormat, Activity client, HeaderDictionary proxy, HeaderDictionary downstream)
+    [CollectionDefinition(nameof(DistributedTracingTests), DisableParallelization = true)]
+    public sealed class DistributedTracingTestCollection;
+
+    private static void ValidateActivities(ActivityIdFormat idFormat, bool usePreW3CPropagator,
+        Activity client, HeaderDictionary proxy, HeaderDictionary downstream)
     {
-        var baggage = string.Join(", ", client.Baggage.Select(pair => $"{pair.Key}={pair.Value}"));
-        Assert.Equal(baggage, proxy[Baggage]);
-        Assert.Equal(baggage, downstream[Baggage]);
+        var baggageHeader = usePreW3CPropagator ? "Correlation-Context" : "baggage";
+        var baggage = string.Join(", ", client.Baggage.Select(pair =>
+            usePreW3CPropagator ? $"{pair.Key}={pair.Value}" : $"{pair.Key} = {pair.Value}"));
+        Assert.Equal(baggage, proxy[baggageHeader]);
+        Assert.Equal(baggage, downstream[baggageHeader]);
 
         if (idFormat == ActivityIdFormat.W3C)
         {
