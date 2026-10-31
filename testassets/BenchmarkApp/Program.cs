@@ -19,21 +19,30 @@ using Yarp.ReverseProxy.Transforms.Builder;
 BenchmarksEventSource.MeasureAspNetVersion();
 BenchmarksEventSource.MeasureNetCoreAppVersion();
 
-var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+{
+    ContentRootPath = Directory.GetCurrentDirectory(),
+});
+
+builder.Configuration
+    .AddEnvironmentVariables(prefix: "ASPNETCORE_")
+    .AddCommandLine(args)
+    .AddJsonFile("appsettings.json", optional: true);
+
+if (Enum.TryParse(builder.Configuration["LogLevel"], out LogLevel logLevel))
+{
+    Console.WriteLine($"Console Logging enabled with level '{logLevel}'");
+    builder.Logging.AddConsole().SetMinimumLevel(logLevel);
+}
 
 builder.WebHost.UseKestrel((context, kestrelOptions) =>
+{
+    kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
     {
-        kestrelOptions.ConfigureHttpsDefaults(httpsOptions =>
-        {
-            httpsOptions.ServerCertificate = new X509Certificate2(Path.Combine(context.HostingEnvironment.ContentRootPath, "testCert.pfx"), "testPassword");
-        });
-    })
-    .UseContentRoot(Directory.GetCurrentDirectory())
-    .ConfigureServices(services =>
-    {
-        services.AddHttpForwarder();
-    })
-    ;
+        httpsOptions.ServerCertificate = new X509Certificate2(Path.Combine(context.HostingEnvironment.ContentRootPath, "testCert.pfx"), "testPassword");
+    });
+});
+builder.Services.AddHttpForwarder();
 
 var app = builder.Build();
 
@@ -46,6 +55,8 @@ app.Run(async context =>
 {
     await forwarder.SendAsync(context, clusterUrl, httpClient, ForwarderRequestConfig.Empty, transformer);
 });
+
+app.Run();
 
 string GetClusterUrl()
 {

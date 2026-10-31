@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.IO.Pipelines;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,18 +78,6 @@ public static class TlsFilter
                     // Abort the connection.
                     return;
                 }
-
-                // All checks passed, we can continue processing the request.
-
-#if !NET10_0_OR_GREATER
-                // Workaround for https://github.com/dotnet/runtime/issues/107213, which was fixed in .NET 10.
-                if (minBytesExamined > 0)
-                {
-                    connectionContext.Transport = new DuplexPipe(
-                        PipeReader.Create(input.AsStream(), new StreamPipeReaderOptions(bufferSize: Math.Max(4096, (int)minBytesExamined))),
-                        connectionContext.Transport.Output);
-                }
-#endif
 
                 break;
             }
@@ -185,11 +172,5 @@ public static class TlsFilter
         }
 
         return success;
-    }
-
-    private sealed class DuplexPipe(PipeReader input, PipeWriter output) : IDuplexPipe
-    {
-        public PipeReader Input { get; } = input;
-        public PipeWriter Output { get; } = output;
     }
 }
