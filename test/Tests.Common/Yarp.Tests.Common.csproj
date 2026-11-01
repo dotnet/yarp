@@ -10,8 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="$(AutofacVersion)" />
-    <PackageReference Include="Autofac.Extras.Moq" Version="$(AutofacExtrasMoqVersion)" />
     <PackageReference Include="coverlet.collector" Version="$(CoverletCollectorVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
     <PackageReference Include="xunit.v3.extensibility.core" Version="$(XUnitV3Version)" />

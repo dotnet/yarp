@@ -8,25 +8,24 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Authentication;
 using System.Text;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
-using Yarp.Tests.Common;
 using Yarp.ReverseProxy.Configuration;
 
 namespace Yarp.ReverseProxy.Forwarder.Tests;
 
-public class ForwarderHttpClientFactoryTests : TestAutoMockBase
+public class ForwarderHttpClientFactoryTests
 {
     [Fact]
     public void Constructor_Works()
     {
-        new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
     }
 
     [Fact]
     public void CreateClient_Works()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
 
         var actual1 = factory.CreateClient(new ForwarderHttpClientContext()
         {
@@ -47,7 +46,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [Fact]
     public void CreateClient_ApplySslProtocols_Success()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var options = new HttpClientConfig
         {
             SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls13,
@@ -64,7 +63,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [Fact]
     public void CreateClient_ApplyDangerousAcceptAnyServerCertificate_Success()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var options = new HttpClientConfig { DangerousAcceptAnyServerCertificate = true };
         var client = factory.CreateClient(new ForwarderHttpClientContext { NewConfig = options });
 
@@ -79,7 +78,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [Fact]
     public void CreateClient_ApplyMaxConnectionsPerServer_Success()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var options = new HttpClientConfig { MaxConnectionsPerServer = 22 };
         var client = factory.CreateClient(new ForwarderHttpClientContext { NewConfig = options });
 
@@ -93,7 +92,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [Fact]
     public void CreateClient_ApplyWebProxy_Success()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var options = new HttpClientConfig
         {
             WebProxy = new WebProxyConfig()
@@ -116,7 +115,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [Fact]
     public void CreateClient_ApplyRequestHeaderEncoding_Success()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var options = new HttpClientConfig
         {
             RequestHeaderEncoding = Encoding.Latin1.WebName
@@ -134,7 +133,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [Fact]
     public void CreateClient_ApplyResponseHeaderEncoding_Success()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var options = new HttpClientConfig
         {
             ResponseHeaderEncoding = Encoding.Latin1.WebName
@@ -152,7 +151,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [Fact]
     public void CreateClient_OldClientExistsNoConfigChange_ReturnsOldInstance()
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var oldClient = new HttpMessageInvoker(new SocketsHttpHandler());
         var oldOptions = new HttpClientConfig
         {
@@ -177,7 +176,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [InlineData(false)]
     public void CreateClient_ApplyEnableMultipleHttp2Connections_Success(bool enableMultipleHttp2Connections)
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var options = new HttpClientConfig { EnableMultipleHttp2Connections = enableMultipleHttp2Connections };
         var client = factory.CreateClient(new ForwarderHttpClientContext { NewConfig = options });
 
@@ -190,7 +189,7 @@ public class ForwarderHttpClientFactoryTests : TestAutoMockBase
     [MemberData(nameof(GetChangedHttpClientOptions))]
     public void CreateClient_OldClientExistsHttpClientOptionsChanged_ReturnsNewInstance(HttpClientConfig oldOptions, HttpClientConfig newOptions)
     {
-        var factory = new ForwarderHttpClientFactory(Mock<ILogger<ForwarderHttpClientFactory>>().Object);
+        var factory = new ForwarderHttpClientFactory(NullLogger<ForwarderHttpClientFactory>.Instance);
         var oldClient = new HttpMessageInvoker(new SocketsHttpHandler());
         var context = new ForwarderHttpClientContext { ClusterId = "cluster1", OldConfig = oldOptions, OldClient = oldClient, NewConfig = newOptions };
 

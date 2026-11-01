@@ -14,7 +14,7 @@ using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.Forwarder.Tests;
 
-public class StreamCopierTests : TestAutoMockBase
+public class StreamCopierTests
 {
     [Theory]
     [InlineData(true)]

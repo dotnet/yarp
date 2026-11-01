@@ -7,35 +7,39 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Model;
-using Yarp.Tests.Common;
 
 namespace Yarp.ReverseProxy.Delegation;
 
-public class HttpSysDelegatorTests : TestAutoMockBase
+public class HttpSysDelegatorTests
 {
     private readonly HttpSysDelegator _delegator;
     private readonly IClusterChangeListener _changeListener;
     private readonly DefaultHttpContext _context;
+    private readonly Mock<IServerDelegationFeature> _serverDelegationFeature = new();
+    private readonly Mock<IHttpSysRequestDelegationFeature> _requestDelegationFeature = new();
 
     public HttpSysDelegatorTests()
     {
-        Mock<IFeatureCollection>()
+        var serverFeatures = new Mock<IFeatureCollection>();
+        serverFeatures
             .Setup(m => m.Get<IServerDelegationFeature>())
-            .Returns(Mock<IServerDelegationFeature>().Object);
-        Mock<IServer>()
+            .Returns(_serverDelegationFeature.Object);
+        var server = new Mock<IServer>();
+        server
             .SetupGet(p => p.Features)
-            .Returns(Mock<IFeatureCollection>().Object);
+            .Returns(serverFeatures.Object);
 
-        _delegator = Create<HttpSysDelegator>();
+        _delegator = new HttpSysDelegator(server.Object, NullLogger<HttpSysDelegator>.Instance);
         _changeListener = _delegator;
 
         _context = new DefaultHttpContext();
-        _context.Features.Set(Mock<IHttpSysRequestDelegationFeature>().Object);
+        _context.Features.Set(_requestDelegationFeature.Object);
 
         SetupCanDelegate(true);
     }
@@ -122,7 +126,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
     {
         var destination = CreateDestination("dest1", "queue1");
         var cluster = CreateCluster("cluster1", destination);
-        Mock<IServerDelegationFeature>()
+        _serverDelegationFeature
             .Setup(x => x.CreateDelegationRule(It.IsAny<string>(), It.IsAny<string>()))
             .Throws<Exception>()
             .Verifiable();
@@ -139,7 +143,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
     {
         var destination = CreateDestination("dest1", "queue1");
         var cluster = CreateCluster("cluster1", destination);
-        Mock<IHttpSysRequestDelegationFeature>()
+        _requestDelegationFeature
             .Setup(x => x.DelegateRequest(It.IsAny<DelegationRule>()))
             .Throws<Exception>()
             .Verifiable();
@@ -216,7 +220,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
         var cluster = CreateCluster("cluster1", destination1);
 
         _changeListener.OnClusterAdded(cluster);
-        Mock<IServerDelegationFeature>().Reset();
+        _serverDelegationFeature.Reset();
 
         var destination2 = CreateDestination("dest2", "queue2");
         cluster = CreateCluster(cluster.ClusterId, destination1, destination2);
@@ -234,7 +238,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
         var cluster = CreateCluster("cluster1", destination1);
 
         _changeListener.OnClusterAdded(cluster);
-        Mock<IServerDelegationFeature>().Reset();
+        _serverDelegationFeature.Reset();
 
         var destination2 = CreateDestination("dest2", queueName: null);
         cluster = CreateCluster(cluster.ClusterId, destination1, destination2);
@@ -269,7 +273,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
 
     private void SetupCanDelegate(bool canDelegate)
     {
-        Mock<IHttpSysRequestDelegationFeature>()
+        _requestDelegationFeature
             .SetupGet(p => p.CanDelegate)
             .Returns(canDelegate);
     }
@@ -286,7 +290,7 @@ public class HttpSysDelegatorTests : TestAutoMockBase
 
     private void VerifyRequestDelegated()
     {
-        Mock<IHttpSysRequestDelegationFeature>()
+        _requestDelegationFeature
             .Verify(m => m.DelegateRequest(It.IsAny<DelegationRule>()), Times.Once());
         var errorFeature = _context.Features.Get<IForwarderErrorFeature>();
         Assert.Null(errorFeature);
@@ -311,13 +315,13 @@ public class HttpSysDelegatorTests : TestAutoMockBase
 
     private void VerifyDelegationRuleCreated(DestinationState destination)
     {
-        Mock<IServerDelegationFeature>()
+        _serverDelegationFeature
             .Verify(m => m.CreateDelegationRule(destination.GetHttpSysDelegationQueue(), destination.Model.Config.Address), Times.Once());
     }
 
     private void VerifyDelegationRuleNotCreated(DestinationState destination)
     {
-        Mock<IServerDelegationFeature>()
+        _serverDelegationFeature
             .Verify(m => m.CreateDelegationRule(destination.GetHttpSysDelegationQueue(), destination.Model.Config.Address), Times.Never());
     }
 

@@ -10,30 +10,22 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
-using Yarp.Tests.Common;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Forwarder;
 using System.Diagnostics;
 
 namespace Yarp.ReverseProxy.Model.Tests;
 
-public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
+public class ProxyPipelineInitializerMiddlewareTests
 {
-    public ProxyPipelineInitializerMiddlewareTests()
-    {
-        Provide<RequestDelegate>(context =>
-        {
-            context.Response.StatusCode = StatusCodes.Status418ImATeapot;
-            return Task.CompletedTask;
-        });
-    }
-
     [Fact]
     public void Constructor_Works()
     {
-        Create<ProxyPipelineInitializerMiddleware>();
+        CreateMiddleware();
     }
 
     [Fact]
@@ -57,7 +49,7 @@ public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
         var httpContext = new DefaultHttpContext();
         httpContext.SetEndpoint(aspNetCoreEndpoint);
 
-        var sut = Create<ProxyPipelineInitializerMiddleware>();
+        var sut = CreateMiddleware();
 
         await sut.Invoke(httpContext);
 
@@ -110,7 +102,7 @@ public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
         var httpContext = new DefaultHttpContext();
         httpContext.SetEndpoint(aspNetCoreEndpoint);
 
-        var sut = Create<ProxyPipelineInitializerMiddleware>();
+        var sut = CreateMiddleware();
 
         await sut.Invoke(httpContext);
 
@@ -147,7 +139,7 @@ public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
         var httpContext = new DefaultHttpContext();
         httpContext.SetEndpoint(aspNetCoreEndpoint);
 
-        var sut = Create<ProxyPipelineInitializerMiddleware>();
+        var sut = CreateMiddleware();
 
         if (timeoutMs == Timeout.Infinite || Debugger.IsAttached)
         {
@@ -158,6 +150,18 @@ public class ProxyPipelineInitializerMiddlewareTests : TestAutoMockBase
         {
             await Assert.ThrowsAsync<InvalidOperationException>(() => sut.Invoke(httpContext));
         }
+    }
+
+    private static ProxyPipelineInitializerMiddleware CreateMiddleware()
+    {
+        return new ProxyPipelineInitializerMiddleware(
+            context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status418ImATeapot;
+                return Task.CompletedTask;
+            },
+            NullLogger<ProxyPipelineInitializerMiddleware>.Instance,
+            new Mock<IOptionsMonitor<RequestTimeoutOptions>>().Object);
     }
 
     private static Endpoint CreateAspNetCoreEndpoint(RouteModel routeConfig, Action<RouteEndpointBuilder> configure = null)
