@@ -59,8 +59,7 @@ public class TlsSecretCertificateParserTests
         }
         else
         {
-            Assert.Null(tlsCertificateChain.LeafCertificate);
-            Assert.Null(tlsCertificateChain.IntermediateCertificates);
+            Assert.Null(tlsCertificateChain);
         }
     }
 
@@ -90,8 +89,7 @@ public class TlsSecretCertificateParserTests
         }
         else
         {
-            Assert.Null(tlsCertificateChain.LeafCertificate);
-            Assert.Null(tlsCertificateChain.IntermediateCertificates);
+            Assert.Null(tlsCertificateChain);
         }
     }
 
@@ -121,8 +119,7 @@ public class TlsSecretCertificateParserTests
         }
         else
         {
-            Assert.Null(tlsCertificateChain.LeafCertificate);
-            Assert.Null(tlsCertificateChain.IntermediateCertificates);
+            Assert.Null(tlsCertificateChain);
         }
     }
 
