@@ -23,14 +23,14 @@ internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
         _logger = logger;
     }
 
-    public (X509Certificate2 leafCertfiicate, X509Certificate2Collection intermediateCertificates) ConvertCertificate(
+    public TlsCertificateChain ConvertCertificate(
         NamespacedName namespacedName, V1Secret secret)
     {
         if (secret?.Data is null ||
             !secret.Data.TryGetValue(TlsCertKey, out var certificate) || certificate.Length == 0 ||
             !secret.Data.TryGetValue(TlsPrivateKeyKey, out var privateKey) || privateKey.Length == 0)
         {
-            return (null, null);
+            return null;
         }
 
         var certificateString = EnsurePemFormat(certificate, "CERTIFICATE");
@@ -57,7 +57,7 @@ internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
             finalLeafCertificate?.Dispose();
             DisposeCertificateCollection(allCertificates);
 
-            return (null, null);
+            return null;
         }
 
         var finalIntermediateCertificates = new X509Certificate2Collection();
@@ -73,7 +73,7 @@ internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
             finalIntermediateCertificates.Add(allCertificates[i]);
         }
 
-        return (finalLeafCertificate, finalIntermediateCertificates);
+        return new TlsCertificateChain(finalLeafCertificate, finalIntermediateCertificates);
     }
 
     private static void DisposeCertificateCollection(X509Certificate2Collection certificateCollection)

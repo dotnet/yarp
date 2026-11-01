@@ -17,9 +17,9 @@ public interface ITlsSecretCertificateParser
     /// <param name="namespacedName">An identifier for the secret.</param>
     /// <param name="secret">The TLS secret containing the certificate and private key data.</param>
     /// <returns>
-    /// A tuple containing the leaf certificate (with its associated private key) and a collection of
-    /// intermediate certificates, or <c>(null, null)</c> if the secret could not be parsed.
+    /// A <see cref="TlsCertificateChain"/> containing the leaf certificate (with its private key) and any
+    /// intermediate certificates, or <see langword="null"/> if the secret is missing certificate data or
+    /// cannot be parsed. The caller owns the returned instance and is responsible for disposing it.
     /// </returns>
-    public (X509Certificate2 leafCertfiicate, X509Certificate2Collection intermediateCertificates) ConvertCertificate(
-        NamespacedName namespacedName, V1Secret secret);
+    public TlsCertificateChain ConvertCertificate(NamespacedName namespacedName, V1Secret secret);
 }

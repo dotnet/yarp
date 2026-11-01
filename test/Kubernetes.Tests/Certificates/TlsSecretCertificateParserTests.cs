@@ -12,7 +12,7 @@ namespace Yarp.Kubernetes.Controller.Certificates.Tests;
 
 public class TlsSecretCertificateParserTests
 {
-    private readonly NullLogger<TlsSecretCertificateParser> _logger;
+    private readonly NullLogger<TlsSecretCertificateParser> _logger = new NullLogger<TlsSecretCertificateParser>();
     private readonly ITlsSecretCertificateParser _tlsSecretCertificateParser;
     private readonly byte[] _pemPrivateKey;
     private readonly byte[] _pemCert;
@@ -23,8 +23,6 @@ public class TlsSecretCertificateParserTests
 
     public TlsSecretCertificateParserTests()
     {
-        _logger = new NullLogger<TlsSecretCertificateParser>();
-
         _tlsSecretCertificateParser = new TlsSecretCertificateParser(_logger);
         _pemCert = ReadManifestData(".Certificates.cert.pem");
         _pemPrivateKey = ReadManifestData(".Certificates.key.pem");
@@ -49,21 +47,20 @@ public class TlsSecretCertificateParserTests
         var namespacedName = NamespacedName.From(secret);
 
         // Act
-        var (actualLeafCertificate, actualIntermediateCertificates) =
-            _tlsSecretCertificateParser.ConvertCertificate(namespacedName, secret);
+        var tlsCertificateChain = _tlsSecretCertificateParser.ConvertCertificate(namespacedName, secret);
 
         // Assert
         if (expectCert)
         {
-            Assert.NotNull(actualLeafCertificate);
-            Assert.NotNull(actualIntermediateCertificates);
-            Assert.NotEmpty(actualIntermediateCertificates);
-            Assert.Single(actualIntermediateCertificates);
+            Assert.NotNull(tlsCertificateChain.LeafCertificate);
+            Assert.NotNull(tlsCertificateChain.IntermediateCertificates);
+            Assert.NotEmpty(tlsCertificateChain.IntermediateCertificates);
+            Assert.Single(tlsCertificateChain.IntermediateCertificates);
         }
         else
         {
-            Assert.Null(actualLeafCertificate);
-            Assert.Null(actualIntermediateCertificates);
+            Assert.Null(tlsCertificateChain.LeafCertificate);
+            Assert.Null(tlsCertificateChain.IntermediateCertificates);
         }
     }
 
@@ -82,20 +79,19 @@ public class TlsSecretCertificateParserTests
         var namespacedName = NamespacedName.From(secret);
 
         // Act
-        var (actualLeafCertificate, actualIntermediateCertificates) =
-            _tlsSecretCertificateParser.ConvertCertificate(namespacedName, secret);
+        var tlsCertificateChain = _tlsSecretCertificateParser.ConvertCertificate(namespacedName, secret);
 
         // Assert
         if (expectCert)
         {
-            Assert.NotNull(actualLeafCertificate);
-            Assert.NotNull(actualIntermediateCertificates);
-            Assert.Empty(actualIntermediateCertificates);
+            Assert.NotNull(tlsCertificateChain.LeafCertificate);
+            Assert.NotNull(tlsCertificateChain.IntermediateCertificates);
+            Assert.Empty(tlsCertificateChain.IntermediateCertificates);
         }
         else
         {
-            Assert.Null(actualLeafCertificate);
-            Assert.Null(actualIntermediateCertificates);
+            Assert.Null(tlsCertificateChain.LeafCertificate);
+            Assert.Null(tlsCertificateChain.IntermediateCertificates);
         }
     }
 
@@ -114,20 +110,19 @@ public class TlsSecretCertificateParserTests
         var namespacedName = NamespacedName.From(secret);
 
         // Act
-        var (actualLeafCertificate, actualIntermediateCertificates) =
-            _tlsSecretCertificateParser.ConvertCertificate(namespacedName, secret);
+        var tlsCertificateChain = _tlsSecretCertificateParser.ConvertCertificate(namespacedName, secret);
 
         // Assert
         if (expectCert)
         {
-            Assert.NotNull(actualLeafCertificate);
-            Assert.NotNull(actualIntermediateCertificates);
-            Assert.Empty(actualIntermediateCertificates);
+            Assert.NotNull(tlsCertificateChain.LeafCertificate);
+            Assert.NotNull(tlsCertificateChain.IntermediateCertificates);
+            Assert.Empty(tlsCertificateChain.IntermediateCertificates);
         }
         else
         {
-            Assert.Null(actualLeafCertificate);
-            Assert.Null(actualIntermediateCertificates);
+            Assert.Null(tlsCertificateChain.LeafCertificate);
+            Assert.Null(tlsCertificateChain.IntermediateCertificates);
         }
     }
 
