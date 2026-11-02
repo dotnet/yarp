@@ -30,11 +30,14 @@ internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
             !secret.Data.TryGetValue(TlsCertKey, out var certificate) || certificate.Length == 0 ||
             !secret.Data.TryGetValue(TlsPrivateKeyKey, out var privateKey) || privateKey.Length == 0)
         {
+            _logger.LogWarning("TLS secret '{NamespacedName}' contains invalid data.", namespacedName);
             return null;
         }
 
-        var certificateString = EnsurePemFormat(certificate, "CERTIFICATE");
-        var privateKeyString = EnsurePemFormat(privateKey, "PRIVATE KEY");
+        // Only PEM is supported (https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets);
+        // tls.crt may contain the full chain: leaf first, followed by intermediates.
+        var certificateString = Encoding.UTF8.GetString(certificate);
+        var privateKeyString = Encoding.UTF8.GetString(privateKey);
 
         X509Certificate2 finalLeafCertificate = null;
         // TODO: check the certificate file follows PEM format: 1) Leaf, 2) Intermediate, optional 3) Root, optional certificates.
@@ -61,7 +64,7 @@ internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
         }
 
         var finalIntermediateCertificates = new X509Certificate2Collection();
-        // [0] is the key-less copy of the leaf; ownership of [1..] moved to finalCertificateCollection.
+        // [0] is the key-less copy of the leaf; ownership of [1..] moved to finalIntermediateCertificates.
         for (var i = 0; i < allCertificates.Count; ++i)
         {
             if (i == 0)
@@ -82,26 +85,5 @@ internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
         {
             certificate.Dispose();
         }
-    }
-
-    /// <summary>
-    /// Kubernetes Secrets should be stored in base-64 encoded DER format (see https://kubernetes.io/docs/concepts/configuration/secret/#tls-secrets)
-    /// but need can be imported into a <see cref="X509Certificate2"/> object via PEM. Before this type of secret existed, an Opaque secret would be
-    /// used containing the full PEM format, so it's possible that the incorrect format would be used.
-    /// Doing it this way means we are more tolerant in handling certs in the wrong format.
-    /// </summary>
-    /// <param name="data">The raw data.</param>
-    /// <param name="pemType">The type for the PEM header.</param>
-    /// <returns>The certificate data in PEM format.</returns>
-    private static string EnsurePemFormat(byte[] data, string pemType)
-    {
-        var der = Encoding.ASCII.GetString(data);
-        if (!der.StartsWith("---", StringComparison.Ordinal))
-        {
-            // Convert from encoded DER to PEM
-            return $"-----BEGIN {pemType}-----\n{der}\n-----END {pemType}-----";
-        }
-
-        return der;
     }
 }

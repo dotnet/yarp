@@ -94,11 +94,11 @@ public class TlsSecretCertificateParserTests
     }
 
     [Theory]
-    [InlineData(true, true, true)]
-    [InlineData(false, true, false)]
-    [InlineData(true, false, false)]
-    [InlineData(false, false, false)]
-    public void CertificateConversionFromDer(bool loadCert, bool loadKey, bool expectCert)
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public void CertificateConversionFromHeaderlessDerIsRejected(bool loadCert, bool loadKey)
     {
         // Arrange
         var cert = loadCert ? _derCert : null;
@@ -111,16 +111,7 @@ public class TlsSecretCertificateParserTests
         var tlsCertificateChain = _tlsSecretCertificateParser.ConvertCertificate(namespacedName, secret);
 
         // Assert
-        if (expectCert)
-        {
-            Assert.NotNull(tlsCertificateChain.LeafCertificate);
-            Assert.NotNull(tlsCertificateChain.IntermediateCertificates);
-            Assert.Empty(tlsCertificateChain.IntermediateCertificates);
-        }
-        else
-        {
-            Assert.Null(tlsCertificateChain);
-        }
+        Assert.Null(tlsCertificateChain);
     }
 
     private static byte[] ReadManifestData(string ending)
