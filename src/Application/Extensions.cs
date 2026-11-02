@@ -72,6 +72,7 @@ public static class Extensions
             options.HttpClientFactory = () =>
             {
                 var handler = new HttpClientHandler();
+                // CodeQL [SM02184] Certificate validation is disabled only when the user explicitly enables Telemetry.UnsafeAcceptAnyCertificate.
                 handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
                 var httpClient = new HttpClient(handler);
                 return httpClient;
