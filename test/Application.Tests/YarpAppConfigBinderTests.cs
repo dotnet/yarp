@@ -4,6 +4,7 @@
 using Microsoft.Extensions.Configuration;
 using Xunit;
 using Yarp.Application.Configuration;
+using Yarp.ReverseProxy.Configuration;
 
 namespace Yarp.Application.Tests;
 
@@ -34,6 +35,99 @@ public class YarpAppConfigBinderTests
     }
 
     [Fact]
+    public void Bind_NavigationFallbackExclude()
+    {
+        var config = Bind(new()
+        {
+            ["NavigationFallback:Exclude:0:Path"] = "/api/{**catch-all}",
+            ["NavigationFallback:Exclude:1:Path"] = "/.well-known/{**catch-all}"
+        });
+        Assert.Collection(
+            config.NavigationFallback.Exclude,
+            match => Assert.Equal("/api/{**catch-all}", match.Path),
+            match => Assert.Equal("/.well-known/{**catch-all}", match.Path));
+    }
+
+    [Fact]
+    public void Bind_HeaderRules()
+    {
+        var config = Bind(new()
+        {
+            ["Headers:0:Match:Path"] = "/{**path}",
+            ["Headers:0:Set:X-Test"] = "applied",
+            ["Headers:1:Match:Path"] = "/_astro/{**path}",
+            ["Headers:1:Set:Cache-Control"] = "public, max-age=31536000, immutable"
+        });
+
+        Assert.Collection(
+            config.Headers,
+            rule =>
+            {
+                Assert.Equal("/{**path}", rule.Match.Path);
+                Assert.Equal("applied", rule.Set["X-Test"]);
+            },
+            rule =>
+            {
+                Assert.Equal("/_astro/{**path}", rule.Match.Path);
+                Assert.Equal("public, max-age=31536000, immutable", rule.Set["Cache-Control"]);
+            });
+    }
+
+    [Fact]
+    public void Bind_RedirectRules()
+    {
+        var config = Bind(new()
+        {
+            ["Redirects:0:Match:Path"] = "/old-page",
+            ["Redirects:0:Destination"] = "/new-page",
+            ["Redirects:0:StatusCode"] = "302"
+        });
+
+        var rule = Assert.Single(config.Redirects);
+        Assert.Equal("/old-page", rule.Match.Path);
+        Assert.Equal("/new-page", rule.Destination);
+        Assert.Equal(302, rule.StatusCode);
+    }
+
+    [Fact]
+    public void Bind_RequestMatch_HostsMethodsAndQueryParameters()
+    {
+        var config = Bind(new()
+        {
+            ["Redirects:0:Match:Path"] = "/docs/{slug}",
+            ["Redirects:0:Match:Hosts:0"] = "example.com",
+            ["Redirects:0:Match:Hosts:1"] = "*.example.com",
+            ["Redirects:0:Match:Methods:0"] = "GET",
+            ["Redirects:0:Match:Methods:1"] = "HEAD",
+            ["Redirects:0:Match:QueryParameters:0:Name"] = "preview",
+            ["Redirects:0:Match:QueryParameters:0:Values:0"] = "true",
+            ["Redirects:0:Match:QueryParameters:0:Mode"] = "Exact",
+            ["Redirects:0:Match:QueryParameters:1:Name"] = "tenant",
+            ["Redirects:0:Match:QueryParameters:1:Mode"] = "Exists",
+            ["Redirects:0:Destination"] = "/new-docs/{slug}"
+        });
+
+        var match = Assert.Single(config.Redirects).Match;
+        Assert.Equal("/docs/{slug}", match.Path);
+        Assert.Equal(["example.com", "*.example.com"], match.Hosts);
+        Assert.Equal(["GET", "HEAD"], match.Methods);
+        Assert.Collection(
+            match.QueryParameters,
+            query =>
+            {
+                Assert.Equal("preview", query.Name);
+                Assert.Equal(["true"], query.Values);
+                Assert.Equal(QueryParameterMatchMode.Exact, query.Mode);
+            },
+            query =>
+            {
+                Assert.Equal("tenant", query.Name);
+                Assert.Null(query.Values);
+                Assert.Equal(QueryParameterMatchMode.Exists, query.Mode);
+            });
+    }
+
+    [Fact]
     public void Bind_TelemetryUnsafeCert()
     {
         var config = Bind(new() { ["Telemetry:UnsafeAcceptAnyCertificate"] = "true" });
@@ -46,6 +140,9 @@ public class YarpAppConfigBinderTests
         var config = Bind(new());
         Assert.False(config.StaticFiles.Enabled);
         Assert.Null(config.NavigationFallback.Path);
+        Assert.Empty(config.NavigationFallback.Exclude);
+        Assert.Empty(config.Headers);
+        Assert.Empty(config.Redirects);
         Assert.False(config.Telemetry.UnsafeAcceptAnyCertificate);
     }
 
@@ -63,6 +160,20 @@ public class YarpAppConfigBinderTests
     {
         var config = Bind(new() { ["YARP_ENABLE_STATIC_FILES"] = "true" });
         Assert.Equal("/index.html", config.NavigationFallback.Path);
+    }
+
+    [Fact]
+    public void Legacy_EnableStaticFiles_ImpliesFallback_WhenOnlyFallbackExclusionsConfigured()
+    {
+        var config = Bind(new()
+        {
+            ["YARP_ENABLE_STATIC_FILES"] = "true",
+            ["NavigationFallback:Exclude:0:Path"] = "/api/{**catch-all}"
+        });
+
+        Assert.Equal("/index.html", config.NavigationFallback.Path);
+        var exclusion = Assert.Single(config.NavigationFallback.Exclude);
+        Assert.Equal("/api/{**catch-all}", exclusion.Path);
     }
 
     [Fact]
@@ -87,15 +198,14 @@ public class YarpAppConfigBinderTests
     // Precedence: new config wins over legacy
 
     [Fact]
-    public void Precedence_NewConfigSection_PreventsLegacyFallback()
+    public void Precedence_ExplicitFallbackPathWinsOverLegacyFallback()
     {
-        // When NavigationFallback section exists explicitly, legacy
-        // YARP_ENABLE_STATIC_FILES doesn't auto-set fallback path
         var config = Bind(new()
         {
             ["YARP_ENABLE_STATIC_FILES"] = "true",
             ["NavigationFallback:Path"] = "/custom.html"
         });
+
         Assert.Equal("/custom.html", config.NavigationFallback.Path);
     }
 

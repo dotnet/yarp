@@ -6,4 +6,6 @@ namespace Yarp.Application.Configuration;
 public sealed class NavigationFallbackOptions
 {
     public string? Path { get; set; }
+
+    public List<RequestMatch> Exclude { get; set; } = [];
 }
