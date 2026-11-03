@@ -58,6 +58,31 @@ Update: The custom rule system was modified by [#24](https://github.com/dotnet/y
        ]
 ```
 
+## Transforms
+
+Transforms can be used to modify request paths and query parameters. Some transforms use templates that substitute route or query values. Tokens like `{name}` or `{**name}` are resolved from route values first, then query values. If a token is missing, the transform is skipped.
+
+Example:
+```json
+      "Routes": {
+        "DarkWeatherImagesRoute": {
+          "ClusterId": "SeabreezeApi",
+          "Match": {
+            "Path": "/img/cache/{category}/{**remainder}"
+          },
+          "Transforms": [
+            {
+              "PathSet": "/v1/weather/render"
+            },
+            {
+              "QueryParameter": "path",
+              "Set": "img/{category}/{remainder}"
+            }
+          ]
+        }
+      }
+```
+
 ## Backend configuration
 
 The proxy code defines the types [Backend](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/BackendDiscovery/Contract/Backend.cs) and [BackendEndpoint](https://github.com/dotnet/yarp/blob/b2cf5bdddf7962a720672a75f2e93913d16dfee7/src/IslandGateway.Core/Abstractions/BackendEndpointDiscovery/Contract/BackendEndpoint.cs) and allows these to be defined via config and referenced by name from routes.

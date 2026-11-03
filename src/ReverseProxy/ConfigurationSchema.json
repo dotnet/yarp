@@ -230,6 +230,7 @@
                           "QueryRouteParameter": { "not": {} },
                           "PathPattern": { "not": {} },
                           "QueryValueParameter": { "not": {} },
+                          "QueryParameter": { "not": {} },
                           "QueryRemoveParameter": { "not": {} },
                           "HttpMethodChange": { "not": {} },
                           "RequestHeaderRouteValue": { "not": {} },
@@ -478,6 +479,25 @@
                               "Append"
                             ]
                           }
+                        ]
+                      },
+                      {
+                        "type": "object",
+                        "description": "Adds or replaces a query string parameter using template substitutions from route and query values.",
+                        "properties": {
+                          "QueryParameter": {
+                            "type": "string",
+                            "description": "Name of a query string parameter."
+                          },
+                          "Set": {
+                            "type": "string",
+                            "description": "Template used to set the given query parameter. Supports {token} and {**token} substitutions."
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": [
+                          "QueryParameter",
+                          "Set"
                         ]
                       },
                       {
