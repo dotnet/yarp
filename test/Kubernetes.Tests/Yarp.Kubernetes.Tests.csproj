@@ -22,16 +22,20 @@
     <None Remove="Client\*.yaml" />
     <None Remove="Certificates\cert.der" />
     <None Remove="Certificates\cert.pem" />
+    <None Remove="Certificates\fullChainCert.pem" />
     <None Remove="Certificates\key.der" />
     <None Remove="Certificates\key.pem" />
+    <None Remove="Certificates\fullChainKey.pem" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Client\*.yaml" />
     <EmbeddedResource Include="Certificates\cert.der" />
     <EmbeddedResource Include="Certificates\cert.pem" />
+    <EmbeddedResource Include="Certificates\fullChainCert.pem" />
     <EmbeddedResource Include="Certificates\key.der" />
     <EmbeddedResource Include="Certificates\key.pem" />
+    <EmbeddedResource Include="Certificates\fullChainKey.pem" />
   </ItemGroup>
 
   <ItemGroup>
