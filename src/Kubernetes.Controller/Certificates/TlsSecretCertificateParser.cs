@@ -48,7 +48,8 @@ internal class TlsSecretCertificateParser : ITlsSecretCertificateParser
             if (OperatingSystem.IsWindows())
             {
                 using var oldLeafCertificate = finalLeafCertificate;
-                finalLeafCertificate = new X509Certificate2(finalLeafCertificate.Export(X509ContentType.Pkcs12));
+                finalLeafCertificate = X509CertificateLoader.LoadPkcs12(
+                    oldLeafCertificate.Export(X509ContentType.Pkcs12), password: null);
             }
 
             allCertificates.ImportFromPem(certificateString);
