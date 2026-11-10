@@ -45,6 +45,7 @@ public static class RequestUtilities
         string mth when HttpMethods.IsOptions(mth) => HttpMethod.Options,
         string mth when HttpMethods.IsHead(mth) => HttpMethod.Head,
         string mth when HttpMethods.IsPatch(mth) => HttpMethod.Patch,
+        string mth when HttpMethods.IsQuery(mth) => HttpMethod.Query,
         string mth when HttpMethods.IsTrace(mth) => HttpMethod.Trace,
         // NOTE: Proxying "CONNECT" is not supported (by design!)
         string mth when HttpMethods.IsConnect(mth) => throw new NotSupportedException($"Unsupported request method '{method}'."),
