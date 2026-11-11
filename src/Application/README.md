@@ -103,11 +103,37 @@ OTLP export uses standard `OTEL_*` environment variables. This section covers YA
 { "Telemetry": { "UnsafeAcceptAnyCertificate": true } }
 ```
 
+### `Log`
+
+Controls console output. Set it in the config file or with the `Log__Level` environment variable.
+
+```json
+{ "Log": { "Level": "requests" } }
+```
+
+| Level | Behavior |
+|---|---|
+| `default` | Startup banner and warnings/errors. No per-request output. A failed proxy request is reported as one condensed line instead of the full stack trace. |
+| `requests` | `default` plus one line per request: method, path (no query string), what handled it (`static`, `proxy`, `fallback`, or blank when nothing did), status, content length when known, and duration. |
+| `debug` | Full framework logging, one line per request, and the resolved application config (`StaticFiles`, `NavigationFallback`, `Telemetry`, `Log`) as JSON at startup. The `ReverseProxy` section is not printed. |
+
+Invalid values (including numbers) stop the app at startup with an error.
+
+```text
+GET  /                        → static   200  510b   3ms
+GET  /api/users               → proxy    200         45ms
+GET  /dashboard               → fallback 200  510b   2ms
+GET  /missing.js              →          404          0ms
+GET  /api/users               → proxy    502         74ms  route=api dest=http://localhost:5100/ Request: Connection refused (localhost:5100)
+```
+
+Request and error lines are written straight to the console, like the startup banner. They are not `ILogger` events, so the `Logging` settings below don't filter them.
+
 ## Logging
 
-By default, the console shows a clean startup banner and warnings/errors only — no per-request noise. Framework logs (DataProtection, Hosting.Lifetime, etc.) are suppressed on console but still flow to other providers (OTEL).
+By default, the console shows a clean startup banner and warnings/errors only — no per-request noise. Framework logs (DataProtection, Hosting.Lifetime, etc.) are suppressed on console but still flow to other providers (OTEL). The verbose forwarding error from `HttpForwarder` is also hidden on the console in `default` and `requests` modes, because the condensed line replaces it; other providers still receive it.
 
-To re-enable framework logs for debugging, use the standard `Logging` config:
+To re-enable framework logs for debugging, use `"Log": { "Level": "debug" }` or the standard `Logging:LogLevel` / `Logging:Console:LogLevel` config. A category entry overrides the console defaults above when it names the same category or a more specific one (for example `Microsoft.AspNetCore`); as usual, a parent such as `Microsoft` or `Default` does not override a more specific default, and `Logging:Console:LogLevel` takes precedence over `Logging:LogLevel`. Setting `Logging:Console:FormatterName` keeps your formatter and the standard forwarding error log:
 
 ```json
 {
@@ -134,11 +160,15 @@ Configuration/                  Config model (IConfiguration → POCOs)
   StaticFilesOptions.cs         Per-feature options
   NavigationFallbackOptions.cs
   TelemetryOptions.cs
+  LogOptions.cs                 Log.Level (LogMode)
+  YarpAppConfigJsonContext.cs   Source-generated JSON for the debug config dump
 Features/                       Per-feature extension methods
   StaticFilesFeature.cs
   NavigationFallbackFeature.cs
   ReverseProxyFeature.cs
   LoggingFeature.cs
+  RequestLoggingFeature.cs
+  CondensedConsoleFormatter.cs
 Program.cs                      Pipeline ordering
 Extensions.cs                   Service defaults (telemetry, health checks)
 yarp-config.schema.json         JSON Schema for IDE support

@@ -12,4 +12,5 @@ public sealed class YarpAppConfig
     public StaticFilesOptions StaticFiles { get; set; } = new();
     public NavigationFallbackOptions NavigationFallback { get; set; } = new();
     public TelemetryOptions Telemetry { get; set; } = new();
+    public LogOptions Log { get; set; } = new();
 }
