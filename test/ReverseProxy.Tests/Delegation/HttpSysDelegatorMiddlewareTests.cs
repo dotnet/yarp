@@ -5,23 +5,27 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.HttpSys;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Model;
 using Yarp.ReverseProxy.Utilities;
-using Yarp.Tests.Common;
 
 namespace Yarp.ReverseProxy.Delegation;
 
-public class HttpSysDelegatorMiddlewareTests : TestAutoMockBase
+public class HttpSysDelegatorMiddlewareTests
 {
     private readonly HttpSysDelegatorMiddleware _sut;
     private readonly RequestDelegate _next;
     private readonly DefaultHttpContext _context;
     private readonly ReverseProxyFeature _proxyFeature;
     private readonly List<DestinationState> _availableDestinations;
+    private readonly Mock<IHttpSysRequestDelegationFeature> _delegationFeature = new();
+    private readonly Mock<IRandomFactory> _randomFactory = new();
 
     private Action _nextCallback;
     private bool _nextCalled;
@@ -33,12 +37,12 @@ public class HttpSysDelegatorMiddlewareTests : TestAutoMockBase
         _proxyFeature = new ReverseProxyFeature
         {
             AvailableDestinations = _availableDestinations,
-            Cluster = new ClusterModel(new ClusterConfig(), new HttpMessageInvoker(Mock<HttpMessageHandler>().Object)),
+            Cluster = new ClusterModel(new ClusterConfig(), new HttpMessageInvoker(new Mock<HttpMessageHandler>().Object)),
         };
         _context.Features.Set<IReverseProxyFeature>(_proxyFeature);
-        _context.Features.Set(Mock<IHttpSysRequestDelegationFeature>().Object);
+        _context.Features.Set(_delegationFeature.Object);
 
-        Mock<IHttpSysRequestDelegationFeature>()
+        _delegationFeature
             .SetupGet(p => p.CanDelegate)
             .Returns(true);
 
@@ -48,9 +52,12 @@ public class HttpSysDelegatorMiddlewareTests : TestAutoMockBase
             _nextCallback?.Invoke();
             return Task.CompletedTask;
         };
-        Provide(_next);
 
-        _sut = Create<HttpSysDelegatorMiddleware>();
+        _sut = new HttpSysDelegatorMiddleware(
+            _next,
+            NullLogger<HttpSysDelegatorMiddleware>.Instance,
+            new HttpSysDelegator(new Mock<IServer>().Object, NullLogger<HttpSysDelegator>.Instance),
+            _randomFactory.Object);
     }
 
     [Fact]
@@ -140,7 +147,7 @@ public class HttpSysDelegatorMiddlewareTests : TestAutoMockBase
 
     private void SetupRandomToReturn(int value)
     {
-        Mock<IRandomFactory>().Setup(m => m.CreateRandomInstance()).Returns(new TestRandom(value));
+        _randomFactory.Setup(m => m.CreateRandomInstance()).Returns(new TestRandom(value));
     }
 
     private class TestRandom : Random

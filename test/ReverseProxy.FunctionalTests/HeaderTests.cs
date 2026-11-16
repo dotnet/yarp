@@ -479,6 +479,7 @@ public class HeaderTests
 
     [Theory]
     [MemberData(nameof(RequestMultiHeadersData))]
+    [ActiveIssue("https://github.com/dotnet/yarp/issues/1887", TestPlatforms.MacCatalyst | TestPlatforms.OSX)]
     public async Task MultiValueRequestHeaders(string headerName, string[] values, string expectedValues)
     {
         var proxyTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);

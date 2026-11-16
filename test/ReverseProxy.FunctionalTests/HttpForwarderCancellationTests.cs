@@ -80,6 +80,7 @@ public class HttpForwarderCancellationTests
 
             using var client = new HttpClient(new HttpClientHandler
             {
+                // CodeQL [SM02184] Certificate validation is disabled only for HTTPS requests to the functional test server.
                 ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             });
 

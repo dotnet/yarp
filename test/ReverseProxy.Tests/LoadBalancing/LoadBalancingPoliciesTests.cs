@@ -9,16 +9,14 @@ using Yarp.Tests.Common;
 using Yarp.ReverseProxy.Configuration;
 using Yarp.ReverseProxy.Model;
 using Yarp.ReverseProxy.Forwarder;
-using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy.LoadBalancing.Tests;
 
-public class LoadBalancingPoliciesTests : TestAutoMockBase
+public class LoadBalancingPoliciesTests
 {
     public LoadBalancingPoliciesTests()
     {
         RandomFactory = new TestRandomFactory() { Instance = RandomInstance };
-        Provide<IRandomFactory>(RandomFactory);
     }
 
     private TestRandom RandomInstance { get; set; } = new TestRandom();
@@ -36,7 +34,7 @@ public class LoadBalancingPoliciesTests : TestAutoMockBase
         };
 
         var context = new DefaultHttpContext();
-        var loadBalancer = Create<FirstLoadBalancingPolicy>();
+        var loadBalancer = new FirstLoadBalancingPolicy();
 
         for (var i = 0; i < 10; i++)
         {
@@ -61,7 +59,7 @@ public class LoadBalancingPoliciesTests : TestAutoMockBase
         RandomInstance.Sequence = Enumerable.Range(0, Iterations).Select(_ => random.Next(destinations.Length)).ToArray();
 
         var context = new DefaultHttpContext();
-        var loadBalancer = Create<RandomLoadBalancingPolicy>();
+        var loadBalancer = new RandomLoadBalancingPolicy(RandomFactory);
 
         for (var i = 0; i < Iterations; i++)
         {
@@ -87,7 +85,7 @@ public class LoadBalancingPoliciesTests : TestAutoMockBase
         RandomInstance.Sequence = Enumerable.Range(0, Iterations * Iterations).Select(_ => random.Next(destinations.Length)).ToArray();
 
         var context = new DefaultHttpContext();
-        var loadBalancer = Create<PowerOfTwoChoicesLoadBalancingPolicy>();
+        var loadBalancer = new PowerOfTwoChoicesLoadBalancingPolicy(RandomFactory);
 
         for (var i = 0; i < Iterations; i++)
         {
@@ -118,7 +116,7 @@ public class LoadBalancingPoliciesTests : TestAutoMockBase
         RandomInstance.Sequence = Enumerable.Range(0, Iterations * Iterations).Select(_ => random.Next(destinations.Length)).ToArray();
 
         var context = new DefaultHttpContext();
-        var loadBalancer = Create<PowerOfTwoChoicesLoadBalancingPolicy>();
+        var loadBalancer = new PowerOfTwoChoicesLoadBalancingPolicy(RandomFactory);
 
         for (var i = 0; i < Iterations; i++)
         {
@@ -139,7 +137,7 @@ public class LoadBalancingPoliciesTests : TestAutoMockBase
         destinations[0].ConcurrentRequestCount++;
 
         var context = new DefaultHttpContext();
-        var loadBalancer = Create<LeastRequestsLoadBalancingPolicy>();
+        var loadBalancer = new LeastRequestsLoadBalancingPolicy();
 
         for (var i = 0; i < 10; i++)
         {
@@ -170,7 +168,7 @@ public class LoadBalancingPoliciesTests : TestAutoMockBase
         };
         context.Features.Set<IReverseProxyFeature>(feature);
 
-        var loadBalancer = Create<RoundRobinLoadBalancingPolicy>();
+        var loadBalancer = new RoundRobinLoadBalancingPolicy();
 
         for (var i = 0; i < 10; i++)
         {
