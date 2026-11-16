@@ -43,7 +43,7 @@ extends:
     sdl:
       sourceAnalysisPool:
         name: $(DncEngInternalBuildPool)
-        image: 1es-windows-2022
+        image: windows.vs2022.amd64
         os: windows
       policheck:
           enabled: true
@@ -74,7 +74,7 @@ extends:
             enablePublishing: true
             pool:
               name: $(DncEngInternalBuildPool)
-              image: 1es-windows-2022
+              image: windows.vs2022.amd64
               os: windows
             variables:
             - name: _OfficialBuildArgs
