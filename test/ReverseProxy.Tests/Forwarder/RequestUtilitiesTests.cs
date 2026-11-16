@@ -52,6 +52,15 @@ public class RequestUtilitiesTests
         Assert.Same(HttpMethod.Patch, RequestUtilities.GetHttpMethod("PATCH"));
     }
 
+    [Theory]
+    [InlineData("QUERY")]
+    [InlineData("Query")]
+    [InlineData("query")]
+    public void GetHttpMethod_Query_Works(string method)
+    {
+        Assert.Same(HttpMethod.Query, RequestUtilities.GetHttpMethod(method));
+    }
+
     [Fact]
     public void GetHttpMethod_Trace_Works()
     {

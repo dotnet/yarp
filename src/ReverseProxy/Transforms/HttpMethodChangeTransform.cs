@@ -60,6 +60,7 @@ public class HttpMethodChangeTransform : RequestTransform
             string _ when HttpMethods.IsOptions(method) => HttpMethod.Options,
             string _ when HttpMethods.IsHead(method) => HttpMethod.Head,
             string _ when HttpMethods.IsPatch(method) => HttpMethod.Patch,
+            string _ when HttpMethods.IsQuery(method) => HttpMethod.Query,
             string _ when HttpMethods.IsTrace(method) => HttpMethod.Trace,
             string _ => new HttpMethod(method),
         };
