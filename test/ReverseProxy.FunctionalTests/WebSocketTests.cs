@@ -237,6 +237,53 @@ public class WebSocketTests
         }, cts.Token);
     }
 
+    [Theory]
+    [InlineData("GET", "websocket", false)]
+    [InlineData("POST", "websocket", false)]
+    [InlineData("CUSTOM", "websocket", false)]
+    [InlineData("POST", "SPDY/3.1", false)]
+    [InlineData("GET", "websocket", true)]
+    [InlineData("POST", "websocket", true)]
+    public async Task UpgradeRequest_PreservesMethod(string method, string upgrade, bool h2Destination)
+    {
+        using var cts = CreateTimer();
+        var test = CreateTestEnvironment();
+        test.ProxyProtocol = HttpProtocols.Http1;
+        test.DestinationProtocol = HttpProtocols.Http1;
+        test.DestinationHttpVersion = h2Destination ? HttpVersion.Version20 : HttpVersion.Version11;
+        test.UseHttpsOnDestination = h2Destination;
+        test.ConfigureDestinationApp = app => app.Run(context => context.Response.WriteAsync(context.Request.Method));
+        var requests = new List<(Version Version, HttpMethod Method)>();
+        test.ConfigureProxy = builder => builder.AddTransforms(transforms => transforms.AddRequestTransform(context =>
+        {
+            requests.Add((context.ProxyRequest.Version, context.ProxyRequest.Method));
+            return default;
+        }));
+
+        await test.Invoke(async uri =>
+        {
+            using var client = CreateInvoker();
+            using var request = new HttpRequestMessage(new HttpMethod(method), uri);
+            request.Version = HttpVersion.Version11;
+            request.Headers.TryAddWithoutValidation("Upgrade", upgrade);
+            request.Headers.TryAddWithoutValidation("Connection", "upgrade");
+            request.Headers.TryAddWithoutValidation("Sec-WebSocket-Key", ProtocolHelper.CreateSecWebSocketKey());
+
+            using var response = await client.SendAsync(request, cts.Token);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(method, await response.Content.ReadAsStringAsync(cts.Token));
+        }, cts.Token);
+
+        // Non-GET requests are never sent as Extended CONNECT, so they don't need the HTTP/1.1 retry.
+        var triesH2 = h2Destination && method == "GET";
+        Assert.Equal(triesH2 ? 2 : 1, requests.Count);
+        if (triesH2)
+        {
+            Assert.Equal((HttpVersion.Version20, HttpMethod.Connect), requests[0]);
+        }
+        Assert.Equal((HttpVersion.Version11, new HttpMethod(method)), requests[^1]);
+    }
+
     [Fact]
     // https://github.com/dotnet/yarp/issues/255 IIS claims all requests are upgradeable.
     public async Task FalseUpgradeTest()
