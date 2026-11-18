@@ -3,6 +3,6 @@
   <PropertyGroup>
     <LatestDevTFM>net11.0</LatestDevTFM>
     <ReleaseTFMs>net10.0</ReleaseTFMs>
-    <TestTFMs>net10.0;net11.0</TestTFMs>
+    <TestTFMs>net10.0;net11.0;net12.0</TestTFMs>
   </PropertyGroup>
 </Project>
