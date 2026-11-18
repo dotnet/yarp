@@ -39,6 +39,8 @@ public class TestEnvironment
 
     public Action<IApplicationBuilder> ConfigureProxyApp { get; set; } = _ => { };
 
+    public Action<IApplicationBuilder> ConfigureProxyAppAfterRouting { get; set; } = _ => { };
+
     public string ClusterId { get; set; } = "cluster1";
 
     public Func<ClusterConfig, RouteConfig, (ClusterConfig Cluster, RouteConfig Route)> ConfigTransformer { get; set; } = (a, b) => (a, b);
@@ -143,6 +145,7 @@ public class TestEnvironment
 
                 ConfigureProxyApp(app);
                 app.UseRouting();
+                ConfigureProxyAppAfterRouting(app);
                 app.UseEndpoints(builder =>
                 {
                     builder.MapReverseProxy();
