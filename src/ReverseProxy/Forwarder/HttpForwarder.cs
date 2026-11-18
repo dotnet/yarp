@@ -375,7 +375,8 @@ internal sealed class HttpForwarder : IHttpForwarder
         var outgoingConnect = false;
         var tryDowngradingH2WsOnFailure = false;
 
-        if (isSpdyRequest)
+        // RFC 8441 only maps GET upgrade requests to Extended CONNECT.
+        if (isSpdyRequest || (isH1WsRequest && !HttpMethods.IsGet(context.Request.Method)))
         {
             // Can only be done on HTTP/1.1.
             outgoingUpgrade = true;
@@ -416,9 +417,10 @@ internal sealed class HttpForwarder : IHttpForwarder
                     : "An outgoing HTTP/1.1 Upgrade request is required to proxy this request, but is disallowed by HttpVersionPolicy.");
             }
 
+            // Preserve the original request's method, unless it's a H2->H1 WebSocket request, which must be GET.
             destinationRequest.Version = HttpVersion.Version11;
             destinationRequest.VersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-            destinationRequest.Method = HttpMethod.Get;
+            destinationRequest.Method = isH2WsRequest ? HttpMethod.Get : RequestUtilities.GetHttpMethod(context.Request.Method);
         }
         else if (outgoingConnect)
         {
