@@ -18,6 +18,8 @@ namespace Yarp.ReverseProxy.Transforms.Builder;
 /// </summary>
 internal sealed class StructuredTransformer : HttpTransformer
 {
+    private readonly bool _canUseRequestTransformFastPath;
+
     /// <summary>
     /// Creates a new <see cref="StructuredTransformer"/> instance.
     /// </summary>
@@ -36,6 +38,7 @@ internal sealed class StructuredTransformer : HttpTransformer
         RequestTransforms = requestTransforms.ToArray();
         ResponseTransforms = responseTransforms.ToArray();
         ResponseTrailerTransforms = responseTrailerTransforms.ToArray();
+        _canUseRequestTransformFastPath = RequestTransforms.All(CanUseRequestTransformFastPath);
     }
 
     /// <summary>
@@ -68,6 +71,22 @@ internal sealed class StructuredTransformer : HttpTransformer
     /// </summary>
     internal ResponseTrailersTransform[] ResponseTrailerTransforms { get; }
 
+    private static bool CanUseRequestTransformFastPath(RequestTransform transform)
+    {
+        // Built-in transforms are inheritable, so exact type checks preserve derived ApplyAsync overrides.
+        var transformType = transform.GetType();
+        return transformType == typeof(RequestHeaderOriginalHostTransform)
+                || transformType == typeof(RequestHeaderXForwardedForTransform)
+                || transformType == typeof(RequestHeaderXForwardedHostTransform)
+                || transformType == typeof(RequestHeaderXForwardedProtoTransform)
+                || transformType == typeof(RequestHeaderXForwardedPrefixTransform)
+                || transformType == typeof(RequestHeaderForwardedTransform)
+                || transformType == typeof(RequestHeaderRemoveTransform)
+                || transformType == typeof(RequestHeaderValueTransform)
+                || transformType == typeof(RequestHeaderRouteValueTransform)
+                || transformType == typeof(RequestHeadersAllowedTransform);
+    }
+
 #pragma warning disable CS0672 // We're overriding the obsolete overloads to preserve backwards compatibility.
     public override ValueTask TransformRequestAsync(HttpContext httpContext, HttpRequestMessage proxyRequest, string destinationPrefix) =>
         TransformRequestAsync(httpContext, proxyRequest, destinationPrefix, CancellationToken.None);
@@ -95,6 +114,19 @@ internal sealed class StructuredTransformer : HttpTransformer
 
         if (RequestTransforms.Length == 0)
         {
+            return;
+        }
+
+        if (_canUseRequestTransformFastPath)
+        {
+            var headersCopied = ShouldCopyRequestHeaders.GetValueOrDefault(true);
+            foreach (var requestTransform in RequestTransforms)
+            {
+                requestTransform.ApplyFast(httpContext, proxyRequest, ref headersCopied);
+            }
+
+            proxyRequest.RequestUri ??= RequestUtilities.MakeDestinationAddress(
+                destinationPrefix, httpContext.Request.Path, httpContext.Request.QueryString);
             return;
         }
 
