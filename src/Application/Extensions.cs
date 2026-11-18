@@ -4,7 +4,10 @@ using System.Security.Cryptography.X509Certificates;
 using HealthChecks.ApplicationStatus.DependencyInjection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
@@ -12,6 +15,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Trace;
 using Yarp.Application.Configuration;
+using Yarp.Application.Features;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -24,6 +28,7 @@ public static class Extensions
         builder.AddDefaultHealthChecks();
 
         builder.Services.AddServiceDiscovery();
+        builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, RequestQueryParameterMatcherPolicy>());
 
         return builder;
     }
