@@ -31,6 +31,7 @@
     <IsPackable>true</IsPackable>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageIcon>icon.png</PackageIcon>
+    <DebugType>embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
