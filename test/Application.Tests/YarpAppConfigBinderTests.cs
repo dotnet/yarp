@@ -49,6 +49,41 @@ public class YarpAppConfigBinderTests
         Assert.False(config.Telemetry.UnsafeAcceptAnyCertificate);
     }
 
+    // Log.Level
+
+    [Fact]
+    public void Bind_LogLevel_DefaultsToDefault()
+    {
+        Assert.Equal(LogMode.Default, Bind(new()).Log.Level);
+        Assert.Equal(LogMode.Default, Bind(new() { ["Log:Level"] = "" }).Log.Level);
+    }
+
+    [Theory]
+    [InlineData("default", LogMode.Default)]
+    [InlineData("requests", LogMode.Requests)]
+    [InlineData("debug", LogMode.Debug)]
+    [InlineData("REQUESTS", LogMode.Requests)]
+    [InlineData("Debug", LogMode.Debug)]
+    public void Bind_LogLevel_IsCaseInsensitive(string value, LogMode expected)
+    {
+        Assert.Equal(expected, Bind(new() { ["Log:Level"] = value }).Log.Level);
+    }
+
+    [Theory]
+    [InlineData("verbose")]
+    [InlineData("0")]
+    [InlineData("1")]
+    [InlineData("2")]
+    [InlineData("+1")]
+    [InlineData("-1")]
+    [InlineData("99")]
+    [InlineData("debug,requests")]
+    public void Bind_LogLevel_RejectsInvalidAndNumericValues(string value)
+    {
+        var ex = Assert.Throws<InvalidOperationException>(() => Bind(new() { ["Log:Level"] = value }));
+        Assert.Contains("Log:Level", ex.Message);
+    }
+
     // Legacy key mapping
 
     [Fact]

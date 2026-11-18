@@ -19,10 +19,32 @@ public static class YarpAppConfigBinder
         configuration.GetSection(nameof(config.NavigationFallback)).Bind(config.NavigationFallback);
         configuration.GetSection(nameof(config.Telemetry)).Bind(config.Telemetry);
 
+        config.Log.Level = ParseLogMode(configuration[$"{nameof(config.Log)}:{nameof(config.Log.Level)}"]);
+
         // Legacy env var support
         MapLegacyKeys(configuration, config);
 
         return config;
+    }
+
+    private static LogMode ParseLogMode(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return LogMode.Default;
+        }
+
+        // Enum.TryParse also accepts numeric strings, so check that the value is a defined name.
+        value = value.Trim();
+        if (value.All(char.IsLetter)
+            && Enum.TryParse<LogMode>(value, ignoreCase: true, out var mode)
+            && Enum.IsDefined(mode))
+        {
+            return mode;
+        }
+
+        throw new InvalidOperationException(
+            $"Invalid configuration value '{value}' for 'Log:Level'. Expected one of: default, requests, debug.");
     }
 
     private static void MapLegacyKeys(IConfiguration configuration, YarpAppConfig config)
