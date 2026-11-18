@@ -94,7 +94,6 @@ public class HeaderTests
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Referer: \r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"custom: \r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
-            await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
             var buffer = new byte[4096];
             var responseBuilder = new StringBuilder();
             while (true)
@@ -177,7 +176,6 @@ public class HeaderTests
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Host: {proxyHostUri.Host}:{proxyHostUri.Port}\r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Content-Length: 0\r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Connection: close\r\n"));
-            await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
             var buffer = new byte[4096];
             var responseBuilder = new StringBuilder();
@@ -479,7 +477,6 @@ public class HeaderTests
 
     [Theory]
     [MemberData(nameof(RequestMultiHeadersData))]
-    [ActiveIssue("https://github.com/dotnet/yarp/issues/1887", TestPlatforms.MacCatalyst | TestPlatforms.OSX)]
     public async Task MultiValueRequestHeaders(string headerName, string[] values, string expectedValues)
     {
         var proxyTcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -543,7 +540,6 @@ public class HeaderTests
 
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Connection: close\r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
-            await stream.WriteAsync(Encoding.ASCII.GetBytes($"\r\n"));
             var response = await new StreamReader(stream).ReadToEndAsync();
 
             await proxyTcs.Task;
@@ -684,7 +680,6 @@ public class HeaderTests
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Host: {proxyHostUri.Host}:{proxyHostUri.Port}\r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Content-Length: 0\r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes($"Connection: close\r\n"));
-            await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
             await stream.WriteAsync(Encoding.ASCII.GetBytes("\r\n"));
             var response = await new StreamReader(stream).ReadToEndAsync();
 
