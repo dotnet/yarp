@@ -45,6 +45,35 @@ public class QueryTransformExtensionsTests : TransformExtensionsTestsBase
         Assert.Equal(expectedMode, queryParameterRouteTransform.Mode);
     }
 
+    [Fact]
+    public void WithTransformQueryParameter()
+    {
+        var routeConfig = new RouteConfig();
+        routeConfig = routeConfig.WithTransformQueryParameter("key", "img/{remainder}");
+
+        var builderContext = ValidateAndBuild(routeConfig, _factory);
+
+        ValidateQueryParameterTemplate(builderContext, "key", "img/{remainder}");
+    }
+
+    [Fact]
+    public void AddQueryParameter()
+    {
+        var builderContext = CreateBuilderContext();
+        builderContext.AddQueryParameter("key", "img/{remainder}");
+
+        ValidateQueryParameterTemplate(builderContext, "key", "img/{remainder}");
+    }
+
+    private static void ValidateQueryParameterTemplate(TransformBuilderContext builderContext, string key, string template)
+    {
+        var requestTransform = Assert.Single(builderContext.RequestTransforms);
+        var queryParameterTemplateTransform = Assert.IsType<QueryParameterTemplateTransform>(requestTransform);
+        Assert.Equal(key, queryParameterTemplateTransform.Key);
+        Assert.Equal(template, queryParameterTemplateTransform.Template);
+        Assert.Equal(QueryStringTransformMode.Set, queryParameterTemplateTransform.Mode);
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
