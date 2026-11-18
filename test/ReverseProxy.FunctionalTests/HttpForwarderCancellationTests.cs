@@ -9,9 +9,12 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using Yarp.ReverseProxy.Common;
+using Yarp.ReverseProxy.Forwarder;
 using Yarp.ReverseProxy.Utilities;
 
 namespace Yarp.ReverseProxy;
@@ -21,6 +24,53 @@ public class HttpForwarderCancellationTests
     // HTTP/2 over TLS is not supported on macOS due to missing ALPN support.
     // See https://github.com/dotnet/runtime/issues/27727
     public static bool Http2OverTlsSupported => !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RouteTimeout_Returns504(bool useNamedPolicy)
+    {
+        var error = ForwarderError.None;
+        var statusCode = HttpStatusCode.OK;
+        // The timeout may fire before or after the destination is reached; either way it must be reported as a timeout.
+        var test = new TestEnvironment(async context =>
+        {
+            try
+            {
+                await Task.Delay(Timeout.Infinite, context.RequestAborted);
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        })
+        {
+            ConfigureProxyServices = services => services.AddRequestTimeouts(options =>
+                options.AddPolicy("test", TimeSpan.FromMilliseconds(10))),
+            ConfigureProxyApp = app =>
+            {
+                app.Use(async (context, next) =>
+                {
+                    await next();
+                    error = context.Features.Get<IForwarderErrorFeature>()?.Error ?? ForwarderError.None;
+                });
+            },
+            ConfigureProxyAppAfterRouting = app => app.UseRequestTimeouts(),
+            ConfigTransformer = (cluster, route) => (cluster, useNamedPolicy
+                ? route with { TimeoutPolicy = "test" }
+                : route with { Timeout = TimeSpan.FromMilliseconds(10) }),
+        };
+
+        await test.Invoke(async uri =>
+        {
+            using var client = new HttpClient();
+            using var response = await client.GetAsync(uri);
+
+            statusCode = response.StatusCode;
+        });
+
+        Assert.Equal(HttpStatusCode.GatewayTimeout, statusCode);
+        Assert.Equal(ForwarderError.RequestTimedOut, error);
+    }
 
     [Fact(Skip = "Condition not met", SkipUnless = nameof(Http2OverTlsSupported))]
     public async Task ServerSendsHttp2Reset_ReadToClientIsCanceled()

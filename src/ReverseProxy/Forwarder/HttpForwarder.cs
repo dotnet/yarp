@@ -657,6 +657,16 @@ internal sealed class HttpForwarder : IHttpForwarder
                     requestException = new AggregateException(requestException, requestBodyException!);
                 }
             }
+
+            // ASP.NET Core request timeouts cancel RequestAborted, unlike the forwarder's activity timeout,
+            // so detect them here before treating linked-token cancellation as a client disconnect.
+            if (context.RequestAborted.IsCancellationRequested &&
+                context.Features.Get<IHttpRequestTimeoutFeature>()?.RequestTimeoutToken.IsCancellationRequested == true)
+            {
+                // YARP reports request timeouts as 504; ASP.NET Core policy status and response customization are not applied.
+                return await ReportErrorAsync(ForwarderError.RequestTimedOut, StatusCodes.Status504GatewayTimeout);
+            }
+
             // Either the client went away (HttpContext.RequestAborted) or the CancellationToken provided to SendAsync was signaled.
             return await ReportErrorAsync(requestBodyCanceled ? ForwarderError.RequestBodyCanceled : ForwarderError.RequestCanceled,
                 context.RequestAborted.IsCancellationRequested ? StatusCodes.Status400BadRequest : StatusCodes.Status502BadGateway);
