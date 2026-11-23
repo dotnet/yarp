@@ -60,6 +60,29 @@ public static class QueryTransformExtensions
     }
 
     /// <summary>
+    /// Clones the route and adds the transform that will set the query parameter using template substitutions.
+    /// Tokens like {name} and {**name} are resolved from route values first, then query values.
+    /// </summary>
+    public static RouteConfig WithTransformQueryParameter(this RouteConfig route, string queryKey, string valueTemplate)
+    {
+        return route.WithTransform(transform =>
+        {
+            transform[QueryTransformFactory.QueryParameterKey] = queryKey;
+            transform[QueryTransformFactory.SetKey] = valueTemplate;
+        });
+    }
+
+    /// <summary>
+    /// Adds the transform that will set the query parameter using template substitutions.
+    /// Tokens like {name} and {**name} are resolved from route values first, then query values.
+    /// </summary>
+    public static TransformBuilderContext AddQueryParameter(this TransformBuilderContext context, string queryKey, string valueTemplate)
+    {
+        context.RequestTransforms.Add(new QueryParameterTemplateTransform(QueryStringTransformMode.Set, queryKey, valueTemplate));
+        return context;
+    }
+
+    /// <summary>
     /// Clones the route and adds the transform that will remove the given query key.
     /// </summary>
     public static RouteConfig WithTransformQueryRemoveKey(this RouteConfig route, string queryKey)
