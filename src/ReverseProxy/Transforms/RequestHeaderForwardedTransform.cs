@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -51,28 +52,35 @@ public class RequestHeaderForwardedTransform : RequestTransform
     public override ValueTask ApplyAsync(RequestTransformContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
+        Apply(context.HttpContext, context.ProxyRequest, context.HeadersCopied);
+        return default;
+    }
 
-        var httpContext = context.HttpContext;
+    internal override void ApplyFast(HttpContext httpContext, HttpRequestMessage proxyRequest, ref bool headersCopied)
+    {
+        Apply(httpContext, proxyRequest, headersCopied);
+    }
 
+    private void Apply(HttpContext httpContext, HttpRequestMessage proxyRequest, bool headersCopied)
+    {
         switch (TransformAction)
         {
             case ForwardedTransformActions.Set:
-                RemoveHeader(context, ForwardedHeaderName);
-                AddHeader(context, ForwardedHeaderName, GetHeaderValue(httpContext));
+                RemoveHeader(proxyRequest, ForwardedHeaderName);
+                AddHeader(proxyRequest, ForwardedHeaderName, GetHeaderValue(httpContext));
                 break;
             case ForwardedTransformActions.Append:
-                var existingValues = TakeHeader(context, ForwardedHeaderName);
+                var existingValues = TakeHeader(httpContext, proxyRequest, headersCopied, ForwardedHeaderName);
                 var values = StringValues.Concat(existingValues, GetHeaderValue(httpContext));
-                AddHeader(context, ForwardedHeaderName, values);
+                AddHeader(proxyRequest, ForwardedHeaderName, values);
                 break;
             case ForwardedTransformActions.Remove:
-                RemoveHeader(context, ForwardedHeaderName);
+                RemoveHeader(proxyRequest, ForwardedHeaderName);
                 break;
             default:
                 throw new NotImplementedException(TransformAction.ToString());
         }
 
-        return default;
     }
 
     private string GetHeaderValue(HttpContext httpContext)

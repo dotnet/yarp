@@ -2,6 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Net.Http;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 
 namespace Yarp.ReverseProxy.Transforms;
 
@@ -35,5 +39,24 @@ public class RequestHeaderRouteValueTransform : RequestHeaderTransform
 
         return value?.ToString();
     }
-}
 
+    internal override void ApplyFast(HttpContext httpContext, HttpRequestMessage proxyRequest, ref bool headersCopied)
+    {
+        if (!httpContext.Request.RouteValues.TryGetValue(RouteValueKey, out var routeValue)
+            || routeValue?.ToString() is not { } value)
+        {
+            return;
+        }
+
+        if (Append)
+        {
+            var existingValues = TakeHeader(httpContext, proxyRequest, headersCopied, HeaderName);
+            AddHeader(proxyRequest, HeaderName, StringValues.Concat(existingValues, value));
+        }
+        else
+        {
+            RemoveHeader(proxyRequest, HeaderName);
+            AddHeader(proxyRequest, HeaderName, value);
+        }
+    }
+}
