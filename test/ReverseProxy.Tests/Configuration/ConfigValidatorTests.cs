@@ -54,6 +54,8 @@ public class ConfigValidatorTests
     [InlineData("example.com", null, "get")]
     [InlineData("example.com", null, "gEt,put")]
     [InlineData("example.com", null, "gEt,put,POST,traCE,PATCH,DELETE,Head")]
+    [InlineData("example.com", null, "QUERY")]
+    [InlineData("example.com", null, "gEt,quERy")]
     [InlineData("example.com,example2.com", null, "get")]
     [InlineData("*.example.com", null, null)]
     [InlineData("a-b.example.com", null, null)]

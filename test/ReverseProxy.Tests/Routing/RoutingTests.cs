@@ -237,6 +237,38 @@ public class RoutingTests
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("QUERY")]
+    [InlineData("query")]
+    public async Task MethodRouting_Query_Works(string method)
+    {
+        var routes = new[]
+        {
+            new RouteConfig()
+            {
+                RouteId = "route1",
+                ClusterId = "cluster1",
+                Match = new RouteMatch
+                {
+                    Path = "/api",
+                    Methods = new[] { method },
+                }
+            }
+        };
+
+        using var host = await CreateHostAsync(routes);
+        var client = host.GetTestClient();
+
+        // Positive
+        var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Query, "/api"));
+        response.EnsureSuccessStatusCode();
+        Assert.Equal("route1", response.Headers.GetValues("route").SingleOrDefault());
+
+        // Negative
+        response = await client.PostAsync("/api", content: null);
+        Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+    }
+
     [Fact]
     public async Task Precedence_PathMethodHostHeaders()
     {
