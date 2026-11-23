@@ -610,6 +610,100 @@ public class HttpForwarderTests
         events.AssertContainProxyStages(upgrade: true);
     }
 
+    [Theory]
+    [InlineData("GET", "websocket", null)]
+    [InlineData("POST", "websocket", null)]
+    [InlineData("CUSTOM", "websocket", null)]
+    [InlineData("POST", "SPDY/3.1", null)]
+    [InlineData("CONNECT", "websocket", null)]
+    [InlineData("GET", "websocket", "HTTP2_ENABLED")]
+    [InlineData("POST", "websocket", "HTTP2_ENABLED")]
+    [InlineData("POST", "websocket", "SETTINGS_ENABLE_CONNECT_PROTOCOL")]
+    [InlineData("CONNECT", "websocket", "HTTP2_ENABLED")]
+    [InlineData("CONNECT", "websocket", "SETTINGS_ENABLE_CONNECT_PROTOCOL")]
+    public async Task UpgradableRequest_PreservesMethodOnHttp1(string method, string upgradeHeader, string retryReason)
+    {
+        var incomingConnect = HttpMethods.IsConnect(method);
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = method;
+        httpContext.Request.Protocol = incomingConnect ? "HTTP/2" : "HTTP/1.1";
+
+        if (incomingConnect)
+        {
+            var connectFeature = new Mock<IHttpExtendedConnectFeature>();
+            connectFeature.SetupGet(f => f.IsExtendedConnect).Returns(true);
+            connectFeature.SetupGet(f => f.Protocol).Returns(upgradeHeader);
+            httpContext.Features.Set(connectFeature.Object);
+        }
+        else
+        {
+            httpContext.Request.Headers.Upgrade = upgradeHeader;
+            httpContext.Request.Headers.Connection = "upgrade";
+            httpContext.Request.Headers.SecWebSocketKey = ProtocolHelper.CreateSecWebSocketKey();
+            var upgradeFeature = new Mock<IHttpUpgradeFeature>();
+            upgradeFeature.SetupGet(f => f.IsUpgradableRequest).Returns(true);
+            httpContext.Features.Set(upgradeFeature.Object);
+        }
+
+        var requests = new List<(Version Version, HttpMethod Method, string Protocol)>();
+        using var client = MockHttpHandler.CreateClient((request, _) =>
+        {
+            requests.Add((request.Version, request.Method, request.Headers.Protocol));
+            if (retryReason is not null && request.Method == HttpMethod.Connect)
+            {
+                var exception = new HttpRequestException();
+                exception.Data[retryReason] = false;
+                throw exception;
+            }
+
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.BadRequest));
+        });
+
+        var config = new ForwarderRequestConfig
+        {
+            Version = retryReason is null ? HttpVersion.Version11 : HttpVersion.Version20,
+            VersionPolicy = HttpVersionPolicy.RequestVersionOrLower,
+        };
+
+        var error = await CreateProxy().SendAsync(httpContext, "https://localhost/", client, config);
+
+        Assert.Equal(ForwarderError.None, error);
+        Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
+        var triesH2 = retryReason is not null && (incomingConnect || HttpMethods.IsGet(method));
+        Assert.Equal(triesH2 ? 2 : 1, requests.Count);
+        if (triesH2)
+        {
+            Assert.Equal((HttpVersion.Version20, HttpMethod.Connect, "websocket"), requests[0]);
+        }
+        Assert.Equal(HttpVersion.Version11, requests[^1].Version);
+        Assert.Equal(incomingConnect ? HttpMethod.Get : new HttpMethod(method), requests[^1].Method);
+    }
+
+    [Theory]
+    [InlineData(HttpVersionPolicy.RequestVersionExact)]
+    [InlineData(HttpVersionPolicy.RequestVersionOrHigher)]
+    public async Task NonGetWebSocketRequest_Http1Disallowed_Fails(HttpVersionPolicy policy)
+    {
+        var events = TestEventListener.Collect();
+        TestLogger.Collect();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "POST";
+        httpContext.Request.Headers.Upgrade = "websocket";
+        httpContext.Request.Headers.Connection = "upgrade";
+        var upgradeFeature = new Mock<IHttpUpgradeFeature>();
+        upgradeFeature.SetupGet(f => f.IsUpgradableRequest).Returns(true);
+        httpContext.Features.Set(upgradeFeature.Object);
+
+        var client = MockHttpHandler.CreateClient((_, _) => throw new InvalidOperationException("Unreachable"));
+        var config = new ForwarderRequestConfig { Version = HttpVersion.Version20, VersionPolicy = policy };
+
+        var error = await CreateProxy().SendAsync(httpContext, "https://localhost/", client, config);
+
+        AssertErrorInfo<HttpRequestException>(ForwarderError.RequestCreation, StatusCodes.Status502BadGateway, error, httpContext, "https://localhost/");
+        events.AssertContainProxyStages([]);
+    }
+
     // Tests proxying an upgradeable request where the destination refused to upgrade.
     // We should still proxy back the response.
     [Fact]
