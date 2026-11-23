@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Timeouts;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1533,6 +1534,94 @@ public class HttpForwarderTests
 
         AssertErrorInfoAndStages<OperationCanceledException>(ForwarderError.RequestCanceled, StatusCodes.Status400BadRequest, proxyError, httpContext, destinationPrefix);
         Assert.Equal(0, proxyResponseStream.Length);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RouteTimeout_Returns504(bool copyRequestBody)
+    {
+        TestEventListener.Collect();
+        TestLogger.Collect();
+
+        using var timeoutCts = new CancellationTokenSource();
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = copyRequestBody ? "POST" : "GET";
+        httpContext.Request.Host = new HostString("example.com:3456");
+        httpContext.RequestAborted = timeoutCts.Token;
+        if (copyRequestBody)
+        {
+            httpContext.Request.Body = new CallbackReadStream(async (memory, ct) =>
+            {
+                timeoutCts.Cancel();
+                await Task.Delay(Timeout.Infinite, ct);
+                return 0;
+            });
+            httpContext.Request.ContentLength = 1;
+        }
+
+        var timeoutFeature = new Mock<IHttpRequestTimeoutFeature>();
+        timeoutFeature.SetupGet(f => f.RequestTimeoutToken).Returns(timeoutCts.Token);
+        httpContext.Features.Set(timeoutFeature.Object);
+
+        var destinationPrefix = "https://localhost:123/";
+        var client = MockHttpHandler.CreateClient(async (HttpRequestMessage request, CancellationToken cancellationToken) =>
+        {
+            if (copyRequestBody)
+            {
+                await request.Content.CopyToWithCancellationAsync(Stream.Null);
+            }
+            else
+            {
+                timeoutCts.Cancel();
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+            return new HttpResponseMessage();
+        });
+
+        var proxyError = await CreateProxy().SendAsync(httpContext, destinationPrefix, client);
+
+        if (copyRequestBody)
+        {
+            AssertErrorInfoAndStages<AggregateException>(ForwarderError.RequestTimedOut, StatusCodes.Status504GatewayTimeout,
+                proxyError, httpContext, destinationPrefix, ForwarderStage.RequestContentTransferStart);
+        }
+        else
+        {
+            AssertErrorInfoAndStages<OperationCanceledException>(ForwarderError.RequestTimedOut, StatusCodes.Status504GatewayTimeout,
+                proxyError, httpContext, destinationPrefix);
+        }
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LinkedCancellation_WithRouteTimeoutFeature_IsNotTimedOut(bool manualCancellation)
+    {
+        TestEventListener.Collect();
+        TestLogger.Collect();
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.Method = "GET";
+        httpContext.RequestAborted = new CancellationToken(canceled: !manualCancellation);
+        var timeoutFeature = new Mock<IHttpRequestTimeoutFeature>();
+        timeoutFeature.SetupGet(f => f.RequestTimeoutToken).Returns(new CancellationToken(canceled: manualCancellation));
+        httpContext.Features.Set(timeoutFeature.Object);
+
+        var destinationPrefix = "https://localhost:123/";
+        var client = MockHttpHandler.CreateClient((HttpRequestMessage request, CancellationToken cancellationToken) =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage());
+        });
+
+        var proxyError = await CreateProxy().SendAsync(httpContext, destinationPrefix, client, ForwarderRequestConfig.Empty,
+            HttpTransformer.Default, new CancellationToken(canceled: manualCancellation));
+
+        AssertErrorInfoAndStages<OperationCanceledException>(ForwarderError.RequestCanceled,
+            manualCancellation ? StatusCodes.Status502BadGateway : StatusCodes.Status400BadRequest,
+            proxyError, httpContext, destinationPrefix);
     }
 
     [Fact]
