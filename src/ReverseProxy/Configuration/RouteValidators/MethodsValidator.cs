@@ -11,7 +11,7 @@ internal sealed class MethodsValidator : IRouteValidator
 {
     private static readonly HashSet<string> _validMethods = new(StringComparer.OrdinalIgnoreCase)
     {
-        "HEAD", "OPTIONS", "GET", "PUT", "POST", "PATCH", "DELETE", "TRACE",
+        "HEAD", "OPTIONS", "GET", "PUT", "POST", "PATCH", "DELETE", "TRACE", "QUERY",
     };
 
     public ValueTask ValidateAsync(RouteConfig routeConfig, IList<Exception> errors)
