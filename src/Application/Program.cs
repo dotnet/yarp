@@ -38,9 +38,6 @@ else
 
 var builder = WebApplication.CreateBuilder(options);
 
-// Suppress noisy framework logs on console by default
-builder.Logging.ConfigureDefaultLogging(builder.Configuration);
-
 // Load configuration from file if passed
 if (configFilePath is not null)
 {
@@ -53,7 +50,19 @@ if (configFilePath is not null)
 builder.Configuration.AddTestConfiguration();
 
 // Bind config into the object model — single conversion point, before Build()
-var config = YarpAppConfigBinder.Bind(builder.Configuration);
+YarpAppConfig config;
+try
+{
+    config = YarpAppConfigBinder.Bind(builder.Configuration);
+}
+catch (InvalidOperationException ex)
+{
+    Console.Error.WriteLine(ex.Message);
+    return 2;
+}
+
+// Console logging depends on Log:Level, so it is configured once all configuration providers are loaded
+builder.Logging.ConfigureLogging(config.Log.Level, builder.Configuration);
 
 // Services
 builder.AddServiceDefaults(config);
@@ -64,7 +73,14 @@ var app = builder.Build();
 // Print startup banner before any middleware runs
 LoggingFeature.PrintBanner(config, configFilePath, app);
 
+if (config.Log.Level == LogMode.Debug)
+{
+    LoggingFeature.PrintResolvedConfig(config);
+}
+
 // Middleware pipeline — order matters
+// Request logging wraps everything after it, including static files
+app.UseRequestLogging(config);
 app.UseStaticFiles(config);
 app.UseRouting();
 app.MapReverseProxy();

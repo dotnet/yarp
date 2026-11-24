@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -24,7 +25,7 @@ internal class YarpTestApp : WebApplicationFactory<Program>
     {
         ConfigureConfiguration(b =>
         {
-            var json = JsonSerializer.Serialize(config);
+            var json = JsonSerializer.Serialize(config, new JsonSerializerOptions { Converters = { new JsonStringEnumConverter() } });
             using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
             b.AddJsonStream(stream);
         });
